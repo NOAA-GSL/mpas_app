@@ -9,8 +9,8 @@ prepend_path("MODULEPATH", "/lfs4/HFIP/hfv3gfs/spack-stack/modulefiles")
 
 load("cmake/3.20.1")
 load("gnu")
-load("stack-intel/2022.1.2")
-load("stack-impi/2022.1.2")
+load("intel/2022.1.2")
+load("impi/2022.1.2")
 
 load("pnetcdf")
 load("szip")
