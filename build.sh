@@ -154,7 +154,7 @@ fi
 source ${CONDA_BUILD_DIR}/etc/profile.d/conda.sh
 
 conda activate
-if [ ! conda env list | grep -q "^mpas_workflow\s" ; ]; then
+if ! conda env list | grep -q "^mpas_workflow\s" ; then
   mamba env create -n mpas_workflow --file environment.yml
 fi
 
