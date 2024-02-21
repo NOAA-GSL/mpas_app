@@ -1,4 +1,6 @@
-age instructions
+#!/bin/bash
+
+#usage instructions
 usage () {
 cat << EOF_USAGE
 Usage: $0 --platform=PLATFORM [OPTIONS] 
