@@ -169,6 +169,7 @@ echo ${CONDA_BUILD_DIR} > ${MPAS_DIR}/conda_loc
 if [ -z "${COMPILER}" ] ; then
   case ${PLATFORM} in
     jet|hera) COMPILER=intel ;;
+    macos|singularity) COMPILER=gnu ;;
     *)
     COMPILER=intel
 printf "WARNING: Setting default COMPILER=intel for new platform ${PLATFORM}\n" >&2;
@@ -246,10 +247,14 @@ printf "... Load MODULE_FILE and create BUILD directory ...\n"
 # load submodules
 printf "...Loading MPAS-Model..."
 module use ${MPAS_DIR}/src/MPAS-Model
+
 module use ${MPAS_DIR}/modulefiles
 module load ${MODULE_FILE}
 
 module list
+
+cd ${MPAS_DIR}/src/MPAS-Model
+make ifort CORE=init_atmosphere
 
 mkdir -p ${BUILD_DIR}
 cd ${BUILD_DIR}
