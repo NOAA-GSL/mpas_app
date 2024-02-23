@@ -34,7 +34,24 @@ OPTIONS
       number of build jobs; defaults to 4
   -v, --verbose
       build with verbose output
-
+  --atmos-only
+      build the MPAS atmosphere core only, this option assumes you have already built the init_atmosphere_model to create the necessary initial conditions and executables.
+  --debug
+      build MPAS with debug mode
+  --use-papi
+      builds version of MPAS using PAPI for timers
+  --tau
+      builds version of MPAS using TAU hooks for profiling
+  --autoclean
+      forces a clean of MPAS infrastructure prior to build new core
+  --gen-f90
+      generates intermediate .f90 files through CPP, and builds with them
+  --timer-lib=TIMER_LIB
+      selects the timer library interface to be used for profiling the model, options are native, gptl, and tau
+  --openmp
+      builds and links with OpenMP flags
+  --single-precision
+      builds with default single-precision real kind.  Default is to use double-precision
 EOF_USAGE
 }
 
@@ -54,7 +71,7 @@ Settings:
   BUILD_JOBS=${BUILD_JOBS}
   VERBOSE=${VERBOSE}
   BUILD_MPAS=${BUILD_MPAS}
-
+  
 EOF_SETTINGS
 }
 
@@ -75,6 +92,14 @@ BUILD_JOBS=4
 REMOVE=false
 CONTINUE=false
 VERBOSE=false
+ATMOS_ONLY=false
+DEBUG=false
+USE_PAPI=false
+TAU=false
+AUTOCLEAN=false
+GEN_F90=false
+OPENMP=false
+SINGLE_PRECISION=false
 
 # Turn off all apps to build and choose default later
 DEFAULT_BUILD=true
@@ -118,7 +143,16 @@ while :; do
     --build-jobs|--build-jobs=) usage_error "$1 requires argument." ;;
     --verbose|-v) VERBOSE=true ;;
     --verbose=?*|--verbose=) usage_error "$1 argument ignored." ;;
-    
+    --atmos-only ) ATMOS_ONLY=true ;;
+    --debug) DEBUG=true ;;
+    --use-papi) USE_PAPI=true ;;
+    --tau ) TAU=true ;;
+    --autoclean ) AUTOCLEAN=true ;;
+    --gen-f90 ) GEN_F90=true ;;
+    --timer-lib=?*) TIMER_LIB=${1#*=} ;;
+    --timer-lib| --timer-lib= ) usage_error "$1 requires argument." ;;
+    --openmp ) OPENMP=true ;;
+    --single-precision ) SINGLE_PRECISION=true ;;
    # unknown
     -?*|?*) usage_error "Unknown option $1" ;;
     *) break
@@ -169,7 +203,6 @@ echo ${CONDA_BUILD_DIR} > ${MPAS_DIR}/conda_loc
 if [ -z "${COMPILER}" ] ; then
   case ${PLATFORM} in
     jet|hera) COMPILER=intel ;;
-    macos|singularity) COMPILER=gnu ;;
     *)
     COMPILER=intel
 printf "WARNING: Setting default COMPILER=intel for new platform ${PLATFORM}\n" >&2;
@@ -244,17 +277,71 @@ source ${MPAS_DIR}/etc/lmod-setup.sh $MACHINE
 # source the module file for this platform/compiler combination, then build the code
 printf "... Load MODULE_FILE and create BUILD directory ...\n"
 
-# load submodules
-printf "...Loading MPAS-Model..."
-module use ${MPAS_DIR}/src/MPAS-Model
+# build MPAS 
+printf "...Building MPAS-Model..."
+# module use ${MPAS_DIR}/src/MPAS-Model
 
 module use ${MPAS_DIR}/modulefiles
 module load ${MODULE_FILE}
 
 module list
 
+# process MPAS flags
+MPAS_MAKE_OPTIONS=""
+
+if [ "${DEBUG}" = true]; then
+  MPAS_MAKE_OPTIONS="${MAKE_OPTIONS} DEBUG=true"
+fi
+
+if [ "${USE_PAPI}" = true]; then
+  MPAS_MAKE_OPTIONS="${MAKE_OPTIONS} USE_PAPI=true"
+fi
+
+if [ "${TAU}" = true]; then
+  MPAS_MAKE_OPTIONS="${MAKE_OPTIONS} TAU=true"
+fi
+
+if [ "${AUTOCLEAN}" = true]; then
+  MPAS_MAKE_OPTIONS="${MAKE_OPTIONS} AUTOCLEAN=true"
+fi
+
+if [ "${GEN_F90}" = true]; then
+  MPAS_MAKE_OPTIONS="${MAKE_OPTIONS} GEN_F90=true"
+fi
+
+if [ ! -z "${TIMER_LIB}" ]; then
+  MPAS_MAKE_OPTIONS="${MAKE_OPTIONS} TIMER_LIB={$TIMER_LIB}"
+fi
+
+if [ "${OPENMP}" = true]; then
+  MPAS_MAKE_OPTIONS="${MAKE_OPTIONS} OPENMP=true"
+fi
+
+if [ "${SINGLE_PRECISION}" = true]; then
+  MPAS_MAKE_OPTIONS="${MAKE_OPTIONS} PRECISION=single"
+fi
+
+# creating the scripts directory here is only necessary until there is a 
+# permanent scripts directory with runscripts, at which point this should
+# be removed
+
+SCRIPTS_DIR="${MPAS_DIR}/scripts"
+if [ -d "$SCRIPTS_DIR" ]; then
+  mkdir "$SCRIPTS_DIR"
+fi 
+
 cd ${MPAS_DIR}/src/MPAS-Model
-make ifort CORE=init_atmosphere
+
+if [ ATMOS_ONLY = false]; then
+  make ifort CORE=init_atmosphere ${MPAS_MAKE_OPTIONS}
+  cp -v init_atmosphere_model ${SCRIPTS_DIR}
+  make clean CORE=init_atmosphere
+fi
+
+make ifort CORE=atmosphere ${MPAS_MAKE_OPTIONS}
+cp -v atmosphere_model ${SCRIPTS_DIR} 
+
+# make ifort CORE=atmosphere ${MAKE_OPTIONS}
 
 mkdir -p ${BUILD_DIR}
 cd ${BUILD_DIR}
