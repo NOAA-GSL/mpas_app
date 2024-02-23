@@ -276,36 +276,33 @@ source ${MPAS_DIR}/etc/lmod-setup.sh $MACHINE
 
 # source the module file for this platform/compiler combination, then build the code
 printf "... Load MODULE_FILE and create BUILD directory ...\n"
+module use ${MPAS_DIR}/modulefiles
+module load ${MODULE_FILE}
+module list 
 
 # build MPAS 
 printf "...Building MPAS-Model..."
-# module use ${MPAS_DIR}/src/MPAS-Model
-
-module use ${MPAS_DIR}/modulefiles
-module load ${MODULE_FILE}
-
-module list
 
 # process MPAS flags
 MPAS_MAKE_OPTIONS=""
 
-if [ "${DEBUG}" = true]; then
+if [ "${DEBUG}" = true ]; then
   MPAS_MAKE_OPTIONS="${MAKE_OPTIONS} DEBUG=true"
 fi
 
-if [ "${USE_PAPI}" = true]; then
+if [ "${USE_PAPI}" = true ]; then
   MPAS_MAKE_OPTIONS="${MAKE_OPTIONS} USE_PAPI=true"
 fi
 
-if [ "${TAU}" = true]; then
+if [ "${TAU}" = true ]; then
   MPAS_MAKE_OPTIONS="${MAKE_OPTIONS} TAU=true"
 fi
 
-if [ "${AUTOCLEAN}" = true]; then
+if [ "${AUTOCLEAN}" = true ]; then
   MPAS_MAKE_OPTIONS="${MAKE_OPTIONS} AUTOCLEAN=true"
 fi
 
-if [ "${GEN_F90}" = true]; then
+if [ "${GEN_F90}" = true ]; then
   MPAS_MAKE_OPTIONS="${MAKE_OPTIONS} GEN_F90=true"
 fi
 
@@ -313,11 +310,11 @@ if [ ! -z "${TIMER_LIB}" ]; then
   MPAS_MAKE_OPTIONS="${MAKE_OPTIONS} TIMER_LIB={$TIMER_LIB}"
 fi
 
-if [ "${OPENMP}" = true]; then
+if [ "${OPENMP}" = true ]; then
   MPAS_MAKE_OPTIONS="${MAKE_OPTIONS} OPENMP=true"
 fi
 
-if [ "${SINGLE_PRECISION}" = true]; then
+if [ "${SINGLE_PRECISION}" = true ]; then
   MPAS_MAKE_OPTIONS="${MAKE_OPTIONS} PRECISION=single"
 fi
 
@@ -326,22 +323,25 @@ fi
 # be removed
 
 SCRIPTS_DIR="${MPAS_DIR}/scripts"
-if [ -d "$SCRIPTS_DIR" ]; then
+if [ ! -d "$SCRIPTS_DIR" ]; then
   mkdir "$SCRIPTS_DIR"
 fi 
 
 cd ${MPAS_DIR}/src/MPAS-Model
 
-if [ ATMOS_ONLY = false]; then
+printf "\nATMOS_ONLY: ${ATMOS_ONLY}\n"
+
+if [ ${ATMOS_ONLY} = false ]; then
   make ifort CORE=init_atmosphere ${MPAS_MAKE_OPTIONS}
+  printf "made init_atmos\n"
   cp -v init_atmosphere_model ${SCRIPTS_DIR}
+  printf "copied to scripts\n"
   make clean CORE=init_atmosphere
+  printf "made clean init\n"
 fi
 
 make ifort CORE=atmosphere ${MPAS_MAKE_OPTIONS}
 cp -v atmosphere_model ${SCRIPTS_DIR} 
-
-# make ifort CORE=atmosphere ${MAKE_OPTIONS}
 
 mkdir -p ${BUILD_DIR}
 cd ${BUILD_DIR}
