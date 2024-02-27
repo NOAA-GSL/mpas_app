@@ -231,40 +231,6 @@ fi
 
 printf "MODULE_FILE=${MODULE_FILE}\n" >&2
 
-# if build directory already exists then exit
-if [ "${REMOVE}" = true ]; then
-  printf "Remove build directory\n"
-  printf "  BUILD_DIR=${BUILD_DIR}\n\n"
-  rm -rf ${BUILD_DIR}
-elif [ "${CONTINUE}" = true ]; then
-  printf "Continue build in directory\n"
-  printf "  BUILD_DIR=${BUILD_DIR}\n\n"
-else
-  if [ -d "${BUILD_DIR}" ]; then
-    while true; do
-      if [[ $(ps -o stat= -p ${LCL_PID}) != *"+"* ]] ; then
-        printf "ERROR: Build directory already exists\n" >&2
-        printf "  BUILD_DIR=${BUILD_DIR}\n\n" >&2
-        usage >&2
-        exit 64
-      fi
-      # interactive selection
-      printf "Build directory (${BUILD_DIR}) already exists\n"
-      printf "Please choose what to do:\n\n"
-      printf "[R]emove the existing directory\n"
-      printf "[C]ontinue building in the existing directory\n"
-      printf "[Q]uit this build script\n"
-      read -p "Choose an option (R/C/Q):" choice
-      case ${choice} in
-        [Rr]* ) rm -rf ${BUILD_DIR}; break ;;
-        [Cc]* ) break ;;
-        [Qq]* ) exit ;;
-        * ) printf "Invalid option selected.\n" ;;
-      esac
-    done
-  fi
-fi
-
 # make settings
 MAKE_SETTINGS="-j ${BUILD_JOBS}"
 if [ "${VERBOSE}" = true ]; then
