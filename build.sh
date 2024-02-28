@@ -288,9 +288,9 @@ fi
 # permanent scripts directory with runscripts, at which point this should
 # be removed
 
-SCRIPTS_DIR="${MPAS_DIR}/scripts"
-if [ ! -d "$SCRIPTS_DIR" ]; then
-  mkdir "$SCRIPTS_DIR"
+EXEC_DIR="${MPAS_DIR}/exec"
+if [ ! -d "$EXEC_DIR" ]; then
+  mkdir "$EXEC_DIR"
 fi 
 
 cd ${MPAS_DIR}/src/MPAS-Model
@@ -299,15 +299,12 @@ printf "\nATMOS_ONLY: ${ATMOS_ONLY}\n"
 
 if [ ${ATMOS_ONLY} = false ]; then
   make ifort CORE=init_atmosphere ${MPAS_MAKE_OPTIONS}
-  printf "made init_atmos\n"
-  cp -v init_atmosphere_model ${SCRIPTS_DIR}
-  printf "copied to scripts\n"
+  cp -v init_atmosphere_model ${EXEC_DIR}
   make clean CORE=init_atmosphere
-  printf "made clean init\n"
 fi
 
 make ifort CORE=atmosphere ${MPAS_MAKE_OPTIONS}
-cp -v atmosphere_model ${SCRIPTS_DIR} 
+cp -v atmosphere_model ${EXEC_DIR} 
 
 mkdir -p ${BUILD_DIR}
 cd ${BUILD_DIR}
