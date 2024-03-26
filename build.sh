@@ -188,8 +188,8 @@ fi
 source ${CONDA_BUILD_DIR}/etc/profile.d/conda.sh
 
 conda activate
-if ! conda env list | grep -q "^mpas_workflow\s" ; then
-  mamba env create -n mpas_workflow --file environment.yml
+if ! conda env list | grep -q "^mpas_app\s" ; then
+  mamba env create -n mpas_app --file environment.yml
 fi
 
 # Conda environment should have linux utilities to perform these tasks on macos.
@@ -305,7 +305,6 @@ fi
 
 make ifort CORE=atmosphere ${MPAS_MAKE_OPTIONS}
 cp -v atmosphere_model ${EXEC_DIR} 
-cp -v build_tables ${EXEC_DIR}
 
 mkdir -p ${BUILD_DIR}
 cd ${BUILD_DIR}
