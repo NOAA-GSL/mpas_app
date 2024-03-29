@@ -1,0 +1,75 @@
+
+workflow:
+  attrs:
+    realtime: False
+    scheduler: "{{ platform.scheduler }}"
+  cycledef:
+    - attrs:
+        group: forecast
+      spec: "{{ user.first_cycle.strftime('%Y%m%d%H%M') }} {{ user.last_cycle.strftime('%Y%m%d%H%M') }} {{user.cycle_frequency}}:00:00"
+  log: "{{ user.experiment_dir }}/workflow.log"
+  entities:
+    EXPERIMENT_CONFIG: "{{user.experiment_dir}}/experiment.yaml"
+    LOGDIR: "{{user.experiment_dir}}/log"
+    MPAS_APP: "{{ user.mpas_app }}"
+  tasks:
+    task_get_ics_data:
+      command: '&MPAS_APP;/scripts/get_external_data.sh'
+      account: "{{ platform.account }}"
+      partition: service
+      join:
+        cyclestr:
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+      walltime: "{{ get_ics_data['execution']['walltime']}}"
+      cores: !int "{{ get_ics_data['execution']['cores']}}"
+      envars:
+        YYYYMMDDHH:
+          cyclestr:
+            value: '@Y@m@d@H'
+        OUTPUT_PATH:
+          cyclestr:
+            value: "{{ user.experiment_dir }}/@Y@m@d@H/{{ get_ics_data.external_model }}"
+        ICS_or_LBCS: ICS
+        TIME_OFFSET_HRS: 0
+        MPAS_APP: '&MPAS_APP;'
+    task_get_lbcs_data:
+      command: '&MPAS_APP;/scripts/get_external_data.sh'
+      account: "{{ platform.account }}"
+      partition: service
+      join:
+        cyclestr:
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+      walltime: "{{ get_lbcs_data['execution']['walltime']}}"
+      cores: !int "{{ get_lbcs_data['execution']['cores']}}"
+      envars:
+        YYYYMMDDHH:
+          cyclestr:
+            value: '@Y@m@d@H'
+        OUTPUT_PATH:
+          cyclestr:
+            value: "{{ user.experiment_dir }}/@Y@m@d@H/{{ get_lbcs_data.external_model }}"
+        ICS_or_LBCS: LBCS
+        TIME_OFFSET_HRS: 0
+        LBC_INTVL_HRS: 6
+        FCST_LEN: 12
+        MPAS_APP: '&MPAS_APP;'
+    task_ungrib:
+      command: 'source &MPAS_APP;/load_wflow_modules.sh jet ; python &MPAS_APP;/scripts/ungrib.py'
+      account: "{{ platform.account }}"
+      join:
+        cyclestr:
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+      walltime: "{{ prepare_grib.ungrib['execution']['batchargs']['walltime']}}"
+      cores: !int "{{ prepare_grib.ungrib['execution']['batchargs']['cores']}}"
+      envars:
+        CONFIG_PATH: '&EXPERIMENT_CONFIG;'
+        CYCLE:
+          cyclestr:
+            value: "@Y-@m-@dT@H:@M:@S"
+      dependency:
+        taskdep:
+          attrs:
+            task: get_ics_data
+        taskdep:
+          attrs:
+            task: get_lbcs_data
