@@ -5,16 +5,12 @@ Creates the experiment directory and populates it with necessary configuration a
 import argparse
 import os
 import sys
-
 from importlib import resources
 from pathlib import Path
 from typing import Any, Dict, Optional, Type
 
-from lxml import etree
 import yaml
-
-from pathlib import Path
-from typing import Optional
+from lxml import etree
 
 import uwtools.api.config as uwconfig
 import uwtools.api.rocoto as uwrocoto
@@ -42,19 +38,20 @@ def main(user_config_file: Optional[Path]) -> None:
     experiment_path = Path(experiment_config["user"]["experiment_dir"])
     os.makedirs(experiment_path, exist_ok=True)
 
-    experiment_config.dump(experiment_path / "experiment.yaml")
+    experiment_file = experiment_path / "experiment.yaml"
 
     # Load the workflow definition
     default_workflow = Path("../parm/wflow/cold_start.yaml")
     rocoto_yaml_path = experiment_path / "rocoto.yaml"
     workflow_config = update_config(default_workflow, experiment_config)
-    workflow_config.dump_dict(path=rocoto_yaml_path, cfg={"workflow": workflow_config["workflow"]})
-
-    print(yaml.dump(workflow_config["user"]))
+    uwconfig.realize(input_config=default_workflow,
+            output_file=experiment_file,
+            supplemental_configs=[experiment_config],
+            )
 
     # Create the workflow files
     rocoto_xml = experiment_path / "rocoto.xml"
-    rocoto_valid = uwrocoto.realize(config=rocoto_yaml_path,
+    rocoto_valid = uwrocoto.realize(config=experiment_file,
             output_file=rocoto_xml)
     if not rocoto_valid:
         sys.exit(1)

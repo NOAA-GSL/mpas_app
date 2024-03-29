@@ -22,7 +22,7 @@ prepare_grib:
   ungrib:
     execution:
       envcmds:
-        - source {{ user.mpas_app }}/pre.sh
+        - source {{ user.mpas_app }}/load_wflow_modules.sh jet
         - conda activate ungrib
       executable: ungrib
       batchargs:
@@ -35,7 +35,3 @@ prepare_grib:
       path: "{{ get_lbcs_data.run_dir }}/gfs.t{cycle_hour:02d}z.pgrb2.0p25.f{forecast_hour:03d}"
     run_dir: '{{ user.experiment_dir }}/{{cycle.strftime("%Y%m%d%H")}}/ungrib'
     vtable: "{{ user.mpas_app }}/parm/Vtable.GFS"
-prepare_ics:
-  init_atmosphere:
-prepare_lbcs:
-  init_atmosphere:

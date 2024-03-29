@@ -54,7 +54,7 @@ workflow:
         FCST_LEN: 12
         MPAS_APP: '&MPAS_APP;'
     task_ungrib:
-      command: 'source &MPAS_APP;/pre.sh ; conda activate DEV-uwtools ; python &MPAS_APP;/scripts/ungrib.py'
+      command: 'source &MPAS_APP;/load_wflow_modules.sh jet ; conda activate DEV-uwtools ; python &MPAS_APP;/scripts/ungrib.py'
       account: "{{ platform.account }}"
       join:
         cyclestr:
