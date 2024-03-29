@@ -2,7 +2,11 @@ name: mpas_workflow
 channels:
   - conda-forge
   - ufs-community
+  - anaconda
+  - defaults
 dependencies:
+  - metis=5.1.0=hf484d3e_4
+  - numpy=1.26*
   - pylint=2.17*
   - pytest=7.2*
   - uwtools=2.0.1
