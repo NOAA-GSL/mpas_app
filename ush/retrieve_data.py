@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# pylint: disable=logging-fstring-interpolation
+# pylint: disable-all
 """
 This script helps users pull data from known data streams, including
 URLS and HPSS (only on supported NOAA platforms), or from user-supplied
@@ -43,7 +43,6 @@ import yaml
 
 
 def clean_up_output_dir(expected_subdir, local_archive, output_path, source_paths):
-
     """Remove expected sub-directories and existing_archive files on
     disk once all files have been extracted and put into the specified
     output location."""
@@ -80,7 +79,6 @@ def clean_up_output_dir(expected_subdir, local_archive, output_path, source_path
 
 
 def copy_file(source, destination, copy_cmd):
-
     """
     Copy a file from a source and place it in the destination location.
     Return a boolean value reflecting the state of the copy.
@@ -89,7 +87,9 @@ def copy_file(source, destination, copy_cmd):
     """
 
     if not os.path.exists(source):
-        logging.info(f"File does not exist on disk \n {source} \n try using: --input_file_path <your_path>")
+        logging.info(
+            f"File does not exist on disk \n {source} \n try using: --input_file_path <your_path>"
+        )
         return False
 
     # Using subprocess here because system copy is much faster than
@@ -107,8 +107,8 @@ def copy_file(source, destination, copy_cmd):
         return False
     return True
 
-def check_file(url):
 
+def check_file(url):
     """
     Check that a file exists at the expected URL. Return boolean value
     based on the response.
@@ -116,8 +116,8 @@ def check_file(url):
     status_code = urllib.request.urlopen(url).getcode()
     return status_code == 200
 
-def download_file(url):
 
+def download_file(url):
     """
     Download a file from a url source, and place it in a target location
     on disk.
@@ -152,7 +152,6 @@ def download_file(url):
 
 
 def arg_list_to_range(args):
-
     """
     Given an argparse list argument, return the sequence to process.
 
@@ -178,7 +177,6 @@ def arg_list_to_range(args):
 
 
 def fill_template(template_str, cycle_date, templates_only=False, **kwargs):
-
     """Fill in the provided template string with date time information,
     and return the resulting string.
 
@@ -199,7 +197,7 @@ def fill_template(template_str, cycle_date, templates_only=False, **kwargs):
     Return:
       filled template string
     """
- 
+
     # Parse keyword args
     ens_group = kwargs.get("ens_group")
     fcst_hr = kwargs.get("fcst_hr", 0)
@@ -244,7 +242,6 @@ def fill_template(template_str, cycle_date, templates_only=False, **kwargs):
 
 
 def create_target_path(target_path):
-
     """
     Append target path and create directory for ensemble members
     """
@@ -254,7 +251,6 @@ def create_target_path(target_path):
 
 
 def find_archive_files(paths, file_names, cycle_date, ens_group):
-
     """Given an equal-length set of archive paths and archive file
     names, and a cycle date, check HPSS via hsi to make sure at least
     one set exists. Return a dict of the paths of the existing archive, along with
@@ -290,7 +286,6 @@ def find_archive_files(paths, file_names, cycle_date, ens_group):
 
 
 def get_file_templates(cla, known_data_info, data_store, use_cla_tmpl=False):
-
     """Returns the file templates requested by user input, either from
     the command line, or from the known data information dict.
 
@@ -312,10 +307,10 @@ def get_file_templates(cla, known_data_info, data_store, use_cla_tmpl=False):
     # Remove sfc files from fcst in file_names of external models for LBCs
     # sfc files needed in fcst when time_offset is not zero.
     if cla.ics_or_lbcs == "LBCS" and isinstance(file_templates, dict):
-        for format in ['netcdf', 'nemsio']:
-            for i, tmpl in enumerate(file_templates.get(format, {}).get('fcst', [])):
+        for format in ["netcdf", "nemsio"]:
+            for i, tmpl in enumerate(file_templates.get(format, {}).get("fcst", [])):
                 if "sfc" in tmpl:
-                    del file_templates[format]['fcst'][i]
+                    del file_templates[format]["fcst"][i]
 
     if use_cla_tmpl:
         file_templates = cla.file_templates if cla.file_templates else file_templates
@@ -443,7 +438,6 @@ def get_requested_files(cla, file_templates, input_locs, method="disk", **kwargs
 
 
 def hsi_single_file(file_path, mode="ls"):
-
     """Call hsi as a subprocess for Python and return information about
     whether the file_path was found.
 
@@ -618,23 +612,21 @@ def hpss_requested_files(cla, file_names, store_specs, members=-1, ens_group=-1)
             unavailable = set.union(*unavailable.values())
 
     # Break loop if unexpected files were found or if files were found
-    # A successful file found does not equal the expected file list and 
+    # A successful file found does not equal the expected file list and
     # returns an empty set function.
     if not expected == unavailable:
         return unavailable - expected
-    
+
     # If this loop has completed successfully without returning early, then all files have been found
     return {}
 
 
 def load_str(arg):
-
     """Load a dict string safely using YAML. Return the resulting dict."""
     return yaml.load(arg, Loader=yaml.SafeLoader)
 
 
 def config_exists(arg):
-
     """
     Check to ensure that the provided config file exists. If it does,
     load it with YAML's safe loader and return the resulting dict.
@@ -651,7 +643,6 @@ def config_exists(arg):
 
 
 def pair_locs_with_files(input_locs, file_templates, check_all):
-
     """
     Given a list of input locations and files, return an iterable that
     contains the multiple locations and file templates for files that
@@ -696,7 +687,6 @@ def pair_locs_with_files(input_locs, file_templates, check_all):
 
 
 def path_exists(arg):
-
     """Check whether the supplied path exists and is writeable"""
 
     if not os.path.exists(arg):
@@ -711,7 +701,6 @@ def path_exists(arg):
 
 
 def setup_logging(debug=False):
-
     """Calls initialization functions for logging package, and sets the
     user-defined level for logging in the script."""
 
@@ -725,19 +714,21 @@ def setup_logging(debug=False):
 
 
 def write_summary_file(cla, data_store, file_templates):
-
     """Given the command line arguments and the data store from which
     the data was retrieved, write a bash summary file that is needed by
     the workflow elements downstream."""
 
-    members =  cla.members if isinstance(cla.members, list) else [-1]
+    members = cla.members if isinstance(cla.members, list) else [-1]
     for mem in members:
         files = []
         for tmpl in file_templates:
             tmpl = tmpl if isinstance(tmpl, list) else [tmpl]
             for t in tmpl:
                 files.extend(
-                    [fill_template(t, cla.cycle_date, fcst_hr=fh, mem=mem) for fh in cla.fcst_hrs]
+                    [
+                        fill_template(t, cla.cycle_date, fcst_hr=fh, mem=mem)
+                        for fh in cla.fcst_hrs
+                    ]
                 )
         output_path = fill_template(cla.output_path, cla.cycle_date, mem=mem)
         summary_fp = os.path.join(output_path, cla.summary_file)
@@ -897,7 +888,6 @@ def main(argv):
 
 
 def get_ens_groups(members):
-
     """Given a list of ensemble members, return a dict with keys for
     the ensemble group, and values are lists of ensemble members
     requested in that group."""
@@ -916,7 +906,6 @@ def get_ens_groups(members):
 
 
 def parse_args(argv):
-
     """
     Function maintains the arguments accepted by this script. Please see
     Python's argparse documenation for more information about settings of each
@@ -948,13 +937,12 @@ def parse_args(argv):
         in this repository is in parm/data_locations.yml",
         required=False,
         type=config_exists,
-        
     )
     parser.add_argument(
         "--cycle_date",
         help="Cycle date of the data to be retrieved in YYYYMMDDHH \
         or YYYYMMDDHHmm format.",
-        required=False, # relaxed this arg option, and set a benign value when not used
+        required=False,  # relaxed this arg option, and set a benign value when not used
         default="1999123100",
         type=to_datetime,
     )
@@ -986,19 +974,19 @@ def parse_args(argv):
     parser.add_argument(
         "--output_path",
         help="Path to a location on disk. Path is expected to exist.",
-        required=True,                    
+        required=True,
         type=os.path.abspath,
     )
     parser.add_argument(
         "--ics_or_lbcs",
         choices=("ICS", "LBCS"),
         help="Flag for whether ICS or LBCS.",
-        required=False
+        required=False,
     )
 
     # Optional
     parser.add_argument(
-        "--version",     # for file patterns that dont conform to cycle_date [TBD]
+        "--version",  # for file patterns that dont conform to cycle_date [TBD]
         help="Version number of package to download, e.g. x.yy.zz",
     )
     parser.add_argument(
@@ -1057,22 +1045,26 @@ def parse_args(argv):
 
     args = parser.parse_args(argv)
 
-    # convert range arguments if necessary 
+    # convert range arguments if necessary
     args.fcst_hrs = arg_list_to_range(args.fcst_hrs)
     if args.members:
         args.members = arg_list_to_range(args.members)
 
     # Check required arguments for various conditions
     if not args.ics_or_lbcs and args.file_set in ["anl", "fcst"]:
-        raise argparse.ArgumentTypeError(f"--ics_or_lbcs is a required " \
-              f"argument when --file_set = {args.file_set}")
+        raise argparse.ArgumentTypeError(
+            f"--ics_or_lbcs is a required "
+            f"argument when --file_set = {args.file_set}"
+        )
 
     # Check valid arguments for various conditions
     valid_data_stores = ["hpss", "nomads", "aws", "disk", "remote"]
     for store in args.data_stores:
         if store not in valid_data_stores:
-            raise argparse.ArgumentTypeError(f"Invalid value '{store}' provided " \
-                  f"for --data_stores; valid values are {valid_data_stores}")
+            raise argparse.ArgumentTypeError(
+                f"Invalid value '{store}' provided "
+                f"for --data_stores; valid values are {valid_data_stores}"
+            )
 
     return args
 

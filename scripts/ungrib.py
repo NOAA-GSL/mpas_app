@@ -1,15 +1,13 @@
 """
 The run script for ungrib
 """
+
 import os
-import tempfile
 from datetime import datetime
 from pathlib import Path
 
-import yaml
-
-import uwtools.api.config as uwconfig
-import uwtools.api.ungrib as ungrib
+from uwtools.api import config as uwconfig
+from uwtools.api import ungrib
 
 
 # Load the YAML config
