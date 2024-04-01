@@ -46,7 +46,7 @@ create_ics:
     execution:
       executable: "{{ user.mpas_app }}/exec/init_atmosphere_model"
       batchargs:
-        walltime: 02:00:00
+        walltime: 01:30:00
         cores: 4
       mpiargs:
         - "--ntasks=4"
@@ -129,9 +129,9 @@ forecast:
       executable: "{{ user.mpas_app }}/exec/atmosphere_model"
       batchargs:
         walltime: 01:30:00
-        cores: 4
+        cores: 32
       mpiargs:
-        - "--ntasks=4"
+        - "--ntasks={{ forecast.mpas['execution']['batchargs']['cores']}}"
       mpicmd: srun
       envcmds:
         - module use {{ user.mpas_app }}/modulefiles
