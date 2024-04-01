@@ -3,6 +3,7 @@ user:
   last_cycle:  !!timestamp 2023-09-15T00:00:00
   cycle_frequency: 12
   experiment_dir: ""
+  grid_files: /lfs4/BMC/wrfruc/jderrico/mpas/mpas_dev/mpas_app/conus
   mpas_app: ""
 platform:
   scheduler: slurm
@@ -35,3 +36,127 @@ prepare_grib:
       path: "{{ get_lbcs_data.run_dir }}/gfs.t{cycle_hour:02d}z.pgrb2.0p25.f{forecast_hour:03d}"
     run_dir: '{{ user.experiment_dir }}/{{cycle.strftime("%Y%m%d%H")}}/ungrib'
     vtable: "{{ user.mpas_app }}/parm/Vtable.GFS"
+create_ics:
+  mpas_init: &mpas_init_config
+    boundary_conditions:
+      interval_hours: 6
+      length: 6
+      offset: 0
+      path: "{{ prepare_grib.ungrib['run_dir'] }}"
+    execution:
+      executable: "{{ user.mpas_app }}/exec/init_atmosphere_model"
+      batchargs:
+        walltime: 02:00:00
+        cores: 4
+      mpiargs:
+        - "--ntasks=4"
+      mpicmd: srun
+      envcmds:
+        - module use {{ user.mpas_app }}/modulefiles
+        - module load build_jet_intel
+    files_to_copy: &mpas_init_files_to_copy
+      conus.static.nc: "{{ user.grid_files }}/conus.static.nc"
+      conus.graph.info.part.{{mpas_init.execution["batchargs"]["cores"]}}: '{{ user.grid_files }}/conus.graph.info.part.{{mpas_init.execution["batchargs"]["cores"]}}'
+      stream_list.atmosphere.diagnostics: "{{ user.mpas_app }}/src/MPAS-Model/stream_list.atmosphere.diagnostics"
+      stream_list.atmosphere.output: "{{ user.mpas_app }}/src/MPAS-Model/stream_list.atmosphere.output"
+      stream_list.atmosphere.surface: "{{ user.mpas_app }}/src/MPAS-Model/stream_list.atmosphere.surface"
+    files_to_link: &mpas_init_files_to_link
+      CAM_ABS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/CAM_ABS_DATA.DBL"
+      CAM_AEROPT_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/CAM_AEROPT_DATA.DBL"
+      GENPARM.TBL: "{{ user.mpas_app }}/src/MPAS-Model/GENPARM.TBL"
+      LANDUSE.TBL: "{{ user.mpas_app }}/src/MPAS-Model/LANDUSE.TBL"
+      OZONE_DAT.TBL: "{{ user.mpas_app }}/src/MPAS-Model/OZONE_DAT.TBL"
+      OZONE_LAT.TBL: "{{ user.mpas_app }}/src/MPAS-Model/OZONE_LAT.TBL"
+      OZONE_PLEV.TBL: "{{ user.mpas_app }}/src/MPAS-Model/OZONE_PLEV.TBL"
+      RRTMG_LW_DATA: "{{ user.mpas_app }}/src/MPAS-Model/RRTMG_LW_DATA"
+      RRTMG_LW_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/RRTMG_LW_DATA.DBL"
+      RRTMG_SW_DATA: "{{ user.mpas_app }}/src/MPAS-Model/RRTMG_SW_DATA"
+      RRTMG_SW_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/RRTMG_SW_DATA.DBL"
+      SOILPARM.TBL: "{{ user.mpas_app }}/src/MPAS-Model/SOILPARM.TBL"
+      VEGPARM.TBL: "{{ user.mpas_app }}/src/MPAS-Model/VEGPARM.TBL"
+    namelist:
+      base_file: "{{ user.mpas_app }}/src/MPAS-Model/namelist.init_atmosphere"
+      update_values: &mpas_init_update_values
+        nhyd_model:
+          config_init_case: 7
+        data_sources:
+          config_met_prefix: FILE
+          config_fg_interval: !int "{{ mpas_init.boundary_conditions['interval_hours'] * 3600 }}"
+        vertical_grid:
+          config_blend_bdy_terrain: true
+        preproc_stages:
+          config_static_interp: false
+          config_native_gwd_static: false
+        decomposition:
+          config_block_decomp_file_prefix: conus.graph.info.part.
+    run_dir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/mpas_ics'
+    streams:
+      path: "{{ user.mpas_app }}/parm/streams.init_atmosphere.IN"
+      values: &mpas_init_streams_values
+        input_filename: conus.static.nc
+        output_filename: conus.init.nc
+        surface_filename: x1.40962.sfc_update.nc
+        surface_output_interval: !int "{{ 24 * 3600 }}"
+        lbc_filename: lbc.$Y-$M-$D_$h.$m.$s.nc
+        output_interval: 06:00:00
+create_lbcs:
+  mpas_init:
+    <<: *mpas_init_config
+    files_to_copy:
+      <<: *mpas_init_files_to_copy
+      conus.init.nc: "{{ create_ics.mpas_init['run_dir'] }}/conus.init.nc"
+    namelist:
+      base_file: "{{ user.mpas_app }}/src/MPAS-Model/namelist.init_atmosphere"
+      update_values:
+        <<: *mpas_init_update_values
+        nhyd_model:
+          config_init_case: 9
+    run_dir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/mpas_lbcs'
+    streams:
+      path: "{{ user.mpas_app }}/parm/streams.init_atmosphere.IN"
+      values:
+        <<: *mpas_init_streams_values
+        input_filename: conus.init.nc
+        output_filename: foo.nc
+forecast:
+  mpas:
+    lateral_boundary_conditions:
+      interval_hours: 6
+      offset: 0
+      path: "{{ create_lbcs.mpas_init['run_dir'] }}"
+    length: 6
+    execution:
+      executable: "{{ user.mpas_app }}/exec/atmosphere_model"
+      batchargs:
+        walltime: 01:30:00
+        cores: 4
+      mpiargs:
+        - "--ntasks=4"
+      mpicmd: srun
+      envcmds:
+        - module use {{ user.mpas_app }}/modulefiles
+        - module load build_jet_intel
+    files_to_copy:
+      conus.init.nc: "{{ create_ics.mpas_init['run_dir'] }}/conus.init.nc"
+      conus.graph.info.part.{{mpas.execution["batchargs"]["cores"]}}: '{{ user.grid_files }}/conus.graph.info.part.{{mpas.execution["batchargs"]["cores"]}}'
+      stream_list.atmosphere.diagnostics: "{{ user.mpas_app }}/src/MPAS-Model/stream_list.atmosphere.diagnostics"
+      stream_list.atmosphere.output: "{{ user.mpas_app }}/src/MPAS-Model/stream_list.atmosphere.output"
+      stream_list.atmosphere.surface: "{{ user.mpas_app }}/src/MPAS-Model/stream_list.atmosphere.surface"
+    files_to_link:
+      <<: *mpas_init_files_to_link
+    namelist:
+      base_file: "{{ user.mpas_app }}/src/MPAS-Model/namelist.atmosphere"
+      update_values:
+        nhyd_model:
+          config_dt: 60.0
+        limited_area:
+          config_apply_lbcs: true
+        decomposition:
+          config_block_decomp_file_prefix: conus.graph.info.part.
+    run_dir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/forecast'
+    streams:
+      path: "{{ user.mpas_app }}/parm/streams.atmosphere.IN"
+      values:
+        input_filename: conus.init.nc
+        input_interval: 06:00:00
+        output_interval: 06:00:00
