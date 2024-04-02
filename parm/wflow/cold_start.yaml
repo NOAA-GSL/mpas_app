@@ -73,3 +73,56 @@ workflow:
         taskdep:
           attrs:
             task: get_lbcs_data
+    task_mpas_ics: &mpas_init_task
+      command: 'source &MPAS_APP;/load_wflow_modules.sh jet ; python &MPAS_APP;/scripts/mpas_init.py'
+      account: "{{ platform.account }}"
+      join:
+        cyclestr:
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+      walltime: "{{ create_ics.mpas_init['execution']['batchargs']['walltime']}}"
+      cores: !int "{{ create_ics.mpas_init['execution']['batchargs']['cores']}}"
+      envars:
+        CONFIG_PATH: '&EXPERIMENT_CONFIG;'
+        CYCLE:
+          cyclestr:
+            value: "@Y-@m-@dT@H:@M:@S"
+        EXPT_SECT: create_ics
+      dependency:
+        taskdep:
+          attrs:
+            task: ungrib
+    task_mpas_lbcs:
+      command: 'source &MPAS_APP;/load_wflow_modules.sh jet ; python &MPAS_APP;/scripts/mpas_init.py'
+      account: "{{ platform.account }}"
+      join:
+        cyclestr:
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+      walltime: "{{ create_lbcs.mpas_init['execution']['batchargs']['walltime']}}"
+      cores: !int "{{ create_lbcs.mpas_init['execution']['batchargs']['cores']}}"
+      envars:
+        CONFIG_PATH: '&EXPERIMENT_CONFIG;'
+        CYCLE:
+          cyclestr:
+            value: "@Y-@m-@dT@H:@M:@S"
+        EXPT_SECT: create_lbcs
+      dependency:
+        taskdep:
+          attrs:
+            task: mpas_ics
+    task_mpas:
+      command: 'source &MPAS_APP;/load_wflow_modules.sh jet ; python &MPAS_APP;/scripts/mpas.py'
+      account: "{{ platform.account }}"
+      join:
+        cyclestr:
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+      walltime: "{{ forecast.mpas['execution']['batchargs']['walltime']}}"
+      cores: !int "{{ forecast.mpas['execution']['batchargs']['cores']}}"
+      envars:
+        CONFIG_PATH: '&EXPERIMENT_CONFIG;'
+        CYCLE:
+          cyclestr:
+            value: "@Y-@m-@dT@H:@M:@S"
+      dependency:
+        taskdep:
+          attrs:
+            task: mpas_lbcs
