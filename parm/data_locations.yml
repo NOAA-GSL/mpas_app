@@ -25,8 +25,8 @@
 #   LBCS. Each file name may (and likely should) include templates.
 #
 #   If the SRW App accepts different file formats, as it does for
-#   FV3GFS, an intermediary level indicating the value associate with a
-#   FV3GFS_FILE_FMT_* variable.
+#   GFS, an intermediary level indicating the value associate with a
+#   GFS_FILE_FMT_* variable.
 #
 # 3rd level optional:
 #
@@ -48,7 +48,7 @@
 #
 #
 #
-FV3GFS:
+GFS:
   nomads:
     protocol: download
     url: https://nomads.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/gfs.{yyyymmdd}/{hh}/atmos
