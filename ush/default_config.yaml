@@ -3,7 +3,7 @@ user:
   last_cycle:  !!timestamp 2023-09-15T00:00:00
   cycle_frequency: 12
   experiment_dir: ""
-  grid_files: /lfs4/BMC/wrfruc/jderrico/mpas/mpas_dev/mpas_app/conus
+  grid_files: /path/to/gps_metis/output
   mpas_app: ""
 platform:
   scheduler: slurm
