@@ -19,14 +19,16 @@ To see the different build options (including MPAS build options):
 
 `./build.sh -h`
 
-This builds the MPAS-Model along with a Miniconda installation local to your clone.  The environment includes a pre-built package to run WPS Ungrib.
+This builds the MPAS-Model and installs Miniconda inside the local clone.  The `ungrib` conda environment installed in the process includes a pre-built package to run WPS Ungrib tool.
 
 ## Configuring the Model
 
-This app assumes a <filename>.static.nc and a <filename>.grid.info have already been created using [MPAS-Limited-Area](https://github.com/MPAS-Dev/MPAS-Limited-Area), the following commands decompose the domain for creating initial conditions (4) and running the model (32):
+This app assumes a `<gridlabel>.static.nc` and a `<gridlabel>.grid.info` have already been created using [MPAS-Limited-Area](https://github.com/MPAS-Dev/MPAS-Limited-Area) utiltity, the following commands decompose the domain for creating initial conditions using 4 processors and running the model using 32 processors:
 
-`gpmetis -minconn -contig -niter=200 <filename>.graph.info 4`
-`gpmetis -minconn -contig -niter=200 <filename>.graph.info 32`
+```
+gpmetis -minconn -contig -niter=200 <filename>.graph.info 4
+gpmetis -minconn -contig -niter=200 <filename>.graph.info 32
+```
 
 ### default_config.yaml
 
@@ -34,9 +36,9 @@ This app assumes a <filename>.static.nc and a <filename>.grid.info have already 
 
 The `grid_files` field references the decomposed domain files from the previous step.
 
-The fields under `prepare_ungrib` will retrieve whatever data you need for GFS initial conditions and lateral conditions from AWS by default, and will ungrib them.
+The fields under `prepare_ungrib` will retrieve whatever data you need for GFS initial conditions and lateral boundary conditions from AWS by default, and will ungrib them.
 
-Next, the `create_ics` part of the worfklow creates the MPAS initial conditions using 4 cores and copies and links the files needed from when the model was built.  It also updates the init_atmosphere namelist.  Additional files like the runtime tables from the MPAS `physics_wrf/files` directory will go in this section of your user config yaml. The input/output file names are modified in the streams field.
+Next, the `create_ics` part of the worfklow creates the MPAS initial conditions using 4 cores and copies and links the files needed from when the model was built.  It also updates the `init_atmosphere` namelist.  Additional files like the runtime tables from the MPAS `physics_wrf/files` directory will go in this section of your user config yaml. The input/output file names are modified in the `streams:` field and the keys correspond to the template in the `parm/` directory.
 
 A similar process is followed to create the lateral boundary conditions in the `create_lbcs` part of the workflow, the namelist and streams fields can be modified in the user config yaml.
 
@@ -75,6 +77,7 @@ Logs are populated for each of the different tasks in the workflow, and `workflo
 ## convert_mpas
 
 To remap the model output to a lat/lon grid you can copy the `convert_mpas` executable to the directory with the model output:
+
 `cp /lfs4/BMC/wrfruc/jderrico/mpas/exec/convert_mpas`
 
-the `convert_mpas` executable requires an additional `include_fields` file and a `target_domain` file, more information can be found [here](https://github.com/mgduda/convert_mpas)
+The `convert_mpas` executable requires an additional `include_fields` file and a `target_domain` file, more information can be found [here](https://github.com/mgduda/convert_mpas). 
