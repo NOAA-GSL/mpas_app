@@ -26,8 +26,8 @@ This builds the MPAS-Model and installs Miniconda inside the local clone.  The `
 This app assumes a `<gridlabel>.static.nc` and a `<gridlabel>.grid.info` have already been created using [MPAS-Limited-Area](https://github.com/MPAS-Dev/MPAS-Limited-Area) utiltity, the following commands decompose the domain for creating initial conditions using 4 processors and running the model using 32 processors:
 
 ```
-gpmetis -minconn -contig -niter=200 <filename>.graph.info 4
-gpmetis -minconn -contig -niter=200 <filename>.graph.info 32
+gpmetis -minconn -contig -niter=200 <gridlabel>.graph.info 4
+gpmetis -minconn -contig -niter=200 <gridlabel>.graph.info 32
 ```
 
 ### default_config.yaml
