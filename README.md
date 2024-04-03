@@ -19,7 +19,7 @@ To see the different build options (including MPAS build options):
 
 `./build.sh -h`
 
-This builds the MPAS-Model along with a mini conda installation local to your clone.  The environment includes a pre-built package to run WPS Ungrib.
+This builds the MPAS-Model along with a Miniconda installation local to your clone.  The environment includes a pre-built package to run WPS Ungrib.
 
 ## Configuring the Model
 
@@ -30,11 +30,11 @@ This app assumes a <filename>.static.nc and a <filename>.grid.info have already 
 
 ### default_config.yaml
 
-default_config.yaml is the default yaml config file located in the ush directory of mpas_app.  
+`default_config.yaml` is the default yaml config file located in the `ush` directory of `mpas_app`.  
 
-The grid_files field references the decomposed domain files from the previous step.
+The `grid_files` field references the decomposed domain files from the previous step.
 
-The fields under prepare_ungrib will retrieve whatever data you need for GFS initial conditions and lateral conditions from AWS by default, and will ungrib them.
+The fields under `prepare_ungrib` will retrieve whatever data you need for GFS initial conditions and lateral conditions from AWS by default, and will ungrib them.
 
 Next, the `create_ics` part of the worfklow creates the MPAS initial conditions using 4 cores and copies and links the files needed from when the model was built.  It also updates the init_atmosphere namelist.  Additional files like the runtime tables from the MPAS `physics_wrf/files` directory will go in this section of your user config yaml. The input/output file names are modified in the streams field.
 
@@ -68,13 +68,13 @@ When you have a completed user config yaml, you can run the experiment_gen pytho
 
 `python experiment_gen.py <user_config.yaml>`
 
-This will create an experiment directory with your `experiment.yaml` file, which contains the user modifications to the default yaml.  The experiment directory also contains a rocoto xml file, which is ready to use with the `rocotorun` command.
+This will create an experiment directory with your `experiment.yaml` file, which contains the user modifications to the default yaml.  The experiment directory also contains a Rocoto XML file, which is ready to use with the `rocotorun` command.
 
 Logs are populated for each of the different tasks in the workflow, and `workflow.log` contains the submission and completion statuses in text format.
 
 ## convert_mpas
 
-To remap the model output to a lat/lon grid you can copy the convert_mpas executable to the directory with the model output:
+To remap the model output to a lat/lon grid you can copy the `convert_mpas` executable to the directory with the model output:
 `cp /lfs4/BMC/wrfruc/jderrico/mpas/exec/convert_mpas`
 
 the `convert_mpas` executable requires an additional `include_fields` file and a `target_domain` file, more information can be found [here](https://github.com/mgduda/convert_mpas)
