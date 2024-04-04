@@ -60,7 +60,7 @@ forecast:
   mpas:
     namelist:
       update_values:
-        forecast:
+        physics:
           config_microp_scheme = 'mp_thompson'
 ```
 
