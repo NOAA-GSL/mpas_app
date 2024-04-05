@@ -3,6 +3,7 @@ The run script for the mpas init_atmosphere
 """
 
 import os
+import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -26,9 +27,14 @@ mpas_init_config = expt_config[EXPT_SECT]
 mpas_init_config.update({"platform": expt_config["platform"], "user": expt_config["user"]})
 mpas_init_config = uwconfig.get_yaml_config(mpas_init_config)
 
-mpas_init_yaml = Path(mpas_init_config["mpas_init"]["run_dir"]) / "mpas_init.yaml"
+mpas_init_dir = Path(mpas_init_config["mpas_init"]["run_dir"])
+mpas_init_yaml = mpas_init_dir / "mpas_init.yaml"
 mpas_init_yaml.parent.mkdir(parents=True, exist_ok=True)
 mpas_init_config.dump(path=mpas_init_yaml)
 
 # Run mpas_init
 mpas_init.execute(task="run", config=mpas_init_yaml, cycle=cycle)
+
+if not (mpas_init_dir / "runscript.mpas_init.out").is_file():
+    print("Error occurred running mpas_init. Please see component error logs.")
+    sys.exit(1)

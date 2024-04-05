@@ -1,4 +1,4 @@
-name: mpas_workflow
+name: mpas_app
 channels:
   - conda-forge
   - ufs-community
@@ -9,4 +9,3 @@ dependencies:
   - numpy=1.26*
   - pylint=2.17*
   - pytest=7.2*
-  - uwtools=2.0.1
