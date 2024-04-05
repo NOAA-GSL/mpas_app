@@ -190,13 +190,14 @@ source ${CONDA_BUILD_DIR}/etc/profile.d/conda.sh
 conda activate
 if ! conda env list | grep -q "^mpas_app\s" ; then
   mamba env create -n mpas_app --file environment.yml
-  mamba install conda-build conda-verify
+  mamba install -y conda-build conda-verify
   git clone https://github.com/ufs-community/uwtools
   cd uwtools
   conda build recipe
   conda activate mpas_app
   mamba install -y -c local uwtools
   conda deactivate
+  rm -rf uwtools
 fi
 if ! conda env list | grep -q "^ungrib\s" ; then
   mamba create -y -n ungrib -c maddenp ungrib

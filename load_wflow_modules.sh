@@ -5,4 +5,4 @@ scrfunc_dir=$( dirname "${scrfunc_fp}" )
 module use $scrfunc_dir/modulefiles
 module load wflow_$1
 
-conda activate mpas_workflow
+conda activate mpas_app

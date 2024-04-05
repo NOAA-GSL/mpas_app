@@ -1,4 +1,4 @@
-name: mpas_workflow
+name: mpas_app
 channels:
   - conda-forge
   - ufs-community
