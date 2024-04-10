@@ -3,6 +3,7 @@ The run script for the mpas forecast
 """
 
 import os
+import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -25,9 +26,14 @@ mpas_config = expt_config["forecast"]
 mpas_config.update({"platform": expt_config["platform"], "user": expt_config["user"]})
 mpas_config = uwconfig.get_yaml_config(mpas_config)
 
-mpas_yaml = Path(mpas_config["mpas"]["run_dir"]) / "mpas.yaml"
+mpas_dir = Path(mpas_config["mpas"]["run_dir"])
+mpas_yaml = mpas_dir / "mpas.yaml"
 mpas_yaml.parent.mkdir(parents=True, exist_ok=True)
 mpas_config.dump(path=mpas_yaml)
 
 # Run mpas
 mpas.execute(task="run", config=mpas_yaml, cycle=cycle)
+
+if not (mpas_dir / "runscript.mpas.out").is_file():
+    print("Error occurred running mpas. Please see component error logs.")
+    sys.exit(1)
