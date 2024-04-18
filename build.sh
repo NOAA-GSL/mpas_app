@@ -309,7 +309,7 @@ cd ${MPAS_DIR}/src/MPAS-Model
 printf "\nATMOS_ONLY: ${ATMOS_ONLY}\n"
 
 if [ ${ATMOS_ONLY} = false ]; then
-  make clean CORE=atmosphere_model
+  make clean CORE=atmosphere
   make ifort CORE=init_atmosphere ${MPAS_MAKE_OPTIONS}
   cp -v init_atmosphere_model ${EXEC_DIR}
   make clean CORE=init_atmosphere
