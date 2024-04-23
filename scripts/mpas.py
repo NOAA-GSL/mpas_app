@@ -34,6 +34,6 @@ mpas_config.dump(path=mpas_yaml)
 # Run mpas
 mpas.execute(task="run", config=mpas_yaml, cycle=cycle)
 
-if not (mpas_dir / "done").is_file():
+if not (mpas_dir / "done.mpas").is_file():
     print("Error occurred running mpas. Please see component error logs.")
     sys.exit(1)

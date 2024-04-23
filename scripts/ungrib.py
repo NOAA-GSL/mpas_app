@@ -34,6 +34,6 @@ ungrib_config.dump(path=ungrib_yaml)
 # Run ungrib
 ungrib.execute(task="run", config=ungrib_yaml, cycle=cycle)
 
-if not (ungrib_dir / "done").is_file():
+if not (ungrib_dir / "done.ungrib").is_file():
     print("Error occurred running ungrib. Please see component error logs.")
     sys.exit(1)

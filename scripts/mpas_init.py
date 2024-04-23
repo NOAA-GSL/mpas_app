@@ -35,6 +35,6 @@ mpas_init_config.dump(path=mpas_init_yaml)
 # Run mpas_init
 mpas_init.execute(task="run", config=mpas_init_yaml, cycle=cycle)
 
-if not (mpas_init_dir / "done").is_file():
+if not (mpas_init_dir / "done.mpas_init").is_file():
     print("Error occurred running mpas_init. Please see component error logs.")
     sys.exit(1)
