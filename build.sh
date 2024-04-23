@@ -274,10 +274,7 @@ if [ "${SINGLE_PRECISION}" = true ]; then
   MPAS_MAKE_OPTIONS="${MAKE_OPTIONS} PRECISION=single"
 fi
 
-# creating the scripts directory here is only necessary until there is a 
-# permanent scripts directory with runscripts, at which point this should
-# be removed
-
+EXEC_DIR="${MPAS_DIR}/exec"
 if [ ! -d "$EXEC_DIR" ]; then
   mkdir "$EXEC_DIR"
 fi
@@ -288,13 +285,15 @@ printf "\nATMOS_ONLY: ${ATMOS_ONLY}\n"
 
 if [ ${ATMOS_ONLY} = false ]; then
   make clean CORE=atmosphere
+  make clean CORE=init_atmosphere
   make intel-mpi CORE=init_atmosphere ${MPAS_MAKE_OPTIONS}
   cp -v init_atmosphere_model ${EXEC_DIR}
-  make clean CORE=init_atmosphere
 fi
 
+make clean CORE=atmosphere
 make intel-mpi CORE=atmosphere ${MPAS_MAKE_OPTIONS}
 cp -v atmosphere_model ${EXEC_DIR}
+cp -v build_tables ${EXEC_DIR}
 
 if [ "${CLEAN}" = true ]; then
     if [ -f $PWD/Makefile ]; then
@@ -302,5 +301,15 @@ if [ "${CLEAN}" = true ]; then
        make ${MAKE_SETTINGS} clean 2>&1 | tee log.make
     fi
 fi
+
+# make mpassit executable
+cd ${MPAS_DIR}/src/MPASSIT
+./build.sh ${PLATFORM}
+cp -v bin/mpassit ${EXEC_DIR}
+
+# make upp ??????
+
+
+
 
 exit 0
