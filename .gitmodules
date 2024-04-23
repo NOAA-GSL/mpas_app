@@ -1,3 +1,11 @@
 [submodule "src/MPAS-Model"]
 	path = src/MPAS-Model
 	url = https://github.com/NOAA-GSL/MPAS-Model.git
+
+[submodule "src/MPASSIT"]
+	path = src/MPASSIT
+	url = https://github.com/NOAA-GSL/MPASSIT.git
+	
+[submodule "src/UPP"]
+	path = src/UPP
+	url = https://github.com/NOAA-EMC/UPP.git
