@@ -5,9 +5,17 @@ App for building and running the [MPAS-Model](https://github.com/NOAA-GSL/MPAS-M
 
 Clone the app and navigate to its directory:
 
-`git clone https://github.com/NOAA-GSL/mpas_app.git --recursive`
+```
+git clone https://github.com/NOAA-GSL/mpas_app.git --recursive
+cd mpas_app
+```
 
-`cd mpas_app`
+If you forget the ``--recursive`` flag when you clone, or if you switch branches on `mpas_app`, from the clone:
+
+```
+git submodule update --init --recursive
+```
+
 
 ## Building the Model
 

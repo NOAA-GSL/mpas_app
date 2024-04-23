@@ -22,11 +22,7 @@ OPTIONS
       does a "make clean"
   --move
       move binaries to final location.
-  --build-dir=BUILD_DIR
-      build directory
-  --install-dir=INSTALL_DIR
-      installation prefix
-  --bin-dir=BIN_DIR
+  --exec-dir=EXEC_DIR
       installation binary directory name ("exec" by default; any name is available)
   --conda-dir=CONDA_DIR
       installation location for miniconda (SRW clone conda subdirectory by default)
@@ -61,9 +57,7 @@ cat << EOF_SETTINGS
 Settings:
 
   MPAS_DIR=${MPAS_DIR}
-  BUILD_DIR=${BUILD_DIR}
-  INSTALL_DIR=${INSTALL_DIR}
-  BIN_DIR=${BIN_DIR}
+  EXEC_DIR=${EXEC_DIR}
   PLATFORM=${PLATFORM}
   COMPILER=${COMPILER}
   REMOVE=${REMOVE}
@@ -85,8 +79,8 @@ usage_error () {
 
 # default settings
 LCL_PID=$$
-BIN_DIR="exec"
-CONDA_BUILD_DIR="conda"
+EXEC_DIR="exec"
+CONDA_BUILD_DIR="./conda"
 COMPILER=""
 BUILD_JOBS=4
 REMOVE=false
@@ -131,12 +125,8 @@ while :; do
     --clean) CLEAN=true ;;
     --build) BUILD=true ;;
     --move) MOVE=true ;;
-    --build-dir=?*) BUILD_DIR=${1#*=} ;;
-    --build-dir|--build-dir=) usage_error "$1 requires argument." ;;
-    --install-dir=?*) INSTALL_DIR=${1#*=} ;;
-    --install-dir|--install-dir=) usage_error "$1 requires argument." ;;
-    --bin-dir=?*) BIN_DIR=${1#*=} ;;
-    --bin-dir|--bin-dir=) usage_error "$1 requires argument." ;;
+    --exec-dir=?*) EXEC_DIR=${1#*=} ;;
+    --exec-dir|--exec-dir=) usage_error "$1 requires argument." ;;
     --conda-dir=?*) CONDA_BUILD_DIR=${1#*=} ;;
     --conda-dir|--conda-dir=) usage_error "$1 requires argument." ;;
     --build-jobs=?*) BUILD_JOBS=$((${1#*=})) ;;
@@ -161,7 +151,6 @@ while :; do
 done
 
 # Ensure uppercase / lowercase ============================================
-APPLICATION=$(echo ${APPLICATION} | tr '[a-z]' '[A-Z]')
 PLATFORM=$(echo ${PLATFORM} | tr '[A-Z]' '[a-z]')
 COMPILER=$(echo ${COMPILER} | tr '[A-Z]' '[a-z]')
 
@@ -174,8 +163,8 @@ fi
 # set PLATFORM (MACHINE)
 MACHINE="${PLATFORM}"
 printf "PLATFORM(MACHINE)=${PLATFORM}\n" >&2
-
-if [ ! -d "$CONDA_BUILD_DIR}" ]; then
+set -x
+if [ ! -d "${CONDA_BUILD_DIR}" ]; then
   os=$(uname)
   test $os == Darwin && os=MacOSX
   hardware=$(uname -m)
@@ -192,22 +181,21 @@ if ! conda env list | grep -q "^mpas_app\s" ; then
   mamba env create -n mpas_app --file environment.yml
   mamba install -y conda-build conda-verify
   git clone https://github.com/ufs-community/uwtools
-  cd uwtools
+  pushd uwtools
   conda build recipe
   conda activate mpas_app
   mamba install -y -c local uwtools
   conda deactivate
+  popd
   rm -rf uwtools
 fi
+APPLICATION=$(echo ${APPLICATION} | tr '[a-z]' '[A-Z]')
 if ! conda env list | grep -q "^ungrib\s" ; then
   mamba create -y -n ungrib -c maddenp ungrib
 fi
 
 # Conda environment should have linux utilities to perform these tasks on macos.
 MPAS_DIR=$(cd "$(dirname "$(readlink -f -n "${BASH_SOURCE[0]}" )" )" && pwd -P)
-MACHINE_SETUP=${MPAS_DIR}/src/UFS_UTILS/sorc/machine-setup.sh
-BUILD_DIR="${BUILD_DIR:-${MPAS_DIR}/build}"
-INSTALL_DIR=${INSTALL_DIR:-$MPAS_DIR}
 CONDA_BUILD_DIR="$(readlink -f "${CONDA_BUILD_DIR}")"
 echo ${CONDA_BUILD_DIR} > ${MPAS_DIR}/conda_loc
 
@@ -252,16 +240,16 @@ fi
 source ${MPAS_DIR}/etc/lmod-setup.sh $MACHINE
 
 # source the module file for this platform/compiler combination, then build the code
-printf "... Load MODULE_FILE and create BUILD directory ...\n"
+printf "... Load MODULE_FILE ...\n"
 module use ${MPAS_DIR}/modulefiles
 module load ${MODULE_FILE}
-module list 
+module list
 
-# build MPAS 
+# build MPAS
 printf "...Building MPAS-Model..."
 
 # process MPAS flags
-MPAS_MAKE_OPTIONS=""
+MPAS_MAKE_OPTIONS="${MAKE_SETTINGS}"
 
 if [ "${DEBUG}" = true ]; then
   MPAS_MAKE_OPTIONS="${MAKE_OPTIONS} DEBUG=true"
@@ -299,10 +287,9 @@ fi
 # permanent scripts directory with runscripts, at which point this should
 # be removed
 
-EXEC_DIR="${MPAS_DIR}/exec"
 if [ ! -d "$EXEC_DIR" ]; then
   mkdir "$EXEC_DIR"
-fi 
+fi
 
 cd ${MPAS_DIR}/src/MPAS-Model
 
