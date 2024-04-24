@@ -1,0 +1,13 @@
+&config
+    grid_file_input_grid = "/path/to/init.nc/"
+    hist_file_input_grid = "HISTFILE"
+    diag_file_input_grid = "DIAGFILE"
+    target_grid_type     = "file"
+    file_target_grid     = "/path/to/wrf/file/target/grid/info"
+    is_regional          = .true.
+    output_file          = "foo.nc"
+    interp_diag          = .true.
+    interp_hist          = .true.
+    wrf_mod_vars         = .true.
+    esmf_log             = .false.
+/
