@@ -79,7 +79,6 @@ usage_error () {
 
 # default settings
 LCL_PID=$$
-EXEC_DIR="exec"
 CONDA_BUILD_DIR="./conda"
 COMPILER=""
 BUILD_JOBS=4
@@ -197,6 +196,7 @@ fi
 # Conda environment should have linux utilities to perform these tasks on macos.
 MPAS_DIR=$(cd "$(dirname "$(readlink -f -n "${BASH_SOURCE[0]}" )" )" && pwd -P)
 CONDA_BUILD_DIR="$(readlink -f "${CONDA_BUILD_DIR}")"
+EXEC_DIR=${EXEC_DIR:-${MPAS_DIR}/exec}
 echo ${CONDA_BUILD_DIR} > ${MPAS_DIR}/conda_loc
 
 if [ -z "${COMPILER}" ] ; then
@@ -297,12 +297,12 @@ printf "\nATMOS_ONLY: ${ATMOS_ONLY}\n"
 
 if [ ${ATMOS_ONLY} = false ]; then
   make clean CORE=atmosphere
-  make ifort CORE=init_atmosphere ${MPAS_MAKE_OPTIONS}
+  make intel-mpi CORE=init_atmosphere ${MPAS_MAKE_OPTIONS}
   cp -v init_atmosphere_model ${EXEC_DIR}
   make clean CORE=init_atmosphere
 fi
 
-make ifort CORE=atmosphere ${MPAS_MAKE_OPTIONS}
+make intel-mpi CORE=atmosphere ${MPAS_MAKE_OPTIONS}
 cp -v atmosphere_model ${EXEC_DIR}
 
 if [ "${CLEAN}" = true ]; then
