@@ -5,7 +5,7 @@ the NOAA RDHPC machine Hera using Intel-2022.1.2
 
 whatis([===[Loads libraries needed for building the MPAS App on Hera ]===])
 
-load("cmake/3.28.1")
+load("cmake/3.23.1")
 load("gnu")
 load("intel/2022.1.2")
 load("impi/2022.1.2")
