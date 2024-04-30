@@ -310,12 +310,12 @@ printf "\nATMOS_ONLY: ${ATMOS_ONLY}\n"
 
 if [ ${ATMOS_ONLY} = false ]; then
   make clean CORE=atmosphere
-  make ifort CORE=init_atmosphere ${MPAS_MAKE_OPTIONS}
+  make intel-mpi CORE=init_atmosphere ${MPAS_MAKE_OPTIONS}
   cp -v init_atmosphere_model ${EXEC_DIR}
   make clean CORE=init_atmosphere
 fi
 
-make ifort CORE=atmosphere ${MPAS_MAKE_OPTIONS}
+make intel-mpi CORE=atmosphere ${MPAS_MAKE_OPTIONS}
 cp -v atmosphere_model ${EXEC_DIR}
 
 if [ "${CLEAN}" = true ]; then
