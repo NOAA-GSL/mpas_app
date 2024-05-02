@@ -6,6 +6,8 @@ user:
   mesh_label: conus
   mpas_app: ""
   platform: big_computer
+  workflow_blocks:
+    - cold_start.yaml
 data:
   mesh_files: /path/to/nonstandard/location
 platform:
@@ -177,3 +179,9 @@ forecast:
   platform:
     account: '{{ platform.account }}'
     scheduler: '{{ platform.scheduler }}'
+post:
+  mpassit:
+    execution:
+      batchargs:
+        walltime: 01:30:00
+        cores: 32

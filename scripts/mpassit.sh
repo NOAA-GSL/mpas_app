@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Default settings
-MODULE_FILE="/path/to/default/modulefile"
 WORK_DIR="/default/work/dir"
 FCST_HOUR="00"
 INIT_TIME="2023010100" # default initial time
@@ -15,7 +14,6 @@ verb=0 # Verbosity
 usage() {
     echo "Usage: $0 [options]"
     echo "Options:"
-    echo "  -m MODULE_FILE    Path to the module file to source"
     echo "  -w WORK_DIR       Work directory path"
     echo "  -f FCST_HOUR      Forecast hour"
     echo "  -i INIT_TIME      Initial time (YYYYMMDDHH format)"
@@ -30,9 +28,6 @@ usage() {
 # Parse command-line options
 while getopts "m:w:f:i:x:n:e:s:vh" opt; do
   case ${opt} in
-    m )
-      MODULE_FILE=$OPTARG
-      ;;
     w )
       WORK_DIR=$OPTARG
       ;;
@@ -69,9 +64,6 @@ while getopts "m:w:f:i:x:n:e:s:vh" opt; do
   esac
 done
 
-# Load modules
-source ${MODULE_FILE}
-
 # Prepare directories and files
 rm -rf $WORK_DIR/$FCST_HOUR
 mkdir -p $WORK_DIR/$FCST_HOUR
@@ -81,8 +73,8 @@ ymd=$(echo $INIT_TIME | cut -c 1-8)
 h=$(echo $INIT_TIME | cut -c 9-10)
 
 fcst_time_str=$(date -d "${ymd} ${h}:00 ${FCST_HOUR} hours" +%Y-%m-%d_%H.%M.%S)
-histfile="${FCST_DIR}/wofs_mpas.history.${fcst_time_str}.nc"
-diagfile="${FCST_DIR}/wofs_mpas.diag.${fcst_time_str}.nc"
+histfile="${FCST_DIR}/history.${fcst_time_str}.nc"
+diagfile="${FCST_DIR}/diag.${fcst_time_str}.nc"
 
 fileappend=$([[ "${MP_SCHEME}" == "mp_thompson" ]] && echo "THOM" || echo "NSSL")
 

@@ -48,10 +48,6 @@ def main(user_config_file: Optional[Path]) -> None:
     machine = user_config["user"]["platform"]
     platform_config = uwconfig.get_yaml_config(mpas_app / "parm" / "machines" / f"{machine}.yaml")
 
-    for config in (platform_config, user_config):
-        experiment_config.update_values(config)
-
-    experiment_config["user"]["mpas_app"] = mpas_app.as_posix()
     experiment_config.dereference()
 
     # Build the experiment directory
@@ -61,9 +57,13 @@ def main(user_config_file: Optional[Path]) -> None:
     experiment_file = experiment_path / "experiment.yaml"
 
     # Load the workflow definition
-    default_workflow = Path("../parm/wflow/cold_start.yaml")
+    workflow_blocks = experiment_config["user"]["workflow_blocks"]
+
+    for block in workflow_blocks:
+        user_workflow = get_yaml_config
+
     uwconfig.realize(
-        input_config=default_workflow,
+        input_config=user_workflow,
         output_file=experiment_file,
         update_config=experiment_config,
     )
