@@ -12,6 +12,7 @@ workflow:
     EXPERIMENT_CONFIG: "{{user.experiment_dir}}/experiment.yaml"
     LOGDIR: "{{user.experiment_dir}}/log"
     MPAS_APP: "{{ user.mpas_app }}"
+    PLATFORM: "{{ user.platform }}"
   tasks:
     task_get_ics_data:
       command: '&MPAS_APP;/scripts/get_external_data.sh'
@@ -54,7 +55,7 @@ workflow:
         FCST_LEN: 12
         MPAS_APP: '&MPAS_APP;'
     task_ungrib:
-      command: 'source &MPAS_APP;/load_wflow_modules.sh jet ; python &MPAS_APP;/scripts/ungrib.py'
+      command: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; ; python &MPAS_APP;/scripts/ungrib.py'
       account: "{{ platform.account }}"
       join:
         cyclestr:
@@ -74,7 +75,7 @@ workflow:
           attrs:
             task: get_lbcs_data
     task_mpas_ics: &mpas_init_task
-      command: 'source &MPAS_APP;/load_wflow_modules.sh jet ; python &MPAS_APP;/scripts/mpas_init.py'
+      command: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; ; python &MPAS_APP;/scripts/mpas_init.py'
       account: "{{ platform.account }}"
       join:
         cyclestr:
@@ -92,7 +93,7 @@ workflow:
           attrs:
             task: ungrib
     task_mpas_lbcs:
-      command: 'source &MPAS_APP;/load_wflow_modules.sh jet ; python &MPAS_APP;/scripts/mpas_init.py'
+      command: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; ; python &MPAS_APP;/scripts/mpas_init.py'
       account: "{{ platform.account }}"
       join:
         cyclestr:
@@ -110,7 +111,7 @@ workflow:
           attrs:
             task: mpas_ics
     task_mpas:
-      command: 'source &MPAS_APP;/load_wflow_modules.sh jet ; python &MPAS_APP;/scripts/mpas.py'
+      command: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; ; python &MPAS_APP;/scripts/mpas.py'
       account: "{{ platform.account }}"
       join:
         cyclestr:

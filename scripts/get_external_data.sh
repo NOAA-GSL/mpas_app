@@ -1,7 +1,5 @@
 #!/bin/bash -eu
 
-. $MPAS_APP/load_wflow_modules.sh jet
-
 if [[ ${ICS_or_LBCS} == "ICS" ]] ; then
   fcst_hours=$TIME_OFFSET_HRS
   if [[ ${TIME_OFFSET_HRS} -eq 0 ]] ; then
