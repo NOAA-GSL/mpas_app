@@ -19,9 +19,9 @@ git submodule update --init --recursive
 
 ## Building the Model
 
-Currently Jet is the only platform supported.  To run the default build script:
+Currently Hera and Jet are the only platforms supported.  To run the default build script:
 
-`./build.sh -p=jet`
+`./build.sh -p=<platform>`
 
 To see the different build options (including MPAS build options):
 
@@ -57,8 +57,8 @@ Finally, the `forecast` step runs the MPAS `atomsphere` executable.  If you want
 Your user config (e.g. <your_name>.yaml) is how you update the default configuration with different settings.  Rather than going through and changing all of the different namelist and streams files that the MPAS Model produces, you only need to create and update the single user config file in the `ush` directory.  The file itself can be as simple as:
 ```
 user:
-  grid_files: /path/to/grid_files
   experiment_dir: /path/to/exp/dir
+  platform: jet
 platform:
   account: wrfruc
 ```
@@ -78,7 +78,7 @@ When you have a completed user config yaml, you can run the experiment_gen pytho
 
 `python experiment_gen.py <user_config.yaml>`
 
-This will create an experiment directory with your `experiment.yaml` file, which contains the user modifications to the default yaml.  The experiment directory also contains a Rocoto XML file, which is ready to use with the `rocotorun` command.
+This will create an experiment directory with your `experiment.yaml` file, which contains the user modifications to the default yaml.  The experiment directory also contains a Rocoto XML file, which is ready to use with the command `rocotorun -w rocoto.xml -d rocoto.db`. You will have to iterately run this command until all steps have been completed. You can check the status of these steps by running `rocotostat -w rocoto.xml -d rocoto.db`.
 
 Logs are populated for each of the different tasks in the workflow, and `workflow.log` contains the submission and completion statuses in text format.
 
