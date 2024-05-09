@@ -65,7 +65,7 @@ forecast:
 
 ## Generate the Experiment
 
-Prior to running the experiment, you must run the command `source load_wflow_modules.sh <plaform>` from the `mpas_app` directory. 
+Prior to running the experiment, you must run the command `source load_wflow_modules.sh <platform>` from the `mpas_app` directory. 
 
 When you have a completed user config yaml, you can run the experiment_gen python script to generate the MPAS experiment:
 
