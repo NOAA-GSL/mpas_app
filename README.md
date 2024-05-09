@@ -29,15 +29,6 @@ To see the different build options (including MPAS build options):
 
 This builds the MPAS-Model and installs Miniconda inside the local clone.  The `ungrib` conda environment installed in the process includes a pre-built package to run WPS Ungrib tool.
 
-## Configuring the Model
-
-This app assumes a `<gridlabel>.static.nc` and a `<gridlabel>.grid.info` have already been created using [MPAS-Limited-Area](https://github.com/MPAS-Dev/MPAS-Limited-Area) utiltity, the following commands decompose the domain for creating initial conditions using 4 processors and running the model using 32 processors:
-
-```
-gpmetis -minconn -contig -niter=200 <gridlabel>.graph.info 4
-gpmetis -minconn -contig -niter=200 <gridlabel>.graph.info 32
-```
-
 ### default_config.yaml
 
 `default_config.yaml` is the default yaml config file located in the `ush` directory of `mpas_app`.  
@@ -73,6 +64,8 @@ forecast:
 ```
 
 ## Generate the Experiment
+
+Prior to running the experiment, you must run the command `source load_wflow_modules.sh <plaform>` from the `mpas_app` directory. 
 
 When you have a completed user config yaml, you can run the experiment_gen python script to generate the MPAS experiment:
 
