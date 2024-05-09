@@ -37,11 +37,11 @@ The `grid_files` field references the decomposed domain files from the previous 
 
 The fields under `prepare_ungrib` will retrieve whatever data you need for GFS initial conditions and lateral boundary conditions from AWS by default, and will ungrib them.
 
-Next, the `create_ics` part of the worfklow creates the MPAS initial conditions using 4 cores and copies and links the files needed from when the model was built.  It also updates the `init_atmosphere` namelist.  Additional files like the runtime tables from the MPAS `physics_wrf/files` directory will go in this section of your user config yaml. The input/output file names are modified in the `streams:` field and the keys correspond to the template in the `parm/` directory.
+Next, the `create_ics` part of the workflow creates the MPAS initial conditions using 4 cores and copies and links the files needed from when the model was built.  It also updates the `init_atmosphere` namelist.  Additional files like the runtime tables from the MPAS `physics_wrf/files` directory will go in this section of your user config yaml. The input/output file names are modified in the `streams:` field and the keys correspond to the template in the `parm/` directory.
 
 A similar process is followed to create the lateral boundary conditions in the `create_lbcs` part of the workflow, the namelist and streams fields can be modified in the user config yaml.
 
-Finally, the `forecast` step runs the MPAS `atomsphere` executable.  If you want to add additional physics, you would add them in the physics field of the atmosphere namelist user config (see below).
+Finally, the `forecast` step runs the MPAS `atmosphere` executable.  If you want to add additional physics, you would add them in the physics field of the atmosphere namelist user config (see below).
 
 ### User Config yaml
 
