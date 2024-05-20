@@ -1,11 +1,11 @@
 &config
-    grid_file_input_grid = "/path/to/init.nc/"
+    grid_file_input_grid = "conus.init.nc"
     hist_file_input_grid = "HISTFILE"
     diag_file_input_grid = "DIAGFILE"
     target_grid_type     = "file"
-    file_target_grid     = "/path/to/wrf/file/target/grid/info"
+    file_target_grid     = "FIX_DIR/geo_em.d01.nc"
     is_regional          = .true.
-    output_file          = "foo.nc"
+    output_file          = "MPAS-A_out.FCSTTIME.nc"
     interp_diag          = .true.
     interp_hist          = .true.
     wrf_mod_vars         = .true.

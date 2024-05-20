@@ -3,6 +3,7 @@ Creates the experiment directory and populates it with necessary configuration a
 """
 
 import argparse
+import logging
 import os
 import sys
 from pathlib import Path
@@ -48,22 +49,25 @@ def main(user_config_file: Optional[Path]) -> None:
     machine = user_config["user"]["platform"]
     platform_config = uwconfig.get_yaml_config(mpas_app / "parm" / "machines" / f"{machine}.yaml")
 
+    for config in (platform_config, user_config):
+        experiment_config.update_values(config)
+
+    experiment_config["user"]["mpas_app"] = mpas_app.as_posix()
     experiment_config.dereference()
 
     # Build the experiment directory
     experiment_path = Path(experiment_config["user"]["experiment_dir"])
+    print("Experiment will be set up here: {}".format(experiment_path))
     os.makedirs(experiment_path, exist_ok=True)
 
     experiment_file = experiment_path / "experiment.yaml"
 
     # Load the workflow definition
     workflow_blocks = experiment_config["user"]["workflow_blocks"]
-
-    for block in workflow_blocks:
-        user_workflow = get_yaml_config
+    workflow_blocks = [mpas_app / "parm" / "wflow" / b for b in workflow_blocks]
 
     uwconfig.realize(
-        input_config=user_workflow,
+        input_config=experiment_config,
         output_file=experiment_file,
         update_config=experiment_config,
     )

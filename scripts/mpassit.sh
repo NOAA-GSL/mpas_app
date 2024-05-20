@@ -1,11 +1,12 @@
 #!/bin/bash
 
 # Default settings
+MODULE_FILE="/path/to/default/modulefile"
 WORK_DIR="/default/work/dir"
 FCST_HOUR="00"
 INIT_TIME="2023010100" # default initial time
 FIX_DIR="/default/fix/dir"
-NAMELIST_DIR="/default/namelist/dir"
+PARM_DIR="/default/namelist/dir"
 EXEC_DIR="/default/exec/dir"
 MP_SCHEME="mp_thompson" # default microphysics scheme
 verb=0 # Verbosity
@@ -14,20 +15,25 @@ verb=0 # Verbosity
 usage() {
     echo "Usage: $0 [options]"
     echo "Options:"
+    echo "  -m MODULE_FILE    Path to the module file to source"
     echo "  -w WORK_DIR       Work directory path"
     echo "  -f FCST_HOUR      Forecast hour"
     echo "  -i INIT_TIME      Initial time (YYYYMMDDHH format)"
     echo "  -x FIX_DIR        Directory for fixed files"
-    echo "  -n NAMELIST_DIR   Directory for namelist files"
+    echo "  -p PARM_DIR       Directory for parm files"
     echo "  -e EXEC_DIR       Directory for executable files"
     echo "  -s MP_SCHEME      Microphysics scheme ('mp_thompson' or 'NSSL')"
     echo "  -v                Enable verbose output"
     echo "  -h                Show this help message"
 }
 
+
 # Parse command-line options
-while getopts "m:w:f:i:x:n:e:s:vh" opt; do
+while getopts "m:w:f:i:x:p:e:s:vh" opt; do
   case ${opt} in
+    m )
+      MODULE_FILE=$OPTARG
+      ;;
     w )
       WORK_DIR=$OPTARG
       ;;
@@ -40,8 +46,8 @@ while getopts "m:w:f:i:x:n:e:s:vh" opt; do
     x )
       FIX_DIR=$OPTARG
       ;;
-    n )
-      NAMELIST_DIR=$OPTARG
+    p )
+      PARM_DIR=$OPTARG
       ;;
     e )
       EXEC_DIR=$OPTARG
@@ -64,6 +70,11 @@ while getopts "m:w:f:i:x:n:e:s:vh" opt; do
   esac
 done
 
+module use $( dirname "${MODULE_FILE}" )
+module load $( basename ${MODULE_FILE} )
+module list
+
+set -eux
 # Prepare directories and files
 rm -rf $WORK_DIR/$FCST_HOUR
 mkdir -p $WORK_DIR/$FCST_HOUR
@@ -78,29 +89,28 @@ diagfile="${FCST_DIR}/diag.${fcst_time_str}.nc"
 
 fileappend=$([[ "${MP_SCHEME}" == "mp_thompson" ]] && echo "THOM" || echo "NSSL")
 
-parmfiles=(diaglist histlist_2d histlist_3d histlist_soil)
+parmfiles=(diaglist histlist_2d histlist_3d.NSSL histlist_soil)
 for fn in "${parmfiles[@]}"; do
     if [[ ! -e $fn ]]; then
         if [[ $verb -eq 1 ]]; then echo "Linking $fn ..."; fi
-        if [[ -e $FIX_DIR/MPASSIT/${fn}.${fileappend} ]]; then
-            ln -sf $FIX_DIR/MPASSIT/${fn}.${fileappend} $fn
-        elif [[ -e $FIX_DIR/MPASSIT/${fn} ]]; then
-            ln -sf $FIX_DIR/MPASSIT/$fn .
+        if [[ -e $PARM_DIR/${fn}.${fileappend} ]]; then
+            ln -sf $PARM_DIR/${fn}.${fileappend} $fn
+        elif [[ -e $PARM_DIR/${fn} ]]; then
+            ln -sf $PARM_DIR/$fn .
         else
-            echo "ERROR: file \"$FIX_DIR/MPASSIT/${fn}\" not exist."
+            echo "ERROR: file \"$PARM_DIR/${fn}\" not exist."
             exit 1
         fi
     fi
 done
-ln -sf $FIX_DIR/MPASSIT/diaglist_nocu diaglist
 
-ln -sf $INIT_DIR/wofs_mpas.init.nc .
+ln -sf $INIT_DIR/conus.init.nc .
 ln -sf $EXEC_DIR/mpassit .
 
 hstr=$(printf "%02d" $FCST_HOUR)
 nmlfile="namelist.fcst_$hstr"
 
-cp $NAMELIST_DIR/namelist.mpassit $nmlfile
+cp $PARM_DIR/namelist.mpassit $nmlfile
 sed -i "s|HISTFILE|$histfile|g" $nmlfile
 sed -i "s|DIAGFILE|$diagfile|g" $nmlfile
 sed -i "s|FIX_DIR|$FIX_DIR|g" $nmlfile
