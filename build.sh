@@ -184,8 +184,6 @@ if ! conda env list | grep -q "^ungrib\s" ; then
   mamba create -y -n ungrib -c maddenp ungrib
 fi
 
-exit
-
 
 # Conda environment should have linux utilities to perform these tasks on macos.
 MPAS_DIR=$(cd "$(dirname "$(readlink -f -n "${BASH_SOURCE[0]}" )" )" && pwd -P)
@@ -305,9 +303,9 @@ if [ "${CLEAN}" = true ]; then
     fi
 fi
 
-# make mpassit executable
-cd ${MPAS_DIR}/src/MPASSIT
-./build.sh ${PLATFORM}
-cp -v bin/mpassit ${EXEC_DIR}
+## make mpassit executable
+#cd ${MPAS_DIR}/src/MPASSIT
+#./build.sh ${PLATFORM}
+#cp -v bin/mpassit ${EXEC_DIR}
 
 # make upp ??????

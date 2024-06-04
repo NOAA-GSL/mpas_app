@@ -53,7 +53,7 @@ create_ics:
       path: "{{ prepare_grib.ungrib['run_dir'] }}"
     execution:
       batchargs:
-        cores: 4
+        cores: 12
         walltime: 01:30:00
       envcmds:
         - ulimit -s unlimited || true

@@ -2,11 +2,13 @@
 <immutable_stream name="input"
                   type="input"
                   filename_template="{{ input_filename }}"
+                  io_type="pnetcdf,cdf5"
                   input_interval="initial_only" />
 
 <immutable_stream name="restart"
                   type="input;output"
                   filename_template="restart.$Y-$M-$D_$h.$m.$s.nc"
+                  io_type="pnetcdf,cdf5"
                   input_interval="initial_only"
                   output_interval="1_00:00:00" />
 
@@ -29,6 +31,7 @@
 <stream name="surface"
         type="input"
         filename_template="x1.40962.sfc_update.nc"
+        io_type="pnetcdf,cdf5"
         filename_interval="none"
         input_interval="none" >
 
@@ -46,6 +49,7 @@
                   type="input"
                   filename_template="lbc.$Y-$M-$D_$h.$m.$s.nc"
                   filename_interval="input_interval"
+                  io_type="pnetcdf,cdf5"
                   packages="limited_area"
                   input_interval="{{ input_interval }}" />
 

@@ -1,5 +1,5 @@
 data:
-  mesh_files: /lfs4/BMC/wrfruc/jderrico/mpas/mpas_dev/mpas_app/conus
+  mesh_files: /misc/whome/role.wrfruc/MPAS_SPC/fix/
 platform:
   scheduler: slurm
 post:

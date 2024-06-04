@@ -13,6 +13,7 @@ from typing import Optional
 
 import uwtools.api.config as uwconfig
 import uwtools.api.rocoto as uwrocoto
+from uwtools.config.formats.base import Config
 
 
 def create_grid_files(expt_dir: Path, mesh_file_path: Path, nprocs: int) -> None:
@@ -49,11 +50,11 @@ def main(user_config_file: Optional[Path]) -> None:
     machine = user_config["user"]["platform"]
     platform_config = uwconfig.get_yaml_config(mpas_app / "parm" / "machines" / f"{machine}.yaml")
 
-    for config in (platform_config, user_config):
-        experiment_config.update_values(config)
+    for supp_config in (platform_config, user_config):
+        experiment_config.update_values(supp_config)
+    print(experiment_config)
 
     experiment_config["user"]["mpas_app"] = mpas_app.as_posix()
-    experiment_config.dereference()
 
     # Build the experiment directory
     experiment_path = Path(experiment_config["user"]["experiment_dir"])
@@ -81,18 +82,20 @@ def main(user_config_file: Optional[Path]) -> None:
     # Create grid files
     mesh_file_name = f"{experiment_config['user']['mesh_label']}.graph.info"
     mesh_file_path = Path(experiment_config["data"]["mesh_files"]) / mesh_file_name
-    all_nprocs = (
-        experiment_config[sect][driver]["execution"]["batchargs"]["cores"]
-        for sect, driver in (
-            ("create_ics", "mpas_init"),
-            ("create_lbcs", "mpas_init"),
-            ("forecast", "mpas"),
-        )
-    )
-    for nprocs in all_nprocs:
-        if not (experiment_path / f"{mesh_file_path.name}.part.{nprocs}").is_file():
-            print(f"Creating grid file for {nprocs} procs")
-            create_grid_files(experiment_path, mesh_file_path, nprocs)
+
+    all_nprocs = []
+    for sect, driver in (
+        ("create_ics", "mpas_init"),
+        ("create_lbcs", "mpas_init"),
+        ("forecast", "mpas"),
+        ):
+        resources = experiment_config[sect][driver]["execution"]["batchargs"]
+        if (cores := resources.get("cores")) is None:
+            cores = resources["nodes"] * resources["tasks_per_node"]
+        all_nprocs.append(cores)
+    for nprocs in set(all_nprocs):
+        print(f"Creating grid file for {nprocs} procs")
+        create_grid_files(experiment_path, mesh_file_path, nprocs)
 
 
 if __name__ == "__main__":
