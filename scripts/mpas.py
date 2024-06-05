@@ -25,7 +25,7 @@ mpas_config = expt_config["forecast"]["mpas"]
 mpas_dir = Path(mpas_config["run_dir"])
 
 # Run mpas
-mpas.execute(task="run", config=CONFIG_PATH, cycle=cycle, key_path["forecast"])
+mpas.execute(task="run", config=CONFIG_PATH, cycle=cycle, key_path=["forecast"])
 
 if not (mpas_dir / "runscript.mpas.done").is_file():
     print("Error occurred running mpas. Please see component error logs.")

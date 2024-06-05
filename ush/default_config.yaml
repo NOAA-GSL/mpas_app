@@ -78,6 +78,8 @@ create_ics:
       RRTMG_LW_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/RRTMG_LW_DATA.DBL"
       RRTMG_SW_DATA: "{{ user.mpas_app }}/src/MPAS-Model/RRTMG_SW_DATA"
       RRTMG_SW_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/RRTMG_SW_DATA.DBL"
+      SOILPARM.TBL: "{{ user.mpas_app }}/src/MPAS-Model/SOILPARM.TBL"
+      VEGPARM.TBL: "{{ user.mpas_app }}/src/MPAS-Model/VEGPARM.TBL"
     namelist:
       base_file: "{{ user.mpas_app }}/src/MPAS-Model/namelist.init_atmosphere"
       update_values: &mpas_init_update_values
@@ -143,7 +145,7 @@ forecast:
       mpicmd: srun
     files_to_copy:
       "{{ user.mesh_label }}.init.nc": "{{ create_ics.mpas_init['run_dir'] }}/{{ user.mesh_label }}.init.nc"
-      "{{ user.mesh_label }}.graph.info.part.{{mpas.execution['batchargs']['cores']}}": '{{ user.experiment_dir }}/{{ user.mesh_label }}.graph.info.part.{{mpas.execution["batchargs"]["cores"]}}'
+      "{{ user.mesh_label }}.graph.info.part.{{forecast.mpas['execution']['batchargs']['cores']}}": '{{ user.experiment_dir }}/{{ user.mesh_label }}.graph.info.part.{{forecast.mpas["execution"]["batchargs"]["cores"]}}'
       stream_list.atmosphere.diagnostics: "{{ user.mpas_app }}/src/MPAS-Model/stream_list.atmosphere.diagnostics"
       stream_list.atmosphere.output: "{{ user.mpas_app }}/src/MPAS-Model/stream_list.atmosphere.output"
       stream_list.atmosphere.surface: "{{ user.mpas_app }}/src/MPAS-Model/stream_list.atmosphere.surface"
