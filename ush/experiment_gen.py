@@ -65,7 +65,7 @@ def main(user_config_file: Optional[Path]) -> None:
     uwconfig.realize(
         input_config=default_workflow,
         output_file=experiment_file,
-        supplemental_configs=[experiment_config],
+        update_config=experiment_config,
     )
 
     # Create the workflow files
@@ -86,7 +86,9 @@ def main(user_config_file: Optional[Path]) -> None:
         )
     )
     for nprocs in all_nprocs:
-        create_grid_files(experiment_path, mesh_file_path, nprocs)
+        if not (experiment_path / f"{mesh_file_path.name}.part.{nprocs}").is_file():
+            print(f"Creating grid file for {nprocs} procs")
+            create_grid_files(experiment_path, mesh_file_path, nprocs)
 
 
 if __name__ == "__main__":
