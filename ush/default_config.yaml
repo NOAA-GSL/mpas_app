@@ -39,6 +39,9 @@ prepare_grib:
       path: "{{ get_lbcs_data.run_dir }}/gfs.t{cycle_hour:02d}z.pgrb2.0p25.f{forecast_hour:03d}"
     run_dir: '{{ user.experiment_dir }}/{{cycle.strftime("%Y%m%d%H")}}/ungrib'
     vtable: "{{ user.mpas_app }}/parm/Vtable.GFS"
+  platform:
+    account: '{{ platform.account }}'
+    scheduler: '{{ platform.scheduler }}'
 create_ics:
   mpas_init: &mpas_init_config
     boundary_conditions:
@@ -59,7 +62,7 @@ create_ics:
       mpicmd: srun
     files_to_copy: &mpas_init_files_to_copy
       "{{ user.mesh_label }}.static.nc": "{{ data.mesh_files }}/{{ user.mesh_label }}.static.nc"
-      "{{ user.mesh_label }}.graph.info.part.{{mpas_init.execution['batchargs']['cores']}}": '{{ user.experiment_dir }}/{{ user.mesh_label }}.graph.info.part.{{mpas_init.execution["batchargs"]["cores"]}}'
+      "{{ user.mesh_label }}.graph.info.part.{{create_ics.mpas_init['execution']['batchargs']['cores']}}": '{{ user.experiment_dir }}/{{ user.mesh_label }}.graph.info.part.{{create_ics.mpas_init["execution"]["batchargs"]["cores"]}}'
       stream_list.atmosphere.diagnostics: "{{ user.mpas_app }}/src/MPAS-Model/stream_list.atmosphere.diagnostics"
       stream_list.atmosphere.output: "{{ user.mpas_app }}/src/MPAS-Model/stream_list.atmosphere.output"
       stream_list.atmosphere.surface: "{{ user.mpas_app }}/src/MPAS-Model/stream_list.atmosphere.surface"
@@ -75,15 +78,13 @@ create_ics:
       RRTMG_LW_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/RRTMG_LW_DATA.DBL"
       RRTMG_SW_DATA: "{{ user.mpas_app }}/src/MPAS-Model/RRTMG_SW_DATA"
       RRTMG_SW_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/RRTMG_SW_DATA.DBL"
-      SOILPARM.TBL: "{{ user.mpas_app }}/src/MPAS-Model/SOILPARM.TBL"
-      VEGPARM.TBL: "{{ user.mpas_app }}/src/MPAS-Model/VEGPARM.TBL"
     namelist:
       base_file: "{{ user.mpas_app }}/src/MPAS-Model/namelist.init_atmosphere"
       update_values: &mpas_init_update_values
         nhyd_model:
           config_init_case: 7
         data_sources:
-          config_fg_interval: !int "{{ mpas_init.boundary_conditions['interval_hours'] * 3600 }}"
+          config_fg_interval: !int "{{ create_ics.mpas_init['boundary_conditions']['interval_hours'] * 3600 }}"
           config_met_prefix: FILE
         vertical_grid:
           config_blend_bdy_terrain: true
@@ -102,6 +103,9 @@ create_ics:
         output_interval: 06:00:00
         surface_filename: x1.40962.sfc_update.nc
         surface_output_interval: !int "{{ 24 * 3600 }}"
+  platform:
+    account: '{{ platform.account }}'
+    scheduler: '{{ platform.scheduler }}'
 create_lbcs:
   mpas_init:
     <<: *mpas_init_config
@@ -121,6 +125,9 @@ create_lbcs:
         <<: *mpas_init_streams_values
         input_filename: "{{ user.mesh_label }}.init.nc"
         output_filename: foo.nc
+  platform:
+    account: '{{ platform.account }}'
+    scheduler: '{{ platform.scheduler }}'
 forecast:
   mpas:
     execution:
@@ -163,3 +170,6 @@ forecast:
         input_filename: "{{ user.mesh_label }}.init.nc"
         input_interval: 06:00:00
         output_interval: 06:00:00
+  platform:
+    account: '{{ platform.account }}'
+    scheduler: '{{ platform.scheduler }}'

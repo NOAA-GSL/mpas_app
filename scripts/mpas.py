@@ -17,23 +17,16 @@ CYCLE = os.environ["CYCLE"]
 
 cycle = datetime.fromisoformat(CYCLE)
 
-# Extract driver config from experiment config and save in the run directory
+# Extract driver config from experiment config
 expt_config = uwconfig.get_yaml_config(CONFIG_PATH)
 expt_config.dereference(context={"cycle": cycle, **expt_config})
 
-
-mpas_config = expt_config["forecast"]
-mpas_config.update({"platform": expt_config["platform"], "user": expt_config["user"]})
-mpas_config = uwconfig.get_yaml_config(mpas_config)
-
-mpas_dir = Path(mpas_config["mpas"]["run_dir"])
-mpas_yaml = mpas_dir / "mpas.yaml"
-mpas_yaml.parent.mkdir(parents=True, exist_ok=True)
-mpas_config.dump(path=mpas_yaml)
+mpas_config = expt_config["forecast"]["mpas"]
+mpas_dir = Path(mpas_config["run_dir"])
 
 # Run mpas
-mpas.execute(task="run", config=mpas_yaml, cycle=cycle)
+mpas.execute(task="run", config=CONFIG_PATH, cycle=cycle, key_path["forecast"])
 
-if not (mpas_dir / "done.mpas").is_file():
+if not (mpas_dir / "runscript.mpas.done").is_file():
     print("Error occurred running mpas. Please see component error logs.")
     sys.exit(1)

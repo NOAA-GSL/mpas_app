@@ -18,23 +18,17 @@ EXPT_SECT = os.environ["EXPT_SECT"]
 
 cycle = datetime.fromisoformat(CYCLE)
 
-# Extract driver config from experiment config and save in the run directory
+# Extract driver config from experiment config
 expt_config = uwconfig.get_yaml_config(CONFIG_PATH)
 expt_config.dereference(context={"cycle": cycle, **expt_config})
 
-
-mpas_init_config = expt_config[EXPT_SECT]
-mpas_init_config.update({"platform": expt_config["platform"], "user": expt_config["user"]})
-mpas_init_config = uwconfig.get_yaml_config(mpas_init_config)
-
-mpas_init_dir = Path(mpas_init_config["mpas_init"]["run_dir"])
-mpas_init_yaml = mpas_init_dir / "mpas_init.yaml"
-mpas_init_yaml.parent.mkdir(parents=True, exist_ok=True)
-mpas_init_config.dump(path=mpas_init_yaml)
+mpas_init_config = expt_config[EXPT_SECT]["mpas_init"]
+mpas_init_dir = Path(mpas_init_config["run_dir"])
 
 # Run mpas_init
-mpas_init.execute(task="run", config=mpas_init_yaml, cycle=cycle)
+mpas_init.execute(task="run", config=CONFIG_PATH, cycle=cycle,
+        key_path=[EXPT_SECT])
 
-if not (mpas_init_dir / "done.mpas_init").is_file():
+if not (mpas_init_dir / "runscript.mpas_init.done").is_file():
     print("Error occurred running mpas_init. Please see component error logs.")
     sys.exit(1)
