@@ -67,10 +67,14 @@ def main(user_config_file: Optional[Path]) -> None:
     workflow_blocks = experiment_config["user"]["workflow_blocks"]
     workflow_blocks = [mpas_app / "parm" / "wflow" / b for b in workflow_blocks]
 
+    for workflow_block in workflow_blocks:
+        block_config = uwconfig.get_yaml_config(workflow_block)
+        experiment_config.update_values(block_config)
+
     uwconfig.realize(
         input_config=experiment_config,
         output_file=experiment_file,
-        update_config=experiment_config,
+        update_config={},
     )
 
     # Create the workflow files

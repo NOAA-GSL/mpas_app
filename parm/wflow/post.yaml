@@ -11,7 +11,8 @@ workflow:
           -f #fhr#
           -i ${CYCLE}
           -x {{ post.mpassit["fix_dir"] }}
-          -p {{ user.mpas_app }}/parm/mpassit
+          -n {{ user.mpas_app }}/parm/mpassit
+          -p {{ post.mpassit["fix_dir"] }}/MPASSIT
           -e {{ user.mpas_app }}/exec'
         envars:
           CYCLE:

@@ -303,9 +303,13 @@ if [ "${CLEAN}" = true ]; then
     fi
 fi
 
-## make mpassit executable
-#cd ${MPAS_DIR}/src/MPASSIT
-#./build.sh ${PLATFORM}
-#cp -v bin/mpassit ${EXEC_DIR}
+# make mpassit executable
+MODULE_FILE="build.${PLATFORM}.${COMPILER}"
+module purge
+module use ${MPAS_DIR}/src/MPASSIT/modulefiles
+module load ${MODULE_FILE}
+cd ${MPAS_DIR}/src/MPASSIT
+./build.sh ${PLATFORM}
+cp -v bin/mpassit ${EXEC_DIR}
 
 # make upp ??????

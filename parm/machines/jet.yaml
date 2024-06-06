@@ -4,4 +4,4 @@ platform:
   scheduler: slurm
 post:
   mpassit:
-    fix_dir: /misc/whome/Trevor.Alcott/mpas/fix
+    fix_dir: /misc/whome/role.wrfruc/HRRRv5/fix/MPASSIT/
