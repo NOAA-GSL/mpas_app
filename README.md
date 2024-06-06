@@ -19,7 +19,7 @@ git submodule update --init --recursive
 
 ## Building the Model
 
-Currently Hera and Jet are the only platforms supported.  To run the default build script:
+Currently Hera, Jet, and Hercules are the only platforms supported.  To run the default build script:
 
 `./build.sh -p=<platform>`
 
@@ -65,7 +65,7 @@ forecast:
 
 ## Generate the Experiment
 
-Prior to running the experiment, you must run the command `source load_wflow_modules.sh <platform>` from the `mpas_app` directory. 
+Prior to generating and running the experiment, you must run the command `source load_wflow_modules.sh <platform>` from the `mpas_app` directory. 
 
 When you have a completed user config yaml, you can run the experiment_gen python script to generate the MPAS experiment:
 
