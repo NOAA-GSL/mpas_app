@@ -10,7 +10,7 @@ OPTIONS
       show this help guide
   -p, --platform=PLATFORM
       name of machine you are building on
-      (e.g. cheyenne | hera | jet | orion | wcoss2)
+      (e.g. hera | jet | hercules)
   -c, --compiler=COMPILER
       compiler to use; default depends on platform
       (e.g. intel | gnu | cray | gccgfortran)
@@ -192,7 +192,7 @@ echo ${CONDA_BUILD_DIR} > ${MPAS_DIR}/conda_loc
 
 if [ -z "${COMPILER}" ] ; then
   case ${PLATFORM} in
-    jet|hera) COMPILER=intel ;;
+    jet|hera|hercules) COMPILER=intel ;;
     *)
     COMPILER=intel
 printf "WARNING: Setting default COMPILER=intel for new platform ${PLATFORM}\n" >&2;
