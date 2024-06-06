@@ -54,6 +54,7 @@ create_ics:
         cores: 4
         walltime: 01:30:00
       envcmds:
+        - ulimit -s unlimited || true
         - module use {{ user.mpas_app }}/modulefiles
         - module load build_{{ user.platform }}_intel
       executable: "{{ user.mpas_app }}/exec/init_atmosphere_model"
@@ -137,6 +138,7 @@ forecast:
         cores: 32
         walltime: 01:30:00
       envcmds:
+        - ulimit -s unlimited || true
         - module use {{ user.mpas_app }}/modulefiles
         - module load build_{{ user.platform }}_intel
       executable: "{{ user.mpas_app }}/exec/atmosphere_model"
