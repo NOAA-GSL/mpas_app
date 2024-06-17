@@ -1,0 +1,30 @@
+user:
+  workflow_blocks:
+    - cold_start.yaml
+    - post.yaml
+  mesh_label: conus
+platform:
+  account: nrtrr
+data:
+  mesh_files: /lfs4/BMC/wrfruc/jderrico/mpas/mpas_dev/meshes/15km-conus
+forecast:
+  mpas:
+    namelist:
+      update_values:
+        physics: 
+          config_physics_suite: convection_permitting
+    files_to_copy:
+      stream_list.atmosphere.diagnostics: "{{ post.mpassit['fix_dir'] }}/stream_list.atmosphere.diagnostics"
+      stream_list.atmosphere.output: "{{ post.mpassit['fix_dir'] }}/stream_list.atmosphere.output"
+      stream_list.atmosphere.surface: "{{ post.mpassit['fix_dir'] }}/stream_list.atmosphere.surface"
+    files_to_link:
+      CCN_ACTIVATE.BIN: '{{ post.mpassit["fix_dir"] }}/CCN_ACTIVATE.BIN'
+      CAM_ABS_DATA.DBL: '{{ post.mpassit["fix_dir"] }}/CAM_ABS_DATA.DBL'
+      CAM_AEROPT_DATA.DBL: '{{ post.mpassit["fix_dir"] }}/CAM_AEROPT_DATA.DBL'
+      MP_THOMPSON_QRacrQG_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_THOMPSON_QRacrQG_DATA.DBL"
+      MP_THOMPSON_QRacrQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_THOMPSON_QRacrQS_DATA.DBL"
+      MP_THOMPSON_freezeH2O_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_THOMPSON_freezeH2O_DATA.DBL"
+      MP_THOMPSON_QIautQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_THOMPSON_QIautQS_DATA.DBL"
+post:
+  mpassit:
+    fix_dir: /misc/whome/role.wrfruc/HRRRv5/fix/

@@ -184,6 +184,7 @@ if ! conda env list | grep -q "^ungrib\s" ; then
   mamba create -y -n ungrib -c maddenp ungrib
 fi
 
+
 # Conda environment should have linux utilities to perform these tasks on macos.
 MPAS_DIR=$(cd "$(dirname "$(readlink -f -n "${BASH_SOURCE[0]}" )" )" && pwd -P)
 CONDA_BUILD_DIR="$(readlink -f "${CONDA_BUILD_DIR}")"
@@ -274,10 +275,7 @@ if [ "${SINGLE_PRECISION}" = true ]; then
   MPAS_MAKE_OPTIONS="${MAKE_OPTIONS} PRECISION=single"
 fi
 
-# creating the scripts directory here is only necessary until there is a 
-# permanent scripts directory with runscripts, at which point this should
-# be removed
-
+EXEC_DIR="${MPAS_DIR}/exec"
 if [ ! -d "$EXEC_DIR" ]; then
   mkdir "$EXEC_DIR"
 fi
@@ -288,13 +286,16 @@ printf "\nATMOS_ONLY: ${ATMOS_ONLY}\n"
 
 if [ ${ATMOS_ONLY} = false ]; then
   make clean CORE=atmosphere
+  make clean CORE=init_atmosphere
   make intel-mpi CORE=init_atmosphere ${MPAS_MAKE_OPTIONS}
   cp -v init_atmosphere_model ${EXEC_DIR}
   make clean CORE=init_atmosphere
 fi
 
+make clean CORE=atmosphere
 make intel-mpi CORE=atmosphere ${MPAS_MAKE_OPTIONS}
 cp -v atmosphere_model ${EXEC_DIR}
+cp -v build_tables ${EXEC_DIR}
 
 if [ "${CLEAN}" = true ]; then
     if [ -f $PWD/Makefile ]; then
@@ -303,4 +304,13 @@ if [ "${CLEAN}" = true ]; then
     fi
 fi
 
-exit 0
+# make mpassit executable
+MODULE_FILE="build.${PLATFORM}.${COMPILER}"
+module purge
+module use ${MPAS_DIR}/src/MPASSIT/modulefiles
+module load ${MODULE_FILE}
+cd ${MPAS_DIR}/src/MPASSIT
+./build.sh ${PLATFORM}
+cp -v bin/mpassit ${EXEC_DIR}
+
+# make upp ??????
