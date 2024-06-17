@@ -59,7 +59,6 @@ def main(user_config_files: list[Path, str]) -> None:
 
     for supp_config in (platform_config, user_config):
         experiment_config.update_values(supp_config)
-    print(experiment_config)
 
     experiment_config["user"]["mpas_app"] = mpas_app.as_posix()
 
@@ -104,9 +103,10 @@ def main(user_config_files: list[Path, str]) -> None:
         if (cores := resources.get("cores")) is None:
             cores = resources["nodes"] * resources["tasks_per_node"]
         all_nprocs.append(cores)
-    for nprocs in set(all_nprocs):
-        print(f"Creating grid file for {nprocs} procs")
-        create_grid_files(experiment_path, mesh_file_path, nprocs)
+    for nprocs in all_nprocs:
+        if not (experiment_path / f"{mesh_file_path.name}.part.{nprocs}").is_file():
+            print(f"Creating grid file for {nprocs} procs")
+            create_grid_files(experiment_path, mesh_file_path, nprocs)
 
 
 if __name__ == "__main__":
