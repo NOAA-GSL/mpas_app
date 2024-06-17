@@ -289,6 +289,7 @@ if [ ${ATMOS_ONLY} = false ]; then
   make clean CORE=init_atmosphere
   make intel-mpi CORE=init_atmosphere ${MPAS_MAKE_OPTIONS}
   cp -v init_atmosphere_model ${EXEC_DIR}
+  make clean CORE=init_atmosphere
 fi
 
 make clean CORE=atmosphere
