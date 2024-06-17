@@ -111,6 +111,8 @@ def main(user_config_files: list[Path, str]) -> None:
 
 if __name__ == "__main__":
 
+    logging.basicConfig(level=logging.INFO)
+
     parser = argparse.ArgumentParser(
         description="Configure an experiment with the following input:"
     )
@@ -120,4 +122,5 @@ if __name__ == "__main__":
             help="Paths to the user config files.")
 
     args = parser.parse_args()
-    main(user_config_files=Path(args.user_config_files))
+    path_list = [Path(p) for p in args.user_config_files]
+    main(user_config_files=path_list)

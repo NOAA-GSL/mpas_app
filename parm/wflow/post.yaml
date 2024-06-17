@@ -1,6 +1,8 @@
 workflow:
   tasks:
     metatask_post:
+      attrs:
+        mode: serial
       var:
         fhr: "{% for h in range(0, forecast.mpas['length'] + 1, 6) %}{{ ' %03d' % h }}{% endfor %}"
       task_mpassit_#fhr#:
@@ -30,16 +32,13 @@ workflow:
         walltime: "{{ post.mpassit['execution']['batchargs']['walltime']}}"
         cores: !int "{{ post.mpassit['execution']['batchargs']['cores']}}"
         dependency:
-          and:
-            datadep_diag:
+          or:
+            taskdep:
               attrs:
-                age: 00:01:00
-              value:
-                cyclestr:
-                  value: '{{ user.experiment_dir }}/@Y@m@d@H/forecast/</cyclestr><cyclestr offset="#fhr#:00:00">diag.@Y-@m-@d_@H.@M.@S.nc'
-            datadep_history:
+                task: mpas
+            sh_files_false:
               attrs:
-                age: 00:01:00
-              value:
+                shell: /bin/bash
+              command:
                 cyclestr:
-                  value: '{{ user.experiment_dir }}/@Y@m@d@H/forecast/</cyclestr><cyclestr offset="#fhr#:00:00">history.@Y-@m-@d_@H.@M.@S.nc'
+                  value: 'fh=$(( #fhr# + 6 )) ; find {{ user.experiment_dir }}/@Y@m@d@H/forecast/[dh]*.@Y-@m-@d_$(printf "%02d" "$fh").@M.@S.nc |  test $(wc -l) == 2'
