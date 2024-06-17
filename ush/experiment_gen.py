@@ -37,7 +37,7 @@ def create_grid_files(expt_dir: Path, mesh_file_path: Path, nprocs: int) -> None
         sys.exit(1)
 
 
-def main(user_config_file: Optional[Path]) -> None:
+def main(user_config_files: list[Path, str]) -> None:
     """
     Stage the Rocoto XML and experiment YAML in the desired experiment
     directory.
@@ -46,7 +46,14 @@ def main(user_config_file: Optional[Path]) -> None:
     # Set up the experiment
     mpas_app = Path(os.path.dirname(__file__)).parent.absolute()
     experiment_config = uwconfig.get_yaml_config(Path("./default_config.yaml"))
-    user_config = uwconfig.get_yaml_config(user_config_file)
+    user_config = None
+    for cfg_file in user_config_files:
+        cfg = uwconfig.get_yaml_config(cfg_file)
+        if not user_config:
+            user_config = cfg
+            continue
+        user_config.update_values(cfg)
+
     machine = user_config["user"]["platform"]
     platform_config = uwconfig.get_yaml_config(mpas_app / "parm" / "machines" / f"{machine}.yaml")
 
@@ -107,6 +114,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Configure an experiment with the following input:"
     )
-    parser.add_argument("user_config_file", help="Path to the user config file.")
+    parser.add_argument(
+            "user_config_files",
+            nargs="+",
+            help="Paths to the user config files.")
+
     args = parser.parse_args()
-    main(user_config_file=Path(args.user_config_file))
+    main(user_config_files=Path(args.user_config_files))
