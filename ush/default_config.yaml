@@ -204,12 +204,17 @@ post:
         - ulimit -s unlimited || true
         - module use {{ user.mpas_app }}/src/UPP/modulefiles
         - module load {{ user.platform }}
+      executable: "{{ user.mpas_app }}/exec/upp.x"
+      mpicmd: srun
     files_to_copy:
       postxconfig-NT.txt: "{{ user.mpas_app }}/parm/upp/postxconfig-NT-hfip.txt"
     files_to_link:
-      hires_micro_lookup.dat: "{{ post.mpassit.fix_dir }}/WRFV4.0/ETAMPNEW_DATA.expanded_rain"
-      nam_micro_lookup.dat: "{{ post.mpassit.fix_dir }}/WRFV4.0/ETAMPNEW_DATA"
+      postcntrl.xml: "{{ user.mpas_app }}/parm/upp/hfip_postcntrl.xml"
+      rap_micro_lookup.dat: "{{ user.mpas_app }}/parm/upp/rap_micro_lookup.dat"
+      nam_micro_lookup.dat: "{{ user.mpas_app }}/parm/upp/nam_micro_lookup.dat"
+      hires_micro_lookup.dat: "{{ user.mpas_app }}/parm/upp/hires_micro_lookup.dat"
       params_grib2_tbl_new: "{{ user.mpas_app }}/src/UPP/parm/params_grib2_tbl_new"
+      post_avblflds.xml: "{{ user.mpas_app }}/src/UPP/parm/post_avblflds.xml"
       abi_gr.SpcCoeff.bin: "{{ platform.crtm_dir }}/abi_gr.SpcCoeff.bin"
       abi_gr.TauCoeff.bin: "{{ platform.crtm_dir }}/abi_gr.TauCoeff.bin"
       AerosolCoeff.bin: "{{ platform.crtm_dir }}/AerosolCoeff.bin"
@@ -260,5 +265,17 @@ post:
       tmi_trmm.SpcCoeff.bin: "{{ platform.crtm_dir }}/tmi_trmm.SpcCoeff.bin"
       tmi_trmm.TauCoeff.bin: "{{ platform.crtm_dir }}/tmi_trmm.TauCoeff.bin"
       v.seviri_m10.SpcCoeff.bin: "{{ platform.crtm_dir }}/v.seviri_m10.SpcCoeff.bin"
+    namelist:
+      update_values:
+        model_inputs:
+          filename: "{{ post.mpassit.run_dir }}/{{ '%03d' % (leadtime.total_seconds() / 3600) }}/MPAS-A_out.{{ (cycle + leadtime).strftime('%Y-%m-%d_%H.%M.%S') }}.nc"
+          ioform: netcdf
+          grib: grib2
+          datestr: "{{ (cycle + leadtime).strftime('%Y-%m-%d_%H:%M:%S') }}"
+          modelname: RAPR
+          filenameflux: "{{ post.mpassit.run_dir }}/{{ '%03d' % (leadtime.total_seconds() / 3600) }}/MPAS-A_out.{{ (cycle + leadtime).strftime('%Y-%m-%d_%H.%M.%S') }}.nc"
+          filenameflat: "{{ filename }}"
+        nampgb:
+          numx: 2
     run_dir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/upp/{{ "%03d" % (leadtime.total_seconds() / 3600) }}'
 
