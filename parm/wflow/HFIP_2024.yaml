@@ -24,18 +24,19 @@ create_ics:
       thompson_aerosol_wfa.dat: "{{ user.mpas_app }}/src/MPAS-Model/src/core_atmosphere/physics/TEMPO/tables/thompson_aerosol_wfa.dat"
       VERSION: "{{ user.mpas_app }}/src/MPAS-Model/src/core_atmosphere/physics/physics_wrf/files/VERSION"
     namelist:
-      dimensions:
-        config_nsoilcat: 16
-        config_nvertlevels: 79
-        config_nsoillevels: 9
-        config_nfglevels: 51
-        config_nfgsoillevels: 4
-      data_sources:
-        config_fg_interval: 21600
-      vertical_grid:
-    config_ztop: 29354.430
-        config_blend_bdy_terrain: true
-        config_specified_zeta_levels: "/lfs5/BMC/wrfruc/jderrico/meshes/hfip_2024/L80_hfip.txt"
+      update_values:
+        dimensions:
+          config_nsoilcat: 16
+          config_nvertlevels: 79
+          config_nsoillevels: 9
+          config_nfglevels: 51
+          config_nfgsoillevels: 4
+        data_sources:
+          config_fg_interval: 21600
+        vertical_grid:
+          config_ztop: 29354.430
+          config_blend_bdy_terrain: true
+          config_specified_zeta_levels: "/lfs5/BMC/wrfruc/jderrico/meshes/hfip_2024/L80_hfip.txt"
 forecast:
   mpas:
     execution:
