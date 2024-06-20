@@ -1,8 +1,6 @@
 workflow:
   tasks:
     metatask_post:
-      attrs:
-        mode: serial
       var:
         fhr: "{% for h in range(0, forecast.mpas['length'] + 1, 6) %}{{ ' %03d' % h }}{% endfor %}"
       task_mpassit_#fhr#:
@@ -42,3 +40,23 @@ workflow:
               command:
                 cyclestr:
                   value: 'fh=$(( #fhr# + 6 )) ; find {{ user.experiment_dir }}/@Y@m@d@H/forecast/[dh]*.@Y-@m-@d_$(printf "%02d" "$fh").@M.@S.nc |  test $(wc -l) == 2'
+
+      task_upp_#fhr#:
+        command: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; ; python &MPAS_APP;/scripts/upp.py'
+        account: "{{ platform.account }}"
+        join:
+          cyclestr:
+            value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+        walltime: "{{ post.upp.execution.batchargs.walltime }}"
+        cores: !int "{{ post.upp.execution.batchargs.cores }}"
+        envars:
+          CONFIG_PATH: '&EXPERIMENT_CONFIG;'
+          CYCLE:
+            cyclestr:
+              value: "@Y-@m-@dT@H:@M:@S"
+          LEAD: '#fhr#'
+        dependency:
+          taskdep:
+            attrs:
+              task: mpassit_#fhr#
+

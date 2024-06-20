@@ -314,3 +314,9 @@ cd ${MPAS_DIR}/src/MPASSIT
 cp -v bin/mpassit ${EXEC_DIR}
 
 # make upp ??????
+cd ${MPAS_DIR}
+mkdir build_upp && cd build_upp
+cmake -DCMAKE_INSTALL_PREFIX=.. -DCMAKE_INSTALL_BINDIR="exec" ../src/UPP/
+make -j 8
+make install
+
