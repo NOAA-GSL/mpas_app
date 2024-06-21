@@ -32,7 +32,7 @@ forecast:
     execution:
       batchargs:
         cores: 3000
-        walltime: 07:59:00
+        walltime: 03:00:00
     namelist:
       update_values:
         nhyd_model:
