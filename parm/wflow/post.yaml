@@ -34,12 +34,12 @@ workflow:
             taskdep:
               attrs:
                 task: mpas
-            sh_files_false:
+            sh_find_files:
               attrs:
                 shell: /bin/bash
               command:
                 cyclestr:
-                  value: 'fh=$(( #fhr# + 6 )) ; find {{ user.experiment_dir }}/@Y@m@d@H/forecast/[dh]*.@Y-@m-@d_$(printf "%02d" "$fh").@M.@S.nc |  test $(wc -l) == 2'
+                  value: 'fh=$(( #fhr# + 6 )) ; find {{ user.experiment_dir }}/@Y@m@d@H/forecast/[dh]*.@Y-@m-@d_$(printf "%02d" "$fh").@M.@S.nc 2>/dev/null |  test $(wc -l) == 2'
 
       task_upp_#fhr#:
         command: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; ; python &MPAS_APP;/scripts/upp.py'
