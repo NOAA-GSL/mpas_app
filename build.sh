@@ -297,6 +297,9 @@ make intel-mpi CORE=atmosphere ${MPAS_MAKE_OPTIONS}
 cp -v atmosphere_model ${EXEC_DIR}
 cp -v build_tables ${EXEC_DIR}
 
+#build tables
+./build_tables
+
 if [ "${CLEAN}" = true ]; then
     if [ -f $PWD/Makefile ]; then
        printf "... Clean executables ...\n"
