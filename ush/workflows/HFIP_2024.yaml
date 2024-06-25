@@ -1,0 +1,74 @@
+user:
+  experiment_dir: /path/to/exp/dir
+  first_cycle: !!timestamp 2024-06-13T00:00:00
+  last_cycle:  !!timestamp 2024-06-13T00:00:00
+  platform: jet
+  mesh_label: hfip
+platform:
+  account: <account>
+data:
+  mesh_files: /lfs5/BMC/wrfruc/jderrico/meshes/hfip_2024
+create_ics:
+  mpas_init:
+    execution:
+      batchargs:
+        cores: 768
+    files_to_link:
+      CCN_ACTIVATE.BIN: "/misc/whome/role.wrfruc/HRRRv5/fix/CCN_ACTIVATE.BIN"
+      COMPATIBILITY: "{{ user.mpas_app }}/src/MPAS-Model/src/core_atmosphere/physics/physics_wrf/files/COMPATIBILITY"
+      MP_THOMPSON_QRacrQG_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_THOMPSON_QRacrQG_DATA.DBL"
+      MP_THOMPSON_QRacrQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_THOMPSON_QRacrQS_DATA.DBL"
+      MP_THOMPSON_freezeH2O_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_THOMPSON_freezeH2O_DATA.DBL"
+      MP_THOMPSON_QIautQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_THOMPSON_QIautQS_DATA.DBL"
+      thompson_aerosol_ifa.dat: "{{ user.mpas_app }}/src/MPAS-Model/src/core_atmosphere/physics/TEMPO/tables/thompson_aerosol_ifa.dat"
+      thompson_aerosol_lat.dat: "{{ user.mpas_app }}/src/MPAS-Model/src/core_atmosphere/physics/TEMPO/tables/thompson_aerosol_lat.dat"
+      thompson_aerosol_lon.dat: "{{ user.mpas_app }}/src/MPAS-Model/src/core_atmosphere/physics/TEMPO/tables/thompson_aerosol_lon.dat"
+      thompson_aerosol_prs.dat: "{{ user.mpas_app }}/src/MPAS-Model/src/core_atmosphere/physics/TEMPO/tables/thompson_aerosol_prs.dat"
+      thompson_aerosol_wfa.dat: "{{ user.mpas_app }}/src/MPAS-Model/src/core_atmosphere/physics/TEMPO/tables/thompson_aerosol_wfa.dat"
+      VERSION: "{{ user.mpas_app }}/src/MPAS-Model/src/core_atmosphere/physics/physics_wrf/files/VERSION"
+    namelist:
+      update_values:      
+        dimensions:
+          config_nsoilcat: 16
+          config_nvertlevels: 79
+          config_nsoillevels: 9
+          config_nfglevels: 51
+          config_nfgsoillevels: 4
+        data_sources:
+          config_fg_interval: 21600
+        vertical_grid:
+          config_ztop: 29354.430
+          config_blend_bdy_terrain: true
+          config_specified_zeta_levels: "/lfs5/BMC/wrfruc/jderrico/meshes/hfip_2024/L80_hfip.txt"
+forecast:
+  mpas:
+    execution:
+      batchargs:
+        cores: 3000
+        walltime: 07:59:00
+    files_to_link:
+      CCN_ACTIVATE.BIN: "/misc/whome/role.wrfruc/HRRRv5/fix/CCN_ACTIVATE.BIN"
+    namelist:
+      update_values:
+        nhyd_model:
+          config_dt: 25.0
+          config_len_disp: 3000.0
+        physics:
+          config_physics_suite: "convection_permitting"
+          config_convection_scheme: "off"
+          config_lsm_scheme: "sf_ruc"
+          num_soil_layers: 9
+          config_mynn_cloudpdf: 2
+          config_mynn_mixlength: 1
+          config_mynn_edmf: 1
+          config_mynn_edmf_mom: 1
+          config_mynn_edmf_tke: 0
+          config_mynn_edmf_output: 0
+          config_mynn_closure: 2.6
+          config_mynn_mixscalars: 1
+          config_mynn_mixclouds: 1
+          config_mynn_mixqt: 0
+          config_mynn_tkeadvect: false
+          config_mynn_tkebudget: 0
+          config_microp_re: true
+          config_radt_cld_scheme: "cld_fraction_mynn"
