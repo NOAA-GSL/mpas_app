@@ -26,7 +26,7 @@ create_ics:
         vertical_grid:
           config_ztop: 29354.430
           config_blend_bdy_terrain: true
-          #          config_specified_zeta_levels: "{{ data.mesh_files }}/L80_hfip.txt"
+          config_specified_zeta_levels: "{{ data.mesh_files }}/L80_hfip.txt"
 forecast:
   mpas:
     execution:
@@ -39,7 +39,7 @@ forecast:
           config_dt: 25.0
           config_len_disp: 3000.0
         physics:
-          config_physics_suite: "convection_permitting"
+          config_physics_suite: convection_permitting
     files_to_copy:
       stream_list.atmosphere.diagnostics: "{{ post.mpassit['fix_dir'] }}/stream_list.atmosphere.diagnostics"
       stream_list.atmosphere.output: "{{ post.mpassit['fix_dir'] }}/stream_list.atmosphere.output"

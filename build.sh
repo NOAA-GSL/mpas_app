@@ -313,7 +313,7 @@ cd ${MPAS_DIR}/src/MPASSIT
 ./build.sh ${PLATFORM}
 cp -v bin/mpassit ${EXEC_DIR}
 
-# make upp ??????
+# make upp
 cd ${MPAS_DIR}
 module purge
 module use src/UPP/modulefiles
