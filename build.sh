@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 #usage instructions
 usage () {
@@ -316,10 +316,10 @@ cp -v bin/mpassit ${EXEC_DIR}
 # make upp
 cd ${MPAS_DIR}
 module purge
-module use src/UPP/modulefiles
+module use ./src/UPP/modulefiles
 module load jet
 mkdir build_upp && cd build_upp
-cmake -DCMAKE_INSTALL_PREFIX=.. -DCMAKE_INSTALL_BINDIR="exec" ../src/UPP/
+cmake -DCMAKE_INSTALL_PREFIX=.. -DCMAKE_INSTALL_BINDIR="exec" -DBUILD_WITH_WRFIO=ON ../src/UPP/
 make -j 8
 make install
 
