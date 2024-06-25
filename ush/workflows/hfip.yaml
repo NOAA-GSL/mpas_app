@@ -26,7 +26,7 @@ create_ics:
         vertical_grid:
           config_ztop: 29354.430
           config_blend_bdy_terrain: true
-          config_specified_zeta_levels: "{{ data.mesh_files }}/L80_hfip.txt"
+          #          config_specified_zeta_levels: "{{ data.mesh_files }}/L80_hfip.txt"
 forecast:
   mpas:
     execution:
@@ -40,23 +40,6 @@ forecast:
           config_len_disp: 3000.0
         physics:
           config_physics_suite: "convection_permitting"
-          config_convection_scheme: "off"
-          config_lsm_scheme: "sf_ruc"
-          num_soil_layers: 9
-          config_mynn_cloudpdf: 2
-          config_mynn_mixlength: 1
-          config_mynn_edmf: 1
-          config_mynn_edmf_mom: 1
-          config_mynn_edmf_tke: 0
-          config_mynn_edmf_output: 0
-          config_mynn_closure: 2.6
-          config_mynn_mixscalars: 1
-          config_mynn_mixclouds: 1
-          config_mynn_mixqt: 0
-          config_mynn_tkeadvect: .false.
-          config_mynn_tkebudget: 0
-          config_microp_re: .true.
-          config_radt_cld_scheme: "cld_fraction_mynn"
     files_to_copy:
       stream_list.atmosphere.diagnostics: "{{ post.mpassit['fix_dir'] }}/stream_list.atmosphere.diagnostics"
       stream_list.atmosphere.output: "{{ post.mpassit['fix_dir'] }}/stream_list.atmosphere.output"
