@@ -84,7 +84,18 @@ forecast:
 post:
   mpassit:
     execution:
-      walltime: 00:30:00
-      partition: "xjet,kjet"
-      cores: 768
+      batchargs:
+        walltime: 00:30:00
+        partition: "xjet,kjet"
+        cores: 768
     fix_dir: "{{ user.hrrr_fix }}"
+  upp:
+    execution:
+      batchargs:
+        exclusive: true
+        walltime: 00:15:00
+        partition: "xjet,kjet"
+        nodes: 24
+        threads: 3
+        tasks_per_node: 12
+
