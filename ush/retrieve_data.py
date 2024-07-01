@@ -246,7 +246,7 @@ def create_target_path(target_path):
     Append target path and create directory for ensemble members
     """
     if not os.path.exists(target_path):
-        os.makedirs(target_path)
+        os.makedirs(target_path, exist_ok=True)
     return target_path
 
 

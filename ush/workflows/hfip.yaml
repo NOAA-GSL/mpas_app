@@ -2,16 +2,43 @@ user:
   workflow_blocks:
     - cold_start.yaml
     - post.yaml
-  mesh_label: conus
+  mesh_label: hfip
 platform:
   account: nrtrr
 data:
-  mesh_files: /lfs4/BMC/wrfruc/jderrico/mpas/mpas_dev/meshes/15km-conus
-forecast:
-  mpas:
+  mesh_files: /lfs5/BMC/wrfruc/jderrico/meshes/hfip_2024
+create_ics:
+  mpas_init:
+    execution:
+      batchargs:
+        cores: 768
+        walltime: 00:15:00
     namelist:
       update_values:
-        physics: 
+        dimensions:
+          config_nsoilcat: 16
+          config_nvertlevels: 79
+          config_nsoillevels: 9
+          config_nfglevels: 51
+          config_nfgsoillevels: 4
+        data_sources:
+          config_fg_interval: 21600
+        vertical_grid:
+          config_ztop: 29354.430
+          config_blend_bdy_terrain: true
+          config_specified_zeta_levels: "{{ data.mesh_files }}/L80_hfip.txt"
+forecast:
+  mpas:
+    execution:
+      batchargs:
+        cores: 3000
+        walltime: 03:00:00
+    namelist:
+      update_values:
+        nhyd_model:
+          config_dt: 25.0
+          config_len_disp: 3000.0
+        physics:
           config_physics_suite: convection_permitting
     files_to_copy:
       stream_list.atmosphere.diagnostics: "{{ post.mpassit['fix_dir'] }}/stream_list.atmosphere.diagnostics"

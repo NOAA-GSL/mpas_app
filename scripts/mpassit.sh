@@ -94,7 +94,7 @@ diagfile="${FCST_DIR}/diag.${fcst_time_str}.nc"
 
 fileappend=$([[ "${MP_SCHEME}" == "mp_thompson" ]] && echo "THOM" || echo "NSSL")
 
-parmfiles=(diaglist histlist_2d histlist_3d histlist_soil)
+parmfiles=(histlist_2d histlist_3d histlist_soil)
 for fn in "${parmfiles[@]}"; do
     if [[ ! -e $fn ]]; then
         if [[ $verb -eq 1 ]]; then echo "Linking $fn ..."; fi
@@ -109,16 +109,20 @@ for fn in "${parmfiles[@]}"; do
     fi
 done
 
-ln -sf $INIT_DIR/conus.init.nc .
+ln -sf $EXEC_DIR/../parm/mpassit/diaglist.noconvection diaglist
+
+ln -sf $INIT_DIR/hfip.init.nc .
 ln -sf $EXEC_DIR/mpassit .
 
 hstr=$(printf "%02d" $FCST_HOUR)
 nmlfile="namelist.fcst_$hstr"
 
+block_file=$INIT_DIR/hfip.graph.info.part.*
+
 cp $NML_DIR/namelist.mpassit $nmlfile
 sed -i "s|HISTFILE|$histfile|g" $nmlfile
 sed -i "s|DIAGFILE|$diagfile|g" $nmlfile
-sed -i "s|FIX_DIR|$FIX_DIR|g" $nmlfile
+sed -i "s|BLOCKFILE|$block_file|g" $nmlfile
 sed -i "s/FCSTTIME/$fcst_time_str/g" $nmlfile
 
 srun mpassit $nmlfile

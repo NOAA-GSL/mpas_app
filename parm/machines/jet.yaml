@@ -2,6 +2,7 @@ data:
   mesh_files: /misc/whome/role.wrfruc/MPAS_SPC/fix/
 platform:
   scheduler: slurm
+  crtm_dir: /mnt/lfs4/HFIP/hfv3gfs/nwprod/hpc-stack/libs/intel-18.0.5.274/crtm/2.4.0/fix/
 post:
   mpassit:
     fix_dir: /misc/whome/role.wrfruc/HRRRv5/fix/MPASSIT/
