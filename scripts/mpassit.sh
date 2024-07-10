@@ -117,7 +117,7 @@ ln -sf $EXEC_DIR/mpassit .
 hstr=$(printf "%02d" $FCST_HOUR)
 nmlfile="namelist.fcst_$hstr"
 
-block_file=$INIT_DIR/hfip.graph.info.part.*
+block_file=$INIT_DIR/hfip.graph.info.part.$SLURM_NPROCS
 
 cp $NML_DIR/namelist.mpassit $nmlfile
 sed -i "s|HISTFILE|$histfile|g" $nmlfile
