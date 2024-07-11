@@ -12,12 +12,20 @@ platform:
   account: <account>
 data:
   mesh_files: /lfs5/BMC/wrfruc/jderrico/meshes/hfip_2024
+prepare_grib:
+  ungrib:
+    execution:
+      batchargs:
+        partition: xjet
+    gfs_files:
+      forecast_length: "{{ forecast.mpas.length }}"
 create_ics:
   mpas_init:
     execution:
       batchargs:
         cores: 768
         walltime: 00:15:00
+        partition: xjet
     files_to_link:
       CCN_ACTIVATE.BIN: "{{ user.hrrr_fix }}/CCN_ACTIVATE.BIN"
       COMPATIBILITY: "{{ user.mpas_app }}/src/MPAS-Model/src/core_atmosphere/physics/physics_wrf/files/COMPATIBILITY"
@@ -45,12 +53,24 @@ create_ics:
           config_ztop: 29354.430
           config_blend_bdy_terrain: true
           config_specified_zeta_levels: "{{ data.mesh_files }}/L80_hfip.txt"
+create_lbcs:
+  mpas_init:
+    execution:
+      batchargs:
+        cores: 768
+        walltime: 00:15:00
+        partition: xjet
+    files_to_link:
+  mpas_init:
+    boundary_conditions:
+      length: "{{ forecast.mpas.length }}"
 forecast:
   mpas:
     execution:
       batchargs:
         cores: 3000
-        walltime: 07:59:00
+        walltime: 09:15:00
+        partition: xjet
     files_to_link:
       CCN_ACTIVATE.BIN: "{{ user.hrrr_fix }}/CCN_ACTIVATE.BIN"
       MP_THOMPSON_QRacrQG_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_THOMPSON_QRacrQG_DATA.DBL"
@@ -81,12 +101,13 @@ forecast:
           config_mynn_tkebudget: 0
           config_microp_re: true
           config_radt_cld_scheme: "cld_fraction_mynn"
+    length: 120
 post:
   mpassit:
     execution:
       batchargs:
         walltime: 00:30:00
-        partition: "xjet,kjet"
+        partition: "kjet"
         cores: 768
     fix_dir: "{{ user.hrrr_fix }}"
   upp:
@@ -94,8 +115,98 @@ post:
       batchargs:
         exclusive: true
         walltime: 00:15:00
-        partition: "xjet,kjet"
+        partition: "xjet"
         nodes: 24
         threads: 3
         tasks_per_node: 12
-
+workflow:
+  attrs:
+    realtime: True
+    cyclethrottle: 3
+  log:
+    cyclestr:
+      value: "{{ user.experiment_dir }}/log/workflow_@Y@m@d.log"
+  entities:
+    LOGDIR: "{{user.experiment_dir}}/log/@Y@m@d@H"
+  tasks:
+    task_get_ics_data:
+      dependency:
+        timedep:
+          cyclestr:
+            attrs:
+              offset: 03:40:00
+            value: "@Y@m@d@H@M@S"
+    task_get_lbcs_data:
+      dependency:
+        timedep:
+          cyclestr:
+            attrs:
+              offset: 03:40:00
+            value: "@Y@m@d@H@M@S"
+    task_ungrib:
+      partition: "{{ prepare_grib.ungrib.execution.batchargs.partition }}"
+      native:
+        cyclestr:
+          value: --reservation=kayee_ini_@H
+      dependency:
+        and:
+          timedep:
+            cyclestr:
+              attrs:
+                offset: 04:15:00
+              value: "@Y@m@d@H@M@S"
+    task_mpas_ics:
+      partition: "{{ create_ics.mpas_init.execution.batchargs.partition }}"
+      native:
+        cyclestr:
+          value: --reservation=kayee_ini_@H
+    task_mpas_lbcs:
+      partition: "{{ create_lbcs.mpas_init.execution.batchargs.partition }}"
+      native:
+        cyclestr:
+          value: --reservation=kayee_ini_@H
+    task_mpas:
+      partition: "{{ forecast.mpas.execution.batchargs.partition }}"
+      native:
+        cyclestr:
+          value: --reservation=kayee_fcst1_@H
+      dependency:
+        and:
+          timedep:
+            cyclestr:
+              attrs:
+                offset: 04:35:00
+              value: "@Y@m@d@H@M@S"
+          taskdep:
+            attrs:
+              task: mpas_lbcs
+        taskdep: !remove
+                  
+    metatask_post:
+      task_mpassit_#fhr#:
+        native:
+          cyclestr:
+            value: --reservation=kayee_post_@H
+        dependency:
+          and:
+            timedep:
+              cyclestr:
+                attrs:
+                  offset: 05:25:00
+                value: "@Y@m@d@H@M@S"
+            or:
+              taskdep:
+                attrs:
+                  task: mpas
+              sh_find_files:
+                attrs:
+                  shell: /bin/bash
+                command:
+                  cyclestr:
+                    value: 'fh=$((10##fhr# + 6 )) ; timestamp=$(date -d "@H:@M:@S @Y-@m-@d +$fh hour" "+%F_%T" ) ; find {{ user.experiment_dir }}/@Y@m@d@H/forecast/[dh]*.${timestamp}.nc 2>/dev/null |  test $(wc -l) == 2'
+          or: !remove
+                    
+      task_upp_#fhr#:
+        native:
+          cyclestr:
+            value: --reservation=kayee_post_@H

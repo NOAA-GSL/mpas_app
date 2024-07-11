@@ -40,7 +40,7 @@ workflow:
                 shell: /bin/bash
               command:
                 cyclestr:
-                  value: 'fh=$(( #fhr# + 6 )) ; find {{ user.experiment_dir }}/@Y@m@d@H/forecast/[dh]*.@Y-@m-@d_$(printf "%02d" "$fh").@M.@S.nc 2>/dev/null |  test $(wc -l) == 2'
+                  value: 'fh=$((10##fhr# + 6 )) ; timestamp=$(date -d "@H:@M:@S @Y-@m-@d +$fh hour" "+%F_%T" ) ; find {{ user.experiment_dir }}/@Y@m@d@H/forecast/[dh]*.${timestamp}.nc 2>/dev/null |  test $(wc -l) == 2'
 
       task_upp_#fhr#:
         command: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; ; python &MPAS_APP;/scripts/upp.py'

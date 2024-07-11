@@ -1,0 +1,18 @@
+user:
+  experiment_dir: /lfs5/BMC/gsd-fv3-dev/hfip_2024/mpas_no_conv
+  first_cycle: !!timestamp 2024-07-10T12:00:00
+  last_cycle: !!timestamp 2025-06-28T12:00:00
+platform:
+  account: rtgsd-fv3-hfip
+get_ics_data:
+  execution:
+    walltime: 00:15:00
+get_lbcs_data:
+  execution:
+    walltime: 00:20:00
+workflow:
+  tasks:
+    task_get_ics_data:
+      account: gsd-fv3-dev
+
+
