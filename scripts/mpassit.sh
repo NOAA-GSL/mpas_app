@@ -114,7 +114,7 @@ ln -sf $EXEC_DIR/../parm/mpassit/diaglist.noconvection diaglist
 ln -sf $INIT_DIR/hfip.init.nc .
 ln -sf $EXEC_DIR/mpassit .
 
-hstr=$(printf "%02d" $FCST_HOUR)
+hstr=$(printf "%02d" $((10#$FCST_HOUR)))
 nmlfile="namelist.fcst_$hstr"
 
 block_file=$INIT_DIR/hfip.graph.info.part.$SLURM_NPROCS

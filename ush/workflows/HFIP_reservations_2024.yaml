@@ -1,0 +1,147 @@
+platform:
+  account: rtgsd-fv3-hfip
+get_ics_data:
+  execution:
+    walltime: 00:15:00
+get_lbcs_data:
+  execution:
+    walltime: 00:20:00
+prepare_grib:
+  ungrib:
+    execution:
+      batchargs:
+        walltime: 00:15:00
+        partition: xjet
+create_ics:
+  mpas_init:
+    execution:
+      batchargs:
+        walltime: 00:03:00
+        partition: xjet
+create_lbcs:
+  mpas_init:
+    execution:
+      batchargs:
+        cores: 768
+        walltime: 00:10:00
+        partition: xjet
+forecast:
+  mpas:
+    execution:
+      batchargs:
+        cores: 3000
+        walltime: 07:59:00
+        partition: xjet
+post:
+  mpassit:
+    execution:
+      batchargs:
+        walltime: 00:30:00
+        partition: kjet
+        cores: 768
+    fix_dir: "{{ user.hrrr_fix }}"
+  upp:
+    execution:
+      batchargs:
+        exclusive: true
+        walltime: 00:15:00
+        partition: kjet
+        nodes: 14
+        threads: 2
+        tasks_per_node: 20
+workflow:
+  tasks:
+    task_get_ics_data:
+      account: gsd-fv3-dev
+    task_get_lbcs_data:
+      account: gsd-fv3-dev
+    task_ungrib:
+      account: gsd-fv3-dev
+      partition: xjet,kjet
+    task_mpas_ics:
+      account: rtgsd-fv3-hfip
+      partition: "{{ create_ics.mpas_init.execution.batchargs.partition }}"
+      deadline:
+        cyclestr:
+          attrs:
+            offset: 04:44:00
+          value: "@Y@m@d@H@M"
+      native:
+        cyclestr:
+          value: --reservation=kayee_ini_@H
+    task_mpas_lbcs:
+      account: rtgsd-fv3-hfip
+      partition: "{{ create_lbcs.mpas_init.execution.batchargs.partition }}"
+      deadline:
+        cyclestr:
+          attrs:
+            offset: 04:34:00
+          value: "@Y@m@d@H@M"
+      native:
+        cyclestr:
+          value: --reservation=kayee_ini_@H
+    task_mpas:
+      account: rtgsd-fv3-hfip
+      partition: "{{ forecast.mpas.execution.batchargs.partition }}"
+      deadline:
+        cyclestr:
+          attrs:
+            offset: 14:00:00
+          value: "@Y@m@d@H@M"
+      native:
+        cyclestr:
+          value: --reservation=kayee_fcst1_@H
+      dependency:
+        and:
+          timedep:
+            cyclestr:
+              attrs:
+                offset: 04:45:00
+              value: "@Y@m@d@H@M@S"
+          taskdep:
+            attrs:
+              task: mpas_lbcs
+        taskdep: !remove
+                  
+    metatask_post:
+      task_mpassit_#fhr#:
+        account: rtgsd-fv3-hfip
+        partition: "{{ post.mpassit.execution.batchargs.partition }}"
+        deadline:
+          cyclestr:
+            attrs:
+              offset: 17:24:00
+            value: "@Y@m@d@H@M"
+        native:
+          cyclestr:
+            value: --reservation=kayee_post_@H
+        dependency:
+          and:
+            timedep:
+              cyclestr:
+                attrs:
+                  offset: 05:25:00
+                value: "@Y@m@d@H@M@S"
+            or:
+              taskdep:
+                attrs:
+                  task: mpas
+              sh_find_files:
+                attrs:
+                  shell: /bin/bash
+                command:
+                  cyclestr:
+                    value: 'fh=$((10##fhr# + 6 )) ; timestamp=$(date -d "@H:@M:@S @Y-@m-@d +$fh hour" "+%F_%T" ) ; find {{ user.experiment_dir }}/@Y@m@d@H/forecast/[dh]*.${timestamp}.nc 2>/dev/null |  test $(wc -l) == 2'
+          or: !remove
+                    
+      task_upp_#fhr#:
+        account: rtgsd-fv3-hfip
+        partition: "{{ post.upp.execution.batchargs.partition }}"
+        deadline:
+          cyclestr:
+            attrs:
+              offset: 17:24:00
+            value: "@Y@m@d@H@M"
+        native:
+          cyclestr:
+            value: --reservation=kayee_post_@H
