@@ -101,6 +101,7 @@ post:
       batchargs:
         walltime: 00:30:00
         cores: 768
+        partition: kjet
     fix_dir: "{{ user.hrrr_fix }}"
   upp:
     execution:
@@ -110,6 +111,7 @@ post:
         nodes: 24
         threads: 3
         tasks_per_node: 12
+        partition: kjet
 workflow:
   attrs:
     realtime: True

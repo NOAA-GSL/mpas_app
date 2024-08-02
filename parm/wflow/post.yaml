@@ -27,7 +27,7 @@ workflow:
         join:
           cyclestr:
             value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
-        partition: "{{ post.upp.execution.batchargs.partition }}"
+        partition: "{{ post.mpassit.execution.batchargs.partition }}"
         walltime: "{{ post.mpassit['execution']['batchargs']['walltime']}}"
         cores: !int "{{ post.mpassit['execution']['batchargs']['cores']}}"
         dependency:
