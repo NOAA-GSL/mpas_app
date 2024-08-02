@@ -5,7 +5,6 @@ graupelncv               GRAUPELNCV
 prec_acc_c               PREC_ACC_C
 prec_acc_nc              PREC_ACC_NC
 snow_acc_nc              SNOW_ACC_NC
-refl10cm                 REFL_10CM
 refl10cm_max             COMPOSITE_REFL_10CM
 refl10cm_1km             REFL_10CM_1KM
 refl10cm_1km_max         REFD_MAX
