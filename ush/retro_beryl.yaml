@@ -1,0 +1,62 @@
+user:
+  experiment_dir: /lfs5/BMC/gsd-fv3-dev/hfip_2024/beryl
+  first_cycle: !!timestamp 2024-07-06 12:00:00
+  last_cycle: !!timestamp 2024-07-06 12:00:00
+workflow:
+  attrs:
+    realtime: false
+  tasks:
+    task_mpas_ics:
+      deadline: !remove
+      native: --reservation=kayee_ini_00
+      dependency:
+        taskdep: !remove
+        and:
+          sh_time:
+            attrs:
+              shell: /bin/bash
+            command: python &MPAS_APP;/ush/check_time.py 04:15:00 04:44:00
+          taskdep:
+            attrs:
+              task: ungrib
+    task_mpas_lbcs:
+      deadline: !remove
+      native: --reservation=kayee_ini_00
+      dependency:
+        taskdep: !remove
+        and:
+          sh_time:
+            attrs:
+              shell: /bin/bash
+            command: python &MPAS_APP;/ush/check_time.py 04:15:00 04:44:00
+          taskdep:
+            attrs:
+              task: mpas_ics
+
+    task_mpas:
+      deadline: !remove
+      native: --reservation=kayee_fcst1_00
+      dependency:
+        and:
+          sh_time:
+            attrs:
+              shell: /bin/bash
+            command: beg=04:45:00 ; end=$(date -d "+9 hours $beg" +"%H:%M:%S") ; python &MPAS_APP;/ush/check_time.py $beg $end
+    metatask_post:
+      task_mpassit_#fhr#:
+        deadline: !remove
+        native: --reservation=kayee_post_00
+        dependency:
+          and:
+            sh_time:
+              attrs:
+                shell: /bin/bash
+              command: beg=05:25:00 ; end=$(date -d "+11 hours $beg" +"%H:%M:%S") ; python &MPAS_APP;/ush/check_time.py $beg $end
+
+      task_upp_#fhr#:
+        deadline: !remove
+        native: --reservation=kayee_post_00
+  
+
+
+

@@ -73,12 +73,16 @@ def main(user_config_files: list[Path, str]) -> None:
     workflow_blocks = experiment_config["user"]["workflow_blocks"]
     workflow_blocks = [mpas_app / "parm" / "wflow" / b for b in workflow_blocks]
 
+    workflow_config = None
     for workflow_block in workflow_blocks:
-        block_config = uwconfig.get_yaml_config(workflow_block)
-        experiment_config.update_values(block_config)
+        if workflow_config is None:
+            workflow_config = uwconfig.get_yaml_config(workflow_block)
+        else:
+            workflow_config.update_values(uwconfig.get_yaml_config(workflow_block))
+    workflow_config.update_values(experiment_config)
 
     uwconfig.realize(
-        input_config=experiment_config,
+        input_config=workflow_config,
         output_file=experiment_file,
         update_config={},
     )
@@ -93,16 +97,18 @@ def main(user_config_files: list[Path, str]) -> None:
     mesh_file_name = f"{experiment_config['user']['mesh_label']}.graph.info"
     mesh_file_path = Path(experiment_config["data"]["mesh_files"]) / mesh_file_name
 
+    experiment_config = uwconfig.get_yaml_config(config=experiment_file)
     all_nprocs = []
     for sect, driver in (
         ("create_ics", "mpas_init"),
         ("create_lbcs", "mpas_init"),
         ("forecast", "mpas"),
         ):
-        resources = experiment_config[sect][driver]["execution"]["batchargs"]
-        if (cores := resources.get("cores")) is None:
-            cores = resources["nodes"] * resources["tasks_per_node"]
-        all_nprocs.append(cores)
+        if sect in experiment_config:
+            resources = experiment_config[sect][driver]["execution"]["batchargs"]
+            if (cores := resources.get("cores")) is None:
+                cores = resources["nodes"] * resources["tasks_per_node"]
+            all_nprocs.append(cores)
     for nprocs in all_nprocs:
         if not (experiment_path / f"{mesh_file_path.name}.part.{nprocs}").is_file():
             print(f"Creating grid file for {nprocs} procs")

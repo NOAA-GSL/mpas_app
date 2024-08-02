@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 #usage instructions
 usage () {
@@ -295,7 +295,7 @@ fi
 make clean CORE=atmosphere
 make intel-mpi CORE=atmosphere ${MPAS_MAKE_OPTIONS}
 cp -v atmosphere_model ${EXEC_DIR}
-cp -v build_tables ${EXEC_DIR}
+./build_tables
 
 #build tables
 ./build_tables
@@ -316,4 +316,13 @@ cd ${MPAS_DIR}/src/MPASSIT
 ./build.sh ${PLATFORM}
 cp -v bin/mpassit ${EXEC_DIR}
 
-# make upp ??????
+# make upp
+cd ${MPAS_DIR}
+module purge
+module use ./src/UPP/modulefiles
+module load jet
+mkdir build_upp && cd build_upp
+cmake -DCMAKE_INSTALL_PREFIX=.. -DCMAKE_INSTALL_BINDIR="exec" -DBUILD_WITH_WRFIO=ON ../src/UPP/
+make -j 8
+make install
+
