@@ -22,7 +22,7 @@ expt_config = uwconfig.get_yaml_config(CONFIG_PATH)
 expt_config.dereference(context={"cycle": cycle, **expt_config})
 
 mpas_config = expt_config["forecast"]["mpas"]
-mpas_dir = Path(mpas_config["run_dir"])
+mpas_dir = Path(mpas_config["rundir"])
 
 # Run mpas
 mpas.execute(task="run", config=CONFIG_PATH, cycle=cycle, key_path=["forecast"])

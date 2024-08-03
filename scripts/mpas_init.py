@@ -23,7 +23,7 @@ expt_config = uwconfig.get_yaml_config(CONFIG_PATH)
 expt_config.dereference(context={"cycle": cycle, **expt_config})
 
 mpas_init_config = expt_config[EXPT_SECT]["mpas_init"]
-mpas_init_dir = Path(mpas_init_config["run_dir"])
+mpas_init_dir = Path(mpas_init_config["rundir"])
 
 # Run mpas_init
 mpas_init.execute(task="run", config=CONFIG_PATH, cycle=cycle,

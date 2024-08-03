@@ -22,7 +22,7 @@ expt_config = uwconfig.get_yaml_config(CONFIG_PATH)
 expt_config.dereference(context={"cycle": cycle, **expt_config})
 
 ungrib_config = expt_config["prepare_grib"]["ungrib"]
-ungrib_dir = Path(ungrib_config["run_dir"])
+ungrib_dir = Path(ungrib_config["rundir"])
 
 # Run ungrib
 ungrib.execute(task="run", config=CONFIG_PATH, cycle=cycle,
