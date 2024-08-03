@@ -326,3 +326,11 @@ cmake -DCMAKE_INSTALL_PREFIX=.. -DCMAKE_INSTALL_BINDIR="exec" -DBUILD_WITH_WRFIO
 make -j 8
 make install
 
+# build tracker
+cd src/gfdl-tracker/src
+export BUILD_TYPE=Release
+./build_all_cmake.sh
+cd ..
+mv gettrk.x ${MPAS_DIR}/exec
+
+
