@@ -9,3 +9,11 @@
 [submodule "src/UPP"]
 	path = src/UPP
 	url = https://github.com/NOAA-EMC/UPP.git
+
+[submodule "src/gfdl-tracker"]
+	path = src/gfdl-tracker
+	url = https://github.com/hafs-community/gfdl-tracker.git
+
+[submodule "ush/pygraf"]
+	path = ush/pygraf
+	url = https://github.com/NOAA-GSL/pygraf.git
