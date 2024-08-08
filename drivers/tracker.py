@@ -110,8 +110,6 @@ class GFDLTracker(DriverCycleBased):
         namelist = self._driver_config[STR.namelist]
         if base_file := namelist.get(STR.basefile):
             input_files.append(base_file)
-        if update_values := namelist.get(STR.updatevalues):
-            config_files = update_values["config"]
         yield [file(Path(input_file)) for input_file in input_files]
         self._create_user_updated_config(
             config_class=NMLConfig,
@@ -155,7 +153,7 @@ class GFDLTracker(DriverCycleBased):
         """
         Returns the name of this driver.
         """
-        return STR.chgrescube
+        return STR.tracker
 
     def _input_file_map(self) -> dict:
         """
@@ -163,9 +161,9 @@ class GFDLTracker(DriverCycleBased):
         """
         infiles = self._driver_config["input_files"]
         endhour = infiles["endhour"]
-        outfreq = infiles["outfreq"]
+        filefreq = infiles["filefreq"]
         file_map = {}
-        for fhr in range(0, endhour + 1, outfreq):
+        for fhr in range(0, endhour + 1, filefreq):
             leadtime = timedelta(hours=fhr)
             configobj = YAMLConfig(infiles)
             configobj.dereference(
@@ -179,4 +177,4 @@ class GFDLTracker(DriverCycleBased):
         return filemap
 
 
-set_driver_docstring(ChgresCube)
+set_driver_docstring(GFDLTracker)
