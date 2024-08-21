@@ -275,6 +275,7 @@ post:
           grib: grib2
           datestr: "{{ (cycle + leadtime).strftime('%Y-%m-%d_%H:%M:%S') }}"
           modelname: RAPR
+          submodelname: MPAS
           filenameflux: "{{ filename }}"
           filenameflat: "{{ post.upp.files_to_copy['postxconfig-NT.txt'] }}"
         nampgb:
