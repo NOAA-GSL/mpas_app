@@ -1,6 +1,5 @@
 #!/bin/bash -e
 
-#usage instructions
 usage () {
 cat << EOF_USAGE
 Usage: $0 --platform=PLATFORM [OPTIONS] 
@@ -320,17 +319,15 @@ cp -v bin/mpassit ${EXEC_DIR}
 cd ${MPAS_DIR}
 module purge
 module use ./src/UPP/modulefiles
-module load jet
+module load ${PLATFORM}
 mkdir build_upp && cd build_upp
 cmake -DCMAKE_INSTALL_PREFIX=.. -DCMAKE_INSTALL_BINDIR="exec" -DBUILD_WITH_WRFIO=ON ../src/UPP/
 make -j 8
 make install
 
 # build tracker
+cd ${MPAS_DIR}
+module purge
 cd src/gfdl-tracker/src
-export BUILD_TYPE=Release
 ./build_all_cmake.sh
-cd ..
-mv gettrk.x ${MPAS_DIR}/exec
-
-
+cp ../exec/gettrk.x ${MPAS_DIR}/exec

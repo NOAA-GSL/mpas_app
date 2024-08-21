@@ -15,8 +15,11 @@
             "filefreq": {
               "type": "number"
             },
-            "filepath": {
-              "type": "string"
+            "filepaths": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           },
           "type": "object"
@@ -40,7 +43,7 @@
               "type": "string"
             },
             "update_values": {
-              "$ref": "urn:uwtools:namelist"
+              "type": "object"
             },
             "validate": {
               "type": "boolean"
