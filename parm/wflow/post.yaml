@@ -62,3 +62,18 @@ workflow:
             attrs:
               task: mpassit_#fhr#
 
+      task_combine_grib_#fhr#:
+        command:
+          cyclestr:
+            value: "cd {{ user.experiment_dir }}/@Y@m@d@H/upp/#fhr# ; cat PRSLEV.GrbF$FHR 2DFLD.GrbF$FHR >> ../COMBINED.F$FHR"
+        walltime: 00:02:00
+        join:
+          cyclestr:
+            value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+        cores: 1
+        envars:
+          FHR: '$( printf "%02d" "$((10##fhr#))'
+        dependency:
+          taskdep:
+            attrs:
+              task: upp_#fhr#
