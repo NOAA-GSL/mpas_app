@@ -1,0 +1,20 @@
+workflow:
+  tasks:
+    task_graphics:
+      command: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; ; python &MPAS_APP;/scripts/run_graphics.sh'
+      account: "{{ platform.account }}"
+      join:
+        cyclestr:
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+      walltime: "{{ graphics.execution.batchargs.walltime }}"
+      nodes: "{{ graphics.execution.batchargs.nodes }}:ppn={{ graphics.execution.batchargs.tasks_per_node }}"
+      partition: "{{ partition.execution.batchargs.partition }}"
+      envars:
+        CONFIG_PATH: '&EXPERIMENT_CONFIG;'
+        CYCLE:
+          cyclestr:
+            value: "@Y@m@d@H"
+      dependency:
+        taskdep:
+          attrs:
+            task: combine_grib_001
