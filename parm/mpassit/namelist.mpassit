@@ -2,7 +2,6 @@
     grid_file_input_grid = "hfip.init.nc"
     hist_file_input_grid = "HISTFILE"
     diag_file_input_grid = "DIAGFILE"
-    target_grid_type     = "file"
     block_decomp_file    = "BLOCKFILE"
     is_regional          = .true.
     output_file          = "MPAS-A_out.FCSTTIME.nc"

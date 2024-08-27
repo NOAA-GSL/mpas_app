@@ -130,7 +130,7 @@ workflow:
                   shell: /bin/bash
                 command:
                   cyclestr:
-                    value: 'fh=$((10##fhr# + 6 )) ; timestamp=$(date -d "@H:@M:@S @Y-@m-@d +$fh hour" "+%F_%T" ) ; find {{ user.experiment_dir }}/@Y@m@d@H/forecast/[dh]*.${timestamp}.nc 2>/dev/null |  test $(wc -l) == 2'
+                    value: 'fh=$((10##fhr# + 6 )) ; timestamp=$(date -d "@H:@M:@S @Y-@m-@d +$fh hour" "+%F_%H.%M.%S" ) ; find {{ user.experiment_dir }}/@Y@m@d@H/forecast/[dh]*.${timestamp}.nc 2>/dev/null |  test $(wc -l) == 2'
           or: !remove
                     
       task_upp_#fhr#:
@@ -144,3 +144,11 @@ workflow:
         native:
           cyclestr:
             value: --reservation=kayee_post_@H
+    task_graphics:
+      native:
+        cyclestr:
+          value: --reservation=kayee_post_@H
+    task_vortex_tracker:
+      account: gsd-fv3-dev
+
+

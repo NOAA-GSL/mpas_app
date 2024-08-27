@@ -24,7 +24,7 @@ expt_config.dereference(context={"cycle": cycle, **expt_config})
 
 driver_dir = Path(expt_config["user"]["mpas_app"], "drivers")
 
-driver_config = expt_config[key_path]["tracker"]
+driver_config = expt_config[key_path]["gfdltracker"]
 rundir = Path(driver_config["rundir"])
 print(f"Will run in {rundir}")
 
@@ -39,6 +39,6 @@ execute(
     key_path=[key_path],
 )
 
-if not (rundir / "runscript.gfdl-tracker.done").is_file():
+if not (rundir / "runscript.gfdltracker.done").is_file():
     print("Error occurred running the GFDL Vortex Tracker. Please see component error logs.")
     sys.exit(1)

@@ -37,38 +37,10 @@ class GFDLTracker(DriverCycleBased):
         yield self.taskname("input fcst minutes file")
         path = self.rundir / fn
         yield asset(path, path.is_file)
-        yield [self.combined_input_files(), self.input_index_files()]
+        yield [self.input_files(), self.input_index_files()]
         content_list = [f"{i+1:4d} {fhr*60:5d}" for i, fhr in enumerate(self._input_file_map())]
         with writable(path) as f:
             f.write("\n".join(content_list))
-
-    @property
-    def _combined_file_tmpl(self):
-        """
-        The templated name of the combined grib file.
-        """
-        return "COMBINED.GrbF{fhr:02d}"
-
-    @task
-    def combined_input_files(self):
-        """
-        Concatinate the surface and PRSLEV files so the tracker has all the
-        fields it needs.
-        """
-        yield self.taskname("input files")
-        upp_files = self._input_file_map()
-        combined_files = [self._combined_file_tmpl.format(fhr=fhr) for fhr in upp_files]
-        yield [file(self.rundir/p) for p in combined_files]
-        all_input_files = list(chain.from_iterable(upp_files.values()))
-        yield [file(Path(p)) for p in all_input_files]
-        self.rundir.mkdir(exist_ok=True)
-        for fhr, infiles in upp_files.items():
-            combined_file = self._combined_file_tmpl.format(fhr=fhr)
-            execute(
-                cmd=f"cat {' '.join(infiles)} > {combined_file}",
-                cwd=self.rundir,
-                log_output=True,
-                )
 
     @tasks
     def input_files(self):
@@ -78,9 +50,9 @@ class GFDLTracker(DriverCycleBased):
         yield self.taskname("input files")
         upp_files = self._input_file_map()
         symlinks = {}
-        for fhr in upp_files:
+        for fhr, target in upp_files.items():
             linkname = f"mpas.trak.all.{self.cycle.strftime('%Y%m%d%H')}.f{fhr * 60:05d}"
-            target = self.rundir / self._combined_file_tmpl.format(fhr=fhr)
+            target = Path(target)
             symlinks[target] = linkname
         yield [symlink(target=t, linkname=self.rundir / l) for t, l in symlinks.items()]
 
@@ -202,7 +174,7 @@ class GFDLTracker(DriverCycleBased):
         """
         Returns the name of this driver.
         """
-        return "gfdl-tracker"
+        return "gfdltracker"
 
     def _input_file_map(self) -> dict:
         """
@@ -222,5 +194,5 @@ class GFDLTracker(DriverCycleBased):
                    **self.config_full,
                    }
                )
-            filemap[fhr] = configobj["filepaths"]
+            filemap[fhr] = configobj["filepath"]
         return filemap

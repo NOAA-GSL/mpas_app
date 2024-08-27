@@ -15,11 +15,8 @@
             "filefreq": {
               "type": "number"
             },
-            "filepaths": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+            "filepath": {
+              "type": "string"
             }
           },
           "type": "object"
@@ -69,7 +66,7 @@
     }
   },
   "required": [
-    "gfdl-tracker"
+    "gfdltracker"
   ],
   "type": "object"
 }
