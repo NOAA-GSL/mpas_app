@@ -47,7 +47,6 @@ post:
         walltime: 00:15:00
         partition: kjet
         nodes: 14
-        threads: 2
         tasks_per_node: 20
 workflow:
   tasks:

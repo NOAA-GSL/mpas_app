@@ -1,7 +1,7 @@
 workflow:
   tasks:
     task_graphics:
-      command: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; ; python &MPAS_APP;/scripts/run_graphics.sh'
+      command: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; ; &MPAS_APP;/scripts/run_graphics.sh'
       account: "{{ platform.account }}"
       join:
         cyclestr:
@@ -14,7 +14,10 @@ workflow:
         CYCLE:
           cyclestr:
             value: "@Y@m@d@H"
+        FCST_LOCATION:
+          cyclestr:
+            value: "{{ user.experiment_dir }}/@Y@m@d@H/upp"
       dependency:
         taskdep:
           attrs:
-            task: combine_grib_001
+            task: combine_grib_006
