@@ -2,6 +2,8 @@ user:
   workflow_blocks:
     - cold_start.yaml
     - post.yaml
+    - graphics.yaml
+    - tracker.yaml
   experiment_dir: /path/to/exp/dir
   first_cycle: !!timestamp 2024-06-13T00:00:00
   last_cycle:  !!timestamp 2024-06-13T00:00:00
@@ -44,9 +46,9 @@ create_ics:
         data_sources:
           config_fg_interval: 21600
         vertical_grid:
-          config_ztop: 29354.430
           config_blend_bdy_terrain: true
-          config_specified_zeta_levels: "{{ data.mesh_files }}/L80_hfip.txt"
+          config_ztop: 38300.0
+          config_specified_zeta_levels: "{{ user.mpas_app }}/parm/mpas/L80_hfip.txt"
 create_lbcs:
   mpas_init:
     execution:
@@ -75,6 +77,7 @@ forecast:
         nhyd_model:
           config_dt: 25.0
           config_len_disp: 3000.0
+          config_number_of_sub_steps: 4
         physics:
           config_physics_suite: "convection_permitting"
           config_convection_scheme: "off"
@@ -109,7 +112,6 @@ post:
         exclusive: true
         walltime: 00:15:00
         nodes: 24
-        threads: 3
         tasks_per_node: 12
         partition: kjet
 workflow:

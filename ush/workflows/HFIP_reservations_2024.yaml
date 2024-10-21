@@ -47,7 +47,6 @@ post:
         walltime: 00:15:00
         partition: kjet
         nodes: 14
-        threads: 2
         tasks_per_node: 20
 workflow:
   tasks:
@@ -64,7 +63,7 @@ workflow:
       deadline:
         cyclestr:
           attrs:
-            offset: 04:44:00
+            offset: 05:14:00
           value: "@Y@m@d@H@M"
       native:
         cyclestr:
@@ -75,7 +74,7 @@ workflow:
       deadline:
         cyclestr:
           attrs:
-            offset: 04:34:00
+            offset: 05:14:00
           value: "@Y@m@d@H@M"
       native:
         cyclestr:
@@ -86,7 +85,7 @@ workflow:
       deadline:
         cyclestr:
           attrs:
-            offset: 14:00:00
+            offset: "14:30:00"
           value: "@Y@m@d@H@M"
       native:
         cyclestr:
@@ -102,7 +101,6 @@ workflow:
             attrs:
               task: mpas_lbcs
         taskdep: !remove
-                  
     metatask_post:
       task_mpassit_#fhr#:
         account: rtgsd-fv3-hfip
@@ -110,7 +108,7 @@ workflow:
         deadline:
           cyclestr:
             attrs:
-              offset: 17:24:00
+              offset: "17:54:00"
             value: "@Y@m@d@H@M"
         native:
           cyclestr:
@@ -131,7 +129,7 @@ workflow:
                   shell: /bin/bash
                 command:
                   cyclestr:
-                    value: 'fh=$((10##fhr# + 6 )) ; timestamp=$(date -d "@H:@M:@S @Y-@m-@d +$fh hour" "+%F_%T" ) ; find {{ user.experiment_dir }}/@Y@m@d@H/forecast/[dh]*.${timestamp}.nc 2>/dev/null |  test $(wc -l) == 2'
+                    value: 'fh=$((10##fhr# + 6 )) ; timestamp=$(date -d "@H:@M:@S @Y-@m-@d +$fh hour" "+%F_%H.%M.%S" ) ; find {{ user.experiment_dir }}/@Y@m@d@H/forecast/[dh]*.${timestamp}.nc 2>/dev/null |  test $(wc -l) == 2'
           or: !remove
                     
       task_upp_#fhr#:
@@ -140,8 +138,16 @@ workflow:
         deadline:
           cyclestr:
             attrs:
-              offset: 17:24:00
+              offset: "17:54:00"
             value: "@Y@m@d@H@M"
         native:
           cyclestr:
             value: --reservation=kayee_post_@H
+    task_graphics:
+      native:
+        cyclestr:
+          value: --reservation=kayee_post_@H
+    task_vortex_tracker:
+      account: gsd-fv3-dev
+
+

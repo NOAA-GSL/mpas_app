@@ -1,0 +1,20 @@
+workflow:
+  tasks:
+    task_vortex_tracker:
+      command: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; ; python &MPAS_APP;/scripts/tracker.py'
+      account: "{{ platform.account }}"
+      join:
+        cyclestr:
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+      walltime: "{{ tracker.gfdltracker.execution.batchargs.walltime }}"
+      nodes: "{{ tracker.gfdltracker.execution.batchargs.nodes }}:ppn={{ tracker.gfdltracker.execution.batchargs.tasks_per_node }}"
+      partition: "{{ tracker.gfdltracker.execution.batchargs.partition }}"
+      envars:
+        CONFIG_PATH: '&EXPERIMENT_CONFIG;'
+        CYCLE:
+          cyclestr:
+            value: "@Y-@m-@dT@H:@M:@S"
+      dependency:
+        metataskdep:
+          attrs:
+            metatask: post

@@ -4,9 +4,8 @@ the NOAA RDHPC machine Jet using Intel-2021.5.0
 ]])
 
 whatis([===[Loads libraries needed for building the MPAS Workflow on Jet ]===])
-prepend_path("MODULEPATH","/mnt/lfs4/HFIP/hfv3gfs/role.epic/spack-stack/spack-stack-1.5.0/envs/unified-env-rocky8/install/modulefiles/Core")
 
-load("stack-intel/2021.5.0")
+load("intel/2021.5.0")
 load("cmake/3.28.1")
 load("gnu")
 load("intel/2023.2.0")

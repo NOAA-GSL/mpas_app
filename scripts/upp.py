@@ -23,11 +23,11 @@ expt_config = uwconfig.get_yaml_config(CONFIG_PATH)
 expt_config.dereference(context={"cycle": cycle, "leadtime": LEAD, **expt_config})
 
 driver_config = expt_config["post"]["upp"]
-run_dir = Path(driver_config["run_dir"])
-print(f"Will run in {run_dir}")
+rundir = Path(driver_config["rundir"])
+print(f"Will run in {rundir}")
 
 # Run upp
 upp.execute(task="run", config=CONFIG_PATH, cycle=cycle, key_path=["post"], leadtime=LEAD)
-if not (run_dir / "runscript.upp.done").is_file():
+if not (rundir / "runscript.upp.done").is_file():
     print("Error occurred running UPP. Please see component error logs.")
     sys.exit(1)

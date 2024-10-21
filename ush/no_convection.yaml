@@ -1,6 +1,6 @@
 user:
   experiment_dir: /lfs5/BMC/gsd-fv3-dev/hfip_2024/mpas_no_conv
-  first_cycle: !!timestamp 2024-07-11T00:00:00
+  first_cycle: !!timestamp 2024-09-10T12:00:00
   last_cycle: !!timestamp 2025-06-28T12:00:00
 platform:
   account: gsd-fv3-dev # Reservation account is activated when using the reservation workflow file.
