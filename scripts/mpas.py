@@ -9,6 +9,9 @@ from pathlib import Path
 
 from uwtools.api import config as uwconfig
 from uwtools.api import mpas
+from uwtools.api.logging import use_uwtools_logger
+
+use_uwtools_logger()
 
 
 # Load the YAML config
@@ -22,7 +25,7 @@ expt_config = uwconfig.get_yaml_config(CONFIG_PATH)
 expt_config.dereference(context={"cycle": cycle, **expt_config})
 
 mpas_config = expt_config["forecast"]["mpas"]
-mpas_dir = Path(mpas_config["run_dir"])
+mpas_dir = Path(mpas_config["rundir"])
 
 # Run mpas
 mpas.execute(task="run", config=CONFIG_PATH, cycle=cycle, key_path=["forecast"])
