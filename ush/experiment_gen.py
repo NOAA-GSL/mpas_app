@@ -13,6 +13,7 @@ from typing import Optional
 
 import uwtools.api.config as uwconfig
 import uwtools.api.rocoto as uwrocoto
+from uwtools.api.logging import use_uwtools_logger
 from uwtools.config.formats.base import Config
 
 
@@ -117,7 +118,7 @@ def main(user_config_files: list[Path, str]) -> None:
 
 if __name__ == "__main__":
 
-    logging.basicConfig(level=logging.INFO)
+    use_uwtools_logger()
 
     parser = argparse.ArgumentParser(
         description="Configure an experiment with the following input:"
