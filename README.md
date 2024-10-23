@@ -31,21 +31,21 @@ This builds the MPAS-Model and installs Miniconda inside the local clone.  The `
 
 ### default_config.yaml
 
-`default_config.yaml` is the default yaml config file located in the `ush` directory of `mpas_app`.  
+`default_config.yaml` is the default YAML config file located in the `ush` directory of `mpas_app`.  
 
 The `grid_files` field references the decomposed domain files from the previous step.
 
 The fields under `prepare_ungrib` will retrieve whatever data you need for GFS initial conditions and lateral boundary conditions from AWS by default, and will ungrib them.
 
-Next, the `create_ics` part of the workflow creates the MPAS initial conditions using 4 cores and copies and links the files needed from when the model was built.  It also updates the `init_atmosphere` namelist.  Additional files like the runtime tables from the MPAS `physics_wrf/files` directory will go in this section of your user config yaml. The input/output file names are modified in the `streams:` field and the keys correspond to the template in the `parm/` directory.
+Next, the `create_ics` part of the workflow creates the MPAS initial conditions using 4 cores and copies and links the files needed from when the model was built.  It also updates the `init_atmosphere` namelist.  Additional files like the runtime tables from the MPAS `physics_wrf/files` directory will go in this section of your user config YAML. The input/output file names are modified in the `streams:` field and the keys correspond to the template in the `parm/` directory.
 
-A similar process is followed to create the lateral boundary conditions in the `create_lbcs` part of the workflow, the namelist and streams fields can be modified in the user config yaml.
+A similar process is followed to create the lateral boundary conditions in the `create_lbcs` part of the workflow, the namelist and streams fields can be modified in the user config YAML.
 
 Finally, the `forecast` step runs the MPAS `atmosphere` executable.  If you want to add additional physics, you would add them in the physics field of the atmosphere namelist user config (see below).
 
-### User Config yaml
+### User Config YAML
 
-Your user config (e.g. <your_name>.yaml) is how you update the default configuration with different settings.  Rather than going through and changing all of the different namelist and streams files that the MPAS Model produces, you only need to create and update the single user config file in the `ush` directory.  The file itself can be as simple as:
+Your user config (e.g. `<your_name>.yaml`) is how you update the default configuration with different settings.  Rather than going through and changing all of the different namelist and streams files that the MPAS Model produces, you only need to create and update the single user config file in the `ush` directory.  The file itself can be as simple as:
 ```
 user:
   experiment_dir: /path/to/exp/dir
@@ -63,13 +63,27 @@ forecast:
           config_microp_scheme = 'mp_thompson'
 ```
 
+To remove tasks from the workflow section, use the UW `!remove` tag on the entry to be removed. The same approach works on any setting in the default configs.
+
+```
+workflow:
+  tasks:
+    task_get_lbcs_data: !remove
+    task_mpas_lbcs: !remove
+```
+
+This block in your user YAML will remove the lateral boundary tasks from the workflow.
+
+
 ## Generate the Experiment
 
 Prior to generating and running the experiment, you must run the command `source load_wflow_modules.sh <platform>` from the `mpas_app` directory. 
 
 When you have a completed user config yaml, you can run the experiment_gen python script to generate the MPAS experiment:
 
-`python experiment_gen.py <user_config.yaml>`
+`python experiment_gen.py [optional.yaml] <user_config.yaml>`
+
+Any number of config YAMLs are accpeted on the command line where the later the configuration setting is in the list, the higher priority it will have. In other words, the same setting altered in `optional.yaml` will be overwritten by the value in `user_config.yaml`.
 
 This will create an experiment directory with your `experiment.yaml` file, which contains the user modifications to the default yaml.  The experiment directory also contains a Rocoto XML file, which is ready to use with the command `rocotorun -w rocoto.xml -d rocoto.db`. You will have to iteratively run this command until all steps have been completed. You can check the status of these steps by running `rocotostat -w rocoto.xml -d rocoto.db`.
 
