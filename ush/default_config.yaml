@@ -8,6 +8,7 @@ user:
   platform: big_computer
   workflow_blocks:
     - cold_start.yaml
+    - post.yaml
 data:
   mesh_files: /path/to/nonstandard/location
 platform:
