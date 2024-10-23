@@ -2,3 +2,6 @@ data:
   mesh_files: /lfs4/BMC/wrfruc/jderrico/mpas/mpas_dev/mpas_app/conus
 platform:
   scheduler: slurm
+post:
+  mpassit:
+    fix_dir: /misc/whome/role.wrfruc/HRRRv5/fix/MPASSIT/
