@@ -9,6 +9,9 @@ from pathlib import Path
 
 from uwtools.api import config as uwconfig
 from uwtools.api import ungrib
+from uwtools.api.logging import use_uwtools_logger
+
+use_uwtools_logger()
 
 
 # Load the YAML config
@@ -22,7 +25,7 @@ expt_config = uwconfig.get_yaml_config(CONFIG_PATH)
 expt_config.dereference(context={"cycle": cycle, **expt_config})
 
 ungrib_config = expt_config["prepare_grib"]["ungrib"]
-ungrib_dir = Path(ungrib_config["run_dir"])
+ungrib_dir = Path(ungrib_config["rundir"])
 
 # Run ungrib
 ungrib.execute(task="run", config=CONFIG_PATH, cycle=cycle,

@@ -1,4 +1,9 @@
 data:
-  mesh_files: /lfs4/BMC/wrfruc/jderrico/mpas/mpas_dev/mpas_app/conus
+  mesh_files: /lfs4/BMC/wrfruc/jderrico/mpas/mpas_dev/meshes/15km-conus/
 platform:
   scheduler: slurm
+forecast:
+  mpas:
+    execution:
+      batchargs:
+        partition: kjet,xjet
