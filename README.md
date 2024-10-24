@@ -83,7 +83,7 @@ When you have a completed user config yaml, you can run the experiment_gen pytho
 
 `python experiment_gen.py [optional.yaml] <user_config.yaml>`
 
-Any number of config YAMLs are accpeted on the command line where the later the configuration setting is in the list, the higher priority it will have. In other words, the same setting altered in `optional.yaml` will be overwritten by the value in `user_config.yaml`.
+Any number of config YAMLs are accepted on the command line where the later the configuration setting is in the list, the higher priority it will have. In other words, the same setting altered in `optional.yaml` will be overwritten by the value in `user_config.yaml`.
 
 This will create an experiment directory with your `experiment.yaml` file, which contains the user modifications to the default yaml.  The experiment directory also contains a Rocoto XML file, which is ready to use with the command `rocotorun -w rocoto.xml -d rocoto.db`. You will have to iteratively run this command until all steps have been completed. You can check the status of these steps by running `rocotostat -w rocoto.xml -d rocoto.db`.
 
