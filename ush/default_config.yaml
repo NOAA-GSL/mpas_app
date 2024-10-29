@@ -258,5 +258,6 @@ post:
         cores: 72
         native:
           - --exclusive
+        partition: 
     fix_dir: /path/to/fix/files
     rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/mpassit'

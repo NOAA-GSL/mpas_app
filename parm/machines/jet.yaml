@@ -5,6 +5,9 @@ platform:
 post:
   mpassit:
     fix_dir: /misc/whome/role.wrfruc/HRRRv5/fix/MPASSIT/
+    execution:
+      batchargs:
+        partition: kjet,xjet
 forecast:
   mpas:
     execution:

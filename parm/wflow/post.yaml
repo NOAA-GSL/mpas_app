@@ -12,7 +12,7 @@ workflow:
           -i ${CYCLE}
           -x {{ post.mpassit["fix_dir"] }}
           -n {{ user.mpas_app }}/parm/mpassit
-          -p {{ post.mpassit["fix_dir"] }}/MPASSIT
+          -p {{ user.mpas_app }}/parm/mpassit
           -e {{ user.mpas_app }}/exec'
         envars:
           CYCLE:
@@ -27,9 +27,9 @@ workflow:
         join:
           cyclestr:
             value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
-        partition: "{{ post.mpassit.execution.batchargs.partition }}"
-        walltime: "{{ post.mpassit['execution']['batchargs']['walltime']}}"
-        cores: !int "{{ post.mpassit['execution']['batchargs']['cores']}}"
+        partition: "{{ post.mpassit.execution.batchargs.partition }}" 
+        walltime: "{{ post.mpassit['execution']['batchargs']['walltime'] }}"
+        cores: !int "{{ post.mpassit['execution']['batchargs']['cores'] }}"
         dependency:
           or:
             taskdep:
