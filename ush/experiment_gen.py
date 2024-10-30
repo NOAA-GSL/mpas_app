@@ -104,6 +104,7 @@ def main(user_config_files: list[Path, str]) -> None:
         ("create_ics", "mpas_init"),
         ("create_lbcs", "mpas_init"),
         ("forecast", "mpas"),
+        ("post", "mpassit"),
         ):
         if sect in experiment_config:
             resources = experiment_config[sect][driver]["execution"]["batchargs"]

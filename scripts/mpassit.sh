@@ -109,21 +109,23 @@ for fn in "${parmfiles[@]}"; do
     fi
 done
 
-ln -sf $EXEC_DIR/../parm/mpassit/diaglist.noconvection diaglist
+ln -sf $EXEC_DIR/../parm/mpassit/diaglist diaglist
 
 ln -sf $INIT_DIR/${MESH_LABEL}.init.nc .
 ln -sf $EXEC_DIR/mpassit .
 
 hstr=$(printf "%02d" $((10#$FCST_HOUR)))
 nmlfile="namelist.fcst_$hstr"
+expt_dir=$WORK_DIR/../../
 
-block_file=$INIT_DIR/${MESH_LABEL}.graph.info.part.$SLURM_NPROCS
+block_file=$expt_dir/${MESH_LABEL}.graph.info.part.$SLURM_NPROCS
 
 cp $NML_DIR/namelist.mpassit $nmlfile
 sed -i "s|HISTFILE|$histfile|g" $nmlfile
 sed -i "s|DIAGFILE|$diagfile|g" $nmlfile
 sed -i "s|BLOCKFILE|$block_file|g" $nmlfile
 sed -i "s/FCSTTIME/$fcst_time_str/g" $nmlfile
+sed -i "s/MESH_LABEL/$MESH_LABEL/g" $nmlfile
 
 srun mpassit $nmlfile
 

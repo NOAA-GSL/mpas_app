@@ -255,7 +255,7 @@ post:
     execution:
       batchargs:
         walltime: 00:12:00
-        cores: 72
+        cores: 12
         native:
           - --exclusive
         partition: 
