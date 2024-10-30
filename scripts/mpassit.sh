@@ -111,13 +111,13 @@ done
 
 ln -sf $EXEC_DIR/../parm/mpassit/diaglist.noconvection diaglist
 
-ln -sf $INIT_DIR/hfip.init.nc .
+ln -sf $INIT_DIR/${MESH_LABEL}.init.nc .
 ln -sf $EXEC_DIR/mpassit .
 
 hstr=$(printf "%02d" $((10#$FCST_HOUR)))
 nmlfile="namelist.fcst_$hstr"
 
-block_file=$INIT_DIR/hfip.graph.info.part.$SLURM_NPROCS
+block_file=$INIT_DIR/${MESH_LABEL}.graph.info.part.$SLURM_NPROCS
 
 cp $NML_DIR/namelist.mpassit $nmlfile
 sed -i "s|HISTFILE|$histfile|g" $nmlfile

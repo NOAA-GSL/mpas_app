@@ -24,6 +24,7 @@ workflow:
           FCST_DIR:
             cyclestr:
               value: '{{ user.experiment_dir }}/@Y@m@d@H/forecast'
+          MESH_LABEL: '{{ user.mesh_label }}'
         join:
           cyclestr:
             value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
