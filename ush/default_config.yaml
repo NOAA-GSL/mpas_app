@@ -36,7 +36,7 @@ prepare_grib:
         - conda activate ungrib
       executable: ungrib
     gfs_files:
-      forecast_length: 12
+      forecast_length: !int "{{ forecast.mpas.length }}"
       interval_hours: 6
       offset: 0
       path: "{{ get_lbcs_data.rundir }}/gfs.t{cycle_hour:02d}z.pgrb2.0p25.f{forecast_hour:03d}"
@@ -49,7 +49,7 @@ create_ics:
   mpas_init: &mpas_init_config
     boundary_conditions:
       interval_hours: 6
-      length: 6
+      length: !int "{{ forecast.mpas.length }}"
       offset: 0
       path: "{{ prepare_grib.ungrib['rundir'] }}"
     execution:
@@ -252,6 +252,7 @@ forecast:
     scheduler: '{{ platform.scheduler }}'
 post:
   mpassit:
+    executable: "{{ user.mpas_app }}/exec/atmosphere_model/CCN_ACTIVATE.BIN"
     execution:
       batchargs:
         walltime: 00:12:00
