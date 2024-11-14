@@ -1,15 +1,15 @@
 data:
-  mesh_files: /lfs4/BMC/wrfruc/jderrico/mpas/mpas_dev/meshes/15km-conus/
+  mesh_files: /lfs5/BMC/gsd-fv3-dev/mpas_dev/meshes/15km-conus/
 platform:
   scheduler: slurm
-post:
-  mpassit:
-    fix_dir: /misc/whome/role.wrfruc/HRRRv5/fix/MPASSIT/
+forecast:
+  mpas:
     execution:
       batchargs:
         partition: kjet,xjet
-forecast:
-  mpas:
+post:
+  mpassit:
+    fix_dir: /misc/whome/role.wrfruc/HRRRv5/fix/MPASSIT/
     execution:
       batchargs:
         partition: kjet,xjet

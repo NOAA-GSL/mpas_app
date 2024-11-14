@@ -1,4 +1,4 @@
 data:
-  mesh_files: /scratch2/BMC/wrfruc/jderrico/mpas/mpas-dev/test-mesh
+  mesh_files: /scratch2/BMC/gsd-fv3-dev/mpas_dev/15km-conus/
 platform:
   scheduler: slurm
