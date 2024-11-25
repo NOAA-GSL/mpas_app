@@ -58,7 +58,7 @@ create_ics:
       envcmds:
         - ulimit -s unlimited || true
         - module use {{ user.mpas_app }}/modulefiles
-        - module load build_{{ user.platform }}_intel
+        - module load build_{{ user.platform }}_{{ user.compiler }}
       executable: "{{ user.mpas_app }}/exec/init_atmosphere_model"
       mpiargs:
         - "--ntasks={{ create_ics.mpas_init['execution']['batchargs']['cores']}}"

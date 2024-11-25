@@ -77,7 +77,15 @@ install_mpas_init () {
   pushd ${MPAS_APP_DIR}/src/MPAS-Model
   make clean CORE=atmosphere
   make clean CORE=init_atmosphere
-  make intel-mpi CORE=init_atmosphere ${MPAS_MAKE_OPTIONS}
+  if [[ ${COMPILER} = "gnu" ]]; then
+    build_target="gfortran"
+  elif [[ ${COMPILER} = "intel" ]]; then
+    build_target="intel-mpi"
+  else
+    echo "Unsupported compiler: ${COMPILER}"
+    exit 1
+  fi
+  make ${build_target} CORE=init_atmosphere ${MPAS_MAKE_OPTIONS}
   cp -v init_atmosphere_model ${EXEC_DIR}
   make clean CORE=init_atmosphere
   popd
@@ -87,7 +95,15 @@ install_mpas_model () {
 
   pushd ${MPAS_APP_DIR}/src/MPAS-Model
   make clean CORE=atmosphere
-  make intel-mpi CORE=atmosphere ${MPAS_MAKE_OPTIONS}
+  if [[ ${COMPILER} = "gnu" ]]; then
+    build_target="gfortran"
+  elif [[ ${COMPILER} = "intel" ]]; then
+    build_target="intel-mpi"
+  else
+    echo "Unsupported compiler: ${COMPILER}"
+    exit 1
+  fi
+  make ${build_target} CORE=atmosphere ${MPAS_MAKE_OPTIONS}
   cp -v atmosphere_model ${EXEC_DIR}
   ./build_tables
   popd
@@ -204,15 +220,25 @@ CONDA_BUILD_DIR="$(readlink -f "${CONDA_BUILD_DIR}")"
 EXEC_DIR=${EXEC_DIR:-${MPAS_APP_DIR}/exec}
 echo ${CONDA_BUILD_DIR} > ${MPAS_APP_DIR}/conda_loc
 
-if [ -z "${COMPILER}" ] ; then
-  case ${PLATFORM} in
-    jet|hera|hercules) COMPILER=intel ;;
-    *)
-    COMPILER=intel
-printf "WARNING: Setting default COMPILER=intel for new platform ${PLATFORM}\n" >&2;
-    ;;
-  esac
-fi
+
+case ${PLATFORM} in
+  jet|hera|hercules)
+    case ${COMPILER} in
+      gnu)
+          printf "Setting COMPILER=gnu for platform ${PLATFORM}\n" >&2;
+        ;;
+      intel)
+          COMPILER=intel
+          printf "Setting COMPILER=intel for platform ${PLATFORM}\n" >&2;
+        ;;
+      *) 
+	if [ -z "${COMPILER}" ] ; then
+          printf "WARNING: Setting default COMPILER=intel for new platform ${PLATFORM}\n" >&2;
+	fi
+	;;	
+     esac
+  ;;
+esac
 
 printf "COMPILER=${COMPILER}\n" >&2
 
@@ -307,6 +333,3 @@ if [ "${CLEAN}" = true ]; then
        make ${MAKE_SETTINGS} clean 2>&1 | tee log.make
     fi
 fi
-
-
-
