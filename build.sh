@@ -228,11 +228,11 @@ case ${PLATFORM} in
           printf "Setting COMPILER=gnu for platform ${PLATFORM}\n" >&2;
         ;;
       intel)
-          COMPILER=intel
           printf "Setting COMPILER=intel for platform ${PLATFORM}\n" >&2;
         ;;
       *) 
 	if [ -z "${COMPILER}" ] ; then
+          COMPILER=intel
           printf "WARNING: Setting default COMPILER=intel for new platform ${PLATFORM}\n" >&2;
 	fi
 	;;	
