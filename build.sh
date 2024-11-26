@@ -78,7 +78,7 @@ install_mpas_init () {
   make clean CORE=atmosphere
   make clean CORE=init_atmosphere
   if [[ ${COMPILER} = "gnu" ]]; then
-    build_target="gfortran"
+    build_target="gnu"
   elif [[ ${COMPILER} = "intel" ]]; then
     build_target="intel-mpi"
   else
@@ -220,25 +220,15 @@ CONDA_BUILD_DIR="$(readlink -f "${CONDA_BUILD_DIR}")"
 EXEC_DIR=${EXEC_DIR:-${MPAS_APP_DIR}/exec}
 echo ${CONDA_BUILD_DIR} > ${MPAS_APP_DIR}/conda_loc
 
-
-case ${PLATFORM} in
-  jet|hera|hercules)
-    case ${COMPILER} in
-      gnu)
-          printf "Setting COMPILER=gnu for platform ${PLATFORM}\n" >&2;
-        ;;
-      intel)
-          printf "Setting COMPILER=intel for platform ${PLATFORM}\n" >&2;
-        ;;
-      *) 
-	if [ -z "${COMPILER}" ] ; then
-          COMPILER=intel
-          printf "WARNING: Setting default COMPILER=intel for new platform ${PLATFORM}\n" >&2;
-	fi
-	;;	
-     esac
-  ;;
-esac
+if [ -z "${COMPILER}" ] ; then
+  case ${PLATFORM} in
+    jet|hera|hercules) COMPILER=intel ;;
+    *)
+    COMPILER=intel
+printf "WARNING: Setting default COMPILER=intel for new platform ${PLATFORM}\n" >&2;
+    ;;
+  esac
+fi
 
 printf "COMPILER=${COMPILER}\n" >&2
 
