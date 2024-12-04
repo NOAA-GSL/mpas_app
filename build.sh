@@ -77,8 +77,8 @@ install_mpas_init () {
   pushd ${MPAS_APP_DIR}/src/MPAS-Model
   make clean CORE=atmosphere
   make clean CORE=init_atmosphere
-  if [[ ${COMPILER} = "gnu" ]]; then
-    build_target="gnu"
+  if [[ ${COMPILER} = "gcc" ]]; then
+    build_target="gfortran"
   elif [[ ${COMPILER} = "intel" ]]; then
     build_target="intel-mpi"
   else
@@ -95,7 +95,7 @@ install_mpas_model () {
 
   pushd ${MPAS_APP_DIR}/src/MPAS-Model
   make clean CORE=atmosphere
-  if [[ ${COMPILER} = "gnu" ]]; then
+  if [[ ${COMPILER} = "gcc" ]]; then
     build_target="gfortran"
   elif [[ ${COMPILER} = "intel" ]]; then
     build_target="intel-mpi"
