@@ -38,11 +38,20 @@ forecast:
         cores: 256
         walltime: 02:30:00
     lateral_boundary_conditions: !remove
+    files_to_link:
+      MP_THOMPSON_QRacrQG_DATA.DBL: !remove
+      MP_THOMPSON_QRacrQS_DATA.DBL: !remove
+      MP_THOMPSON_freezeH2O_DATA.DBL: !remove
+      MP_THOMPSON_QIautQS_DATA.DBL: !remove
+      MP_TEMPO_QRacrQS_DATA.DBL: /mnt/lfs5/BMC/gsd-fv3-dev/mpas_dev/hrrr_fix/tables_tempo/MP_TEMPO_QRacrQS_DATA.DBL
+      MP_TEMPO_freezeH2O_DATA.DBL: /mnt/lfs5/BMC/gsd-fv3-dev/mpas_dev/hrrr_fix/tables_tempo/MP_TEMPO_freezeH2O_DATA.DBL
+      MP_TEMPO_QIautQS_DATA.DBL: /mnt/lfs5/BMC/gsd-fv3-dev/mpas_dev/hrrr_fix/tables_tempo/MP_TEMPO_QIautQS_DATA.DBL
+      MP_TEMPO_HAILAWARE_QRacrQG_DATA.DBL: /mnt/lfs5/BMC/gsd-fv3-dev/mpas_dev/hrrr_fix/tables_tempo/MP_TEMPO_HAILAWARE_QRacrQG_DATA.DBL
     namelist:
       update_values:
         nhyd_model:
-          config_dt: 75
-          config_number_sub_steps: 6
+          config_dt: 60
+          config_number_of_sub_steps: 6
           config_len_disp: 15000.0
         damping:
           config_mpas_cam_coef: 2.0
@@ -54,7 +63,7 @@ forecast:
           config_apply_lbcs: false
         physics:
           config_gvf_update: false
-          config_frac_seaeice: true
+          config_frac_seaice: true
           config_deepsoiltemp_update: false
           config_radtlw_interval: 00:15:00
           config_radtsw_interval: 00:15:00
@@ -62,7 +71,7 @@ forecast:
           config_physics_suite: 'hrrrv5'
           config_convection_scheme: 'cu_grell_freitas'
           config_tempo_aerosolaware: true
-          config_tempo_hailaware: true
+          config_tempo_hailaware: false
           config_gwdo_scheme: 'bl_ugwp_gwdo'
           config_lsm_scheme: 'sf_noah'
           num_soil_layers: 4
