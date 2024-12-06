@@ -53,13 +53,13 @@ def main(user_config_files: list[Path, str]) -> None:
         if not user_config:
             user_config = cfg
             continue
-        user_config.update_values(cfg)
+        user_config.update_from(cfg)
 
     machine = user_config["user"]["platform"]
     platform_config = uwconfig.get_yaml_config(mpas_app / "parm" / "machines" / f"{machine}.yaml")
 
     for supp_config in (platform_config, user_config):
-        experiment_config.update_values(supp_config)
+        experiment_config.update_from(supp_config)
 
     experiment_config["user"]["mpas_app"] = mpas_app.as_posix()
 
@@ -79,8 +79,8 @@ def main(user_config_files: list[Path, str]) -> None:
         if workflow_config is None:
             workflow_config = uwconfig.get_yaml_config(workflow_block)
         else:
-            workflow_config.update_values(uwconfig.get_yaml_config(workflow_block))
-    workflow_config.update_values(experiment_config)
+            workflow_config.update_from(uwconfig.get_yaml_config(workflow_block))
+    workflow_config.update_from(experiment_config)
 
     uwconfig.realize(
         input_config=workflow_config,
