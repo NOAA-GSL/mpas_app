@@ -1,0 +1,78 @@
+user:
+  mesh_label: x1.40962
+  platform: jet
+  workflow_blocks: 
+    - cold_start.yaml
+data:
+  mesh_files: /lfs5/BMC/gsd-fv3-dev/mpas_dev/meshes/120-km-global/
+create_ics:
+  mpas_init: &mpas_init_config
+    boundary_conditions:
+      length: 12
+    execution:
+      batchargs:
+        cores: 128
+        walltime: 02:30:00
+    namelist:
+      update_values:
+        dimensions:
+          config_nvertlevels: 119
+          config_nsoillevels: 4
+          config_nfglevels: 57
+          config_nfgsoillevels: 4
+          config_nsoilcat: 16
+          config_nvegopt: 2
+        data_sources:
+          config_geog_data_path: '/lfs5/BMC/wrfruc/Michael.Barlage/mpas/data/mpas_static/'
+          config_landuse_data: 'MODIFIED_IGBP_MODIS_NOAH_15s'
+          config_soilcat_data: 'BNU'
+          config_use_spechumd: true
+        vertical_grid:
+          config_ztop: 30000.0
+          config_blend_bdy_terrain: false
+forecast:
+  mpas:
+    domain: global
+    execution:
+      batchargs:
+        cores: 256
+        walltime: 02:30:00
+    lateral_boundary_conditions: !remove
+    namelist:
+      update_values:
+        nhyd_model:
+          config_dt: 75
+          config_number_sub_steps: 6
+          config_len_disp: 15000.0
+        damping:
+          config_mpas_cam_coef: 2.0
+          config_rayleigh_damp_u: true
+          config_zd: 16000.0
+          config_xnutr: 0.2
+          config_number_cam_damping_levels: 8
+        limited_area:
+          config_apply_lbcs: false
+        physics:
+          config_gvf_update: false
+          config_frac_seaeice: true
+          config_deepsoiltemp_update: false
+          config_radtlw_interval: 00:15:00
+          config_radtsw_interval: 00:15:00
+          config_bucket_update: 'none'
+          config_physics_suite: 'hrrrv5'
+          config_convection_scheme: 'cu_grell_freitas'
+          config_tempo_aerosolaware: true
+          config_tempo_hailaware: true
+          config_gwdo_scheme: 'bl_ugwp_gwdo'
+          config_lsm_scheme: 'sf_noah'
+          num_soil_layers: 4
+          config_pbl_scheme: 'bl_mynnedmf'
+workflow:
+  tasks:
+    task_mpas_lbcs: !remove
+    task_mpas:
+      partition: !remove
+      dependency:
+        taskdep: 
+          attrs:          
+            task: mpas_ics
