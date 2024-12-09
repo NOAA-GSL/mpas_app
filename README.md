@@ -23,6 +23,10 @@ Currently Hera, Jet, and Hercules are the only platforms supported.  To run the 
 
 `./build.sh -p=<platform>`
 
+Currently Hera and Jet are the only platforms with GNU Compiler support. To run the default build script with a specified compiler:
+
+`./build.sh -p=<platform> -c=<compiler>`
+
 To see the different build options (including MPAS build options):
 
 `./build.sh -h`
