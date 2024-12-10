@@ -1,52 +1,95 @@
 user:
-  mesh_label: global_15km
+  mesh_label: x1.40962
   platform: hera
   workflow_blocks: 
     - cold_start.yaml
 data:
-  mesh_files: /scratch2/BMC/gsd-fv3-dev/mpas_dev/meshes/
+  mesh_files: /scratch2/BMC/gsd-fv3-dev/mpas_dev/meshes/120-km-global/
 create_ics:
   mpas_init: &mpas_init_config
     boundary_conditions:
       length: 12
     execution:
       batchargs:
-        cores: 128
+        cores: 512
         walltime: 02:30:00
     files_to_copy:
-      global_15km.ugwp_oro_data.nc: /scratch2/BMC/gsd-fv3-dev/mpas_dev/meshes/global_15km.ugwp_oro_data.nc
+      x1.40962.ugwp_oro_data.nc: "/scratch2/BMC/wrfruc/jderrico/mpas/dev/ugwp_static/x1.40962.ugwp_oro_data.nc" 
+    files_to_link:
+      MP_THOMPSON_QRacrQG_DATA.DBL: !remove
+      MP_THOMPSON_QRacrQS_DATA.DBL: !remove
+      MP_THOMPSON_freezeH2O_DATA.DBL: !remove
+      MP_THOMPSON_QIautQS_DATA.DBL: !remove
+      MP_TEMPO_freezeH2O_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_freezeH2O_DATA.DBL"
+      MP_TEMPO_HAILAWARE_QRacrQG_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_HAILAWARE_QRacrQG_DATA.DBL"
+      MP_TEMPO_QIautQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_QIautQS_DATA.DBL"
+      MP_TEMPO_QRacrQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_QRacrQS_DATA.DBL"
     namelist:
       update_values:
         dimensions:
           config_nvertlevels: 119
-          config_nsoillevels: 4
-          config_nfglevels: 57
+          config_nsoillevels: 9
+          config_nfglevels: 58
           config_nfgsoillevels: 4
           config_nsoilcat: 16
           config_nvegopt: 2
         data_sources:
-          config_geog_data_path: '/scratch2/BMC/wrfruc/talcott/mpas/WPS_GEOG'
+          config_geog_data_path: '/scratch2/BMC/wrfruc/talcott/mpas/global/static/geog/'
+          config_met_prefix: 'FILE'
+          config_sfc_prefix: 'SST'
           config_landuse_data: 'MODIFIED_IGBP_MODIS_NOAH_15s'
-          config_soilcat_data: 'BNU'
+          config_topo_data: 'GMTED2010'
+          config_vegfrac_data: 'MODIS'
+          config_albedo_data: 'MODIS'
+          config_maxsnowalbedo_data: 'MODIS'
+          config_supersample_factor: 3
+          config_30s_supersample_factor: 1
           config_use_spechumd: true
+          config_soilcat_data: 'BNU'
+          config_fg_interval: !remove
+          config_lai_data: !remove
         vertical_grid:
-          config_ztop: 30000.0
+          config_ztop: 74000.0
+          config_nsmterrain: 1
+          config_smooth_surfaces: true
+          config_dzmin: 0.3
+          config_nsm: 30
+          config_tc_vertical_grid: true
           config_blend_bdy_terrain: false
+        preproc_stages:
+          config_static_interp: false
+          config_native_gwd_static: false
+          config_native_gwd_gsl_static: true
+          config_vertical_grid: true
+          config_met_interp: true
+          config_input_sst: false
+          config_frac_seaice: true
+          config_aerosol_climo: !remove
+          config_tempo_rap: !remove
 forecast:
   mpas:
     domain: global
     execution:
       batchargs:
-        cores: 256
+        cores: 1024
         walltime: 02:30:00
     files_to_copy:
-      global_15km.ugwp_oro_data.nc: "{{ create_ics.mpas_init['rundir'] }}/global_15km.ugwp_oro_data.nc"
+      x1.40962.ugwp_oro_data.nc: "/scratch2/BMC/wrfruc/jderrico/mpas/dev/ugwp_static/x1.40962.ugwp_oro_data.nc"
+    files_to_link:
+      MP_THOMPSON_QRacrQG_DATA.DBL: !remove
+      MP_THOMPSON_QRacrQS_DATA.DBL: !remove
+      MP_THOMPSON_freezeH2O_DATA.DBL: !remove
+      MP_THOMPSON_QIautQS_DATA.DBL: !remove
+      MP_TEMPO_freezeH2O_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_freezeH2O_DATA.DBL"
+      MP_TEMPO_HAILAWARE_QRacrQG_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_HAILAWARE_QRacrQG_DATA.DBL"
+      MP_TEMPO_QIautQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_QIautQS_DATA.DBL"
+      MP_TEMPO_QRacrQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_QRacrQS_DATA.DBL"
     lateral_boundary_conditions: !remove
     namelist:
       update_values:
         nhyd_model:
-          config_dt: 75
-          config_number_sub_steps: 6
+          config_dt: 90
+          config_number_of_sub_steps: 6
           config_len_disp: 15000.0
         damping:
           config_mpas_cam_coef: 2.0
@@ -56,12 +99,11 @@ forecast:
           config_number_cam_damping_levels: 8
         limited_area:
           config_apply_lbcs: false
-        io:
-          config_pio_num_iotasks: 60
-          config_pio_stride: 20
         physics:
+          config_sst_update: false
           config_gvf_update: false
-          config_frac_seaeice: true
+          config_sstdiurn_update: false
+          config_frac_seaice: true
           config_deepsoiltemp_update: false
           config_radtlw_interval: 00:15:00
           config_radtsw_interval: 00:15:00
@@ -71,8 +113,8 @@ forecast:
           config_tempo_aerosolaware: true
           config_tempo_hailaware: true
           config_gwdo_scheme: 'bl_ugwp_gwdo'
-          config_lsm_scheme: 'sf_noah'
-          num_soil_layers: 4
+          config_lsm_scheme: 'sf_ruc'
+          num_soil_layers: 9
           config_pbl_scheme: 'bl_mynnedmf'
 workflow:
   tasks:
