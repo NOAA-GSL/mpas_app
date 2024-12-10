@@ -13,7 +13,7 @@ OPTIONS
       (e.g. hera | jet | hercules)
   -c, --compiler=COMPILER
       compiler to use; default depends on platform
-      (e.g. intel | gcc)
+      (e.g. intel | gcc | gnu)
   --continue
       continue with existing build
   --clean
@@ -79,6 +79,8 @@ install_mpas_init () {
   make clean CORE=init_atmosphere
   if [[ ${COMPILER} = "gcc" ]]; then
     build_target="gfortran"
+  elif [[ ${COMPILER} = "gnu" ]]; then
+    build_target="gfortran"
   elif [[ ${COMPILER} = "intel" ]]; then
     build_target="intel-mpi"
   else
@@ -96,6 +98,8 @@ install_mpas_model () {
   pushd ${MPAS_APP_DIR}/src/MPAS-Model
   make clean CORE=atmosphere
   if [[ ${COMPILER} = "gcc" ]]; then
+    build_target="gfortran"
+  elif [[ ${COMPILER} = "gnu" ]]; then
     build_target="gfortran"
   elif [[ ${COMPILER} = "intel" ]]; then
     build_target="intel-mpi"
