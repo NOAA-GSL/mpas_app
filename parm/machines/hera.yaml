@@ -2,3 +2,8 @@ data:
   mesh_files: /scratch2/BMC/gsd-fv3-dev/mpas_dev/15km-conus/
 platform:
   scheduler: slurm
+forecast:
+  mpas:
+    execution:
+      batchargs:
+        partition: hera 

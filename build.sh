@@ -13,7 +13,7 @@ OPTIONS
       (e.g. hera | jet | hercules)
   -c, --compiler=COMPILER
       compiler to use; default depends on platform
-      (e.g. intel | gnu | cray | gccgfortran)
+      (e.g. intel | gcc | gnu)
   --continue
       continue with existing build
   --clean
@@ -77,7 +77,17 @@ install_mpas_init () {
   pushd ${MPAS_APP_DIR}/src/MPAS-Model
   make clean CORE=atmosphere
   make clean CORE=init_atmosphere
-  make intel-mpi CORE=init_atmosphere ${MPAS_MAKE_OPTIONS}
+  if [[ ${COMPILER} = "gcc" ]]; then
+    build_target="gfortran"
+  elif [[ ${COMPILER} = "gnu" ]]; then
+    build_target="gfortran"
+  elif [[ ${COMPILER} = "intel" ]]; then
+    build_target="intel-mpi"
+  else
+    echo "Unsupported compiler: ${COMPILER}"
+    exit 1
+  fi
+  make ${build_target} CORE=init_atmosphere ${MPAS_MAKE_OPTIONS}
   cp -v init_atmosphere_model ${EXEC_DIR}
   make clean CORE=init_atmosphere
   popd
@@ -87,7 +97,17 @@ install_mpas_model () {
 
   pushd ${MPAS_APP_DIR}/src/MPAS-Model
   make clean CORE=atmosphere
-  make intel-mpi CORE=atmosphere ${MPAS_MAKE_OPTIONS}
+  if [[ ${COMPILER} = "gcc" ]]; then
+    build_target="gfortran"
+  elif [[ ${COMPILER} = "gnu" ]]; then
+    build_target="gfortran"
+  elif [[ ${COMPILER} = "intel" ]]; then
+    build_target="intel-mpi"
+  else
+    echo "Unsupported compiler: ${COMPILER}"
+    exit 1
+  fi
+  make ${build_target} CORE=atmosphere ${MPAS_MAKE_OPTIONS}
   cp -v atmosphere_model ${EXEC_DIR}
   ./build_tables
   popd
@@ -307,6 +327,3 @@ if [ "${CLEAN}" = true ]; then
        make ${MAKE_SETTINGS} clean 2>&1 | tee log.make
     fi
 fi
-
-
-

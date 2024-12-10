@@ -19,9 +19,13 @@ git submodule update --init --recursive
 
 ## Building the Model
 
-Currently Hera, Jet, and Hercules are the only platforms supported.  To run the default build script:
+Currently Hera, Jet, and Hercules are the only platforms supported. To run the default build script:
 
 `./build.sh -p=<platform>`
+
+For platforms Hera and Jet, GNU Compiler support is available. To run with a specific compiler:
+
+`./build.sh -p=<platform> -c=<compiler>`
 
 To see the different build options (including MPAS build options):
 
