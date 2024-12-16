@@ -1,0 +1,144 @@
+user:
+  workflow_blocks:
+    - cold_start.yaml
+    - post.yaml
+    - graphics.yaml
+    - tracker.yaml
+  experiment_dir: /path/to/exp/dir
+  first_cycle: !!timestamp 2024-06-13T00:00:00
+  last_cycle:  !!timestamp 2024-06-13T00:00:00
+  platform: jet
+  mesh_label: hfip
+  hrrr_fix: /misc/whome/role.wrfruc/HRRRv5/fix
+data:
+  mesh_files: /lfs5/BMC/wrfruc/jderrico/meshes/hfip_2024
+prepare_grib:
+  ungrib:
+    gfs_files:
+      forecast_length: !int "{{ forecast.mpas.length }}"
+create_ics:
+  mpas_init:
+    execution:
+      batchargs:
+        cores: 768
+        walltime: 00:15:00
+    files_to_link:
+      CCN_ACTIVATE.BIN: "{{ user.hrrr_fix }}/CCN_ACTIVATE.BIN"
+      COMPATIBILITY: "{{ user.mpas_app }}/src/MPAS-Model/src/core_atmosphere/physics/physics_wrf/files/COMPATIBILITY"
+      MP_THOMPSON_QRacrQG_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_THOMPSON_QRacrQG_DATA.DBL"
+      MP_THOMPSON_QRacrQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_THOMPSON_QRacrQS_DATA.DBL"
+      MP_THOMPSON_freezeH2O_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_THOMPSON_freezeH2O_DATA.DBL"
+      MP_THOMPSON_QIautQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_THOMPSON_QIautQS_DATA.DBL"
+      thompson_aerosol_ifa.dat: "{{ user.mpas_app }}/src/MPAS-Model/src/core_atmosphere/physics/TEMPO/tables/thompson_aerosol_ifa.dat"
+      thompson_aerosol_lat.dat: "{{ user.mpas_app }}/src/MPAS-Model/src/core_atmosphere/physics/TEMPO/tables/thompson_aerosol_lat.dat"
+      thompson_aerosol_lon.dat: "{{ user.mpas_app }}/src/MPAS-Model/src/core_atmosphere/physics/TEMPO/tables/thompson_aerosol_lon.dat"
+      thompson_aerosol_prs.dat: "{{ user.mpas_app }}/src/MPAS-Model/src/core_atmosphere/physics/TEMPO/tables/thompson_aerosol_prs.dat"
+      thompson_aerosol_wfa.dat: "{{ user.mpas_app }}/src/MPAS-Model/src/core_atmosphere/physics/TEMPO/tables/thompson_aerosol_wfa.dat"
+      VERSION: "{{ user.mpas_app }}/src/MPAS-Model/src/core_atmosphere/physics/physics_wrf/files/VERSION"
+    namelist:
+      update_values:
+        dimensions:
+          config_nsoilcat: 16
+          config_nvertlevels: 79
+          config_nsoillevels: 9
+          config_nfglevels: 51
+          config_nfgsoillevels: 4
+        data_sources:
+          config_fg_interval: 21600
+        vertical_grid:
+          config_blend_bdy_terrain: true
+          config_ztop: 38300.0
+          config_specified_zeta_levels: "{{ user.mpas_app }}/parm/mpas/L80_hfip.txt"
+create_lbcs:
+  mpas_init:
+    execution:
+      batchargs:
+        cores: 768
+        walltime: 00:15:00
+    files_to_link:
+  mpas_init:
+    boundary_conditions:
+      length: !int "{{ forecast.mpas.length }}"
+forecast:
+  mpas:
+    execution:
+      batchargs:
+        cores: 3000
+        walltime: 07:59:00
+        partition: xjet,kjet
+    files_to_link:
+      CCN_ACTIVATE.BIN: "{{ user.hrrr_fix }}/CCN_ACTIVATE.BIN"
+      MP_THOMPSON_QRacrQG_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_THOMPSON_QRacrQG_DATA.DBL"
+      MP_THOMPSON_QRacrQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_THOMPSON_QRacrQS_DATA.DBL"
+      MP_THOMPSON_freezeH2O_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_THOMPSON_freezeH2O_DATA.DBL"
+      MP_THOMPSON_QIautQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_THOMPSON_QIautQS_DATA.DBL"
+    namelist:
+      update_values:
+        nhyd_model:
+          config_dt: 25.0
+          config_len_disp: 3000.0
+          config_number_of_sub_steps: 4
+        physics:
+          config_physics_suite: "convection_permitting"
+          config_convection_scheme: "off"
+          config_lsm_scheme: "sf_ruc"
+          num_soil_layers: 9
+          config_mynn_cloudpdf: 2
+          config_mynn_mixlength: 1
+          config_mynn_edmf: 1
+          config_mynn_edmf_mom: 1
+          config_mynn_edmf_tke: 0
+          config_mynn_edmf_output: 0
+          config_mynn_closure: 2.6
+          config_mynn_mixscalars: 1
+          config_mynn_mixclouds: 1
+          config_mynn_mixqt: 0
+          config_mynn_tkeadvect: false
+          config_mynn_tkebudget: 0
+          config_microp_re: true
+          config_radt_cld_scheme: "cld_fraction_mynn"
+    length: 120
+post:
+  mpassit:
+    execution:
+      batchargs:
+        walltime: 00:30:00
+        cores: 768
+        partition: kjet
+    fix_dir: "{{ user.hrrr_fix }}"
+  upp:
+    execution:
+      batchargs:
+        exclusive: true
+        walltime: 00:15:00
+        nodes: 24
+        tasks_per_node: 12
+        partition: kjet
+workflow:
+  attrs:
+    realtime: True
+    cyclethrottle: 3
+  log:
+    cyclestr:
+      value: "{{ user.experiment_dir }}/log/workflow_@Y@m@d.log"
+  entities:
+    LOGDIR: "{{user.experiment_dir}}/log/@Y@m@d@H"
+  tasks:
+    task_get_ics_data:
+      account: gsd-fv3-dev
+      dependency:
+        timedep:
+          cyclestr:
+            attrs:
+              offset: 03:40:00
+            value: "@Y@m@d@H@M@S"
+    task_get_lbcs_data:
+      account: gsd-fv3-dev
+      dependency:
+        timedep:
+          cyclestr:
+            attrs:
+              offset: 04:10:00
+            value: "@Y@m@d@H@M@S"
+    task_ungrib:
+      partition: xjet,kjet

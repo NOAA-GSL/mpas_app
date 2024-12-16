@@ -93,6 +93,17 @@ install_mpas_model () {
   popd
 }
 
+install_mpassit () {
+  MODULE_FILE="build.${PLATFORM}.${COMPILER}"
+  module purge
+  module use ${MPAS_APP_DIR}/src/MPASSIT/modulefiles
+  module load ${MODULE_FILE}
+  pushd ${MPAS_APP_DIR}/src/MPASSIT
+  ./build.sh ${PLATFORM}
+  cp -v bin/mpassit ${EXEC_DIR}
+  popd
+}
+
 # print settings
 settings () {
 cat << EOF_SETTINGS
@@ -300,6 +311,7 @@ if [ ${ATMOS_ONLY} = false ]; then
 fi
 
 install_mpas_model
+install_mpassit
 
 if [ "${CLEAN}" = true ]; then
     if [ -f $PWD/Makefile ]; then
