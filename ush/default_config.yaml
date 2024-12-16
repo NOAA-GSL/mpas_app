@@ -84,10 +84,6 @@ create_ics:
       RRTMG_SW_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/RRTMG_SW_DATA.DBL"
       SOILPARM.TBL: "{{ user.mpas_app }}/src/MPAS-Model/SOILPARM.TBL"
       VEGPARM.TBL: "{{ user.mpas_app }}/src/MPAS-Model/VEGPARM.TBL"
-      MP_THOMPSON_QRacrQG_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_THOMPSON_QRacrQG_DATA.DBL"
-      MP_THOMPSON_QRacrQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_THOMPSON_QRacrQS_DATA.DBL"
-      MP_THOMPSON_freezeH2O_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_THOMPSON_freezeH2O_DATA.DBL"
-      MP_THOMPSON_QIautQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_THOMPSON_QIautQS_DATA.DBL"
     namelist:
       base_file: "{{ user.mpas_app }}/src/MPAS-Model/namelist.init_atmosphere"
       update_values: &mpas_init_update_values
