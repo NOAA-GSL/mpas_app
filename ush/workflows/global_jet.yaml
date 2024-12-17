@@ -23,41 +23,17 @@ create_ics:
       MP_TEMPO_HAILAWARE_QRacrQG_DATA.DBL: /mnt/lfs5/BMC/gsd-fv3-dev/mpas_dev/hrrr_fix/tables_tempo/MP_TEMPO_HAILAWARE_QRacrQG_DATA.DBL
     namelist:
       update_values:
-        dimensions:
-          config_nvertlevels: 59
-          config_nsoillevels: 9
-          config_nfglevels: 38
-          config_nfgsoillevels: 4
-          config_nsoilcat: 16
-          config_nvegopt: 1
         data_sources:
           config_geog_data_path: '/lfs5/BMC/wrfruc/Michael.Barlage/mpas/data/mpas_static/'
-          config_fg_interval: 10800
           config_landuse_data: 'MODIFIED_IGBP_MODIS_NOAH_15s'
           config_soilcat_data: 'BNU'
-          config_topo_data: 'GMTED2010'
-          config_vegfrac_data: 'MODIS'
-          config_albedo_data: 'MODIS'
-          config_maxsnowalbedo_data: 'MODIS'
-          config_supersample_factor: 3
-          config_30s_supersample_factor: 1
           config_use_spechumd: true
         vertical_grid:
-          config_ztop: 25878.712
-          config_nsmterrain: 1
-          config_smooth_surfaces: true
-          config_dzmin: 0.3
-          config_nsm: 30
-          config_tc_vertical_grid: true
+          config_ztop: 30000.0
           config_blend_bdy_terrain: false
         preproc_stages:
-          config_static_interp: false
           config_native_gwd_static: false
-          config_native_gwd_gsl_static: false
-          config_vertical_grid: true
-          config_met_interp: true
-          config_input_sst: false
-          config_frac_seaice: true
+          config_static_interp: false
 create_lbcs: !remove
 forecast:
   mpas:
@@ -82,26 +58,24 @@ forecast:
         nhyd_model:
           config_dt: 60
           config_number_of_sub_steps: 6
-          config_len_disp: 3000.0
-        damping:
-          config_mpas_cam_coef: 2.0
-          config_rayleigh_damp_u: true
-          config_zd: 16000.0
-          config_xnutr: 0.2
-          config_number_cam_damping_levels: 8
+          config_len_disp: 15000.0
         limited_area:
           config_apply_lbcs: false
         physics:
-          config_sst_update: false
+          config_physics_suite: hrrrv5
+          config_gvf_update: false
           config_frac_seaice: true
           config_deepsoiltemp_update: false
           config_radtlw_interval: 00:15:00
           config_radtsw_interval: 00:15:00
-          config_bucket_update: 'none'
-          config_physics_suite: 'hrrrv5'
+          config_bucket_update: none
+          config_convection_scheme: cu_grell_freitas
           config_tempo_aerosolaware: true
-          config_tempo_hailaware: true
-          num_soil_layers: 9
+          config_tempo_hailaware: false
+          config_gwdo_scheme: bl_ugwp_gwdo
+          config_lsm_scheme: sf_noah
+          num_soil_layers: 4
+          config_pbl_scheme: bl_mynnedmf
 post:
   mpassit:
     executable: "{{ user.mpas_app }}/exec/atmosphere_model/CCN_ACTIVATE.BIN"
