@@ -24,7 +24,7 @@ cycle = datetime.fromisoformat(CYCLE)
 ungrib.execute(task="run", config=CONFIG_PATH, cycle=cycle,
         key_path=["prepare_grib"])
 
-# Extract driver config from experiment config
+# Transform experiment config and obtain ungrib run directory path
 expt_config = uwconfig.get_yaml_config(CONFIG_PATH)
 expt_config.dereference(context={"cycle": cycle, **expt_config})
 

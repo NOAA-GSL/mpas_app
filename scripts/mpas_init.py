@@ -25,7 +25,7 @@ cycle = datetime.fromisoformat(CYCLE)
 mpas_init.execute(task="run", config=CONFIG_PATH, cycle=cycle,
         key_path=[EXPT_SECT])
 
-# Extract driver config from experiment config
+# Transform experiment config and obtain MPAS init run directory path
 expt_config = uwconfig.get_yaml_config(CONFIG_PATH)
 expt_config.dereference(context={"cycle": cycle, **expt_config})
 
