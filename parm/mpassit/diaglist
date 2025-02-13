@@ -1,8 +1,4 @@
-rainc                    RAINC
 rainnc                   RAINNC
-snowncv                  SNOWNCV
-rainncv                  RAINNCV
-graupelncv               GRAUPELNCV
 prec_acc_c               PREC_ACC_C
 prec_acc_nc              PREC_ACC_NC
 snow_acc_nc              SNOW_ACC_NC
@@ -38,8 +34,5 @@ wind_speed_10m_mean            SPDUV10MEAN
 u10m_mean                      U10MEAN
 v10m_mean                      V10MEAN
 swdnb                    SWDOWN
-swddir                   SWDDIR
-swddni                   SWDDNI
-swddif                   SWDDIF
 swupt                    SWUPT
 olrtoa                   OLR
