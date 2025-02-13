@@ -199,7 +199,7 @@ forecast:
     execution:
       batchargs:
         cores: 800
-        walltime: 01:30:00
+        walltime: 02:30:00
       envcmds:
         - ulimit -s unlimited || true
         - module use {{ user.mpas_app }}/modulefiles
@@ -216,6 +216,8 @@ forecast:
       stream_list.atmosphere.surface: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.surface"
     files_to_link:
       <<: *mpas_init_files_to_link
+      CCN_ACTIVATE.BIN: /misc/whome/role.wrfruc/HRRRv5/fix.v8.2.2/CCN_ACTIVATE.BIN
+      CCN_ACTIVATE_DATA: /misc/whome/role.wrfruc/HRRRv5/fix.v8.2.2/CCN_ACTIVATE_DATA
     lateral_boundary_conditions:
       interval_hours: 6
       offset: 0
@@ -326,10 +328,9 @@ post:
     executable: "{{ user.mpas_app }}/exec/atmosphere_model/CCN_ACTIVATE.BIN"
     execution:
       batchargs:
-        walltime: 00:12:00
-        cores: 12
+        walltime: 00:30:00
+        cores: 768
         native:
-          - --exclusive
-        partition: 
+          - --exclusive 
     fix_dir: /path/to/fix/files
     rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/mpassit'
