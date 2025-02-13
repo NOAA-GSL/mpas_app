@@ -4,3 +4,6 @@
 [submodule "src/MPASSIT"]
 	path = src/MPASSIT
 	url = https://github.com/NOAA-GSL/MPASSIT.git
+[submodule "src/UPP"]
+	path = src/UPP
+	url = https://github.com/NOAA-EMC/UPP.git
