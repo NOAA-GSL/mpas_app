@@ -117,19 +117,6 @@ install_upp () {
   popd
 }
 
-install_upp () {
-  pushd ${MPAS_APP_DIR}
-  module purge
-  module use ./src/UPP/modulefiles
-  module load ${PLATFORM}
-  mkdir build_upp && pushd build_upp
-  cmake -DCMAKE_INSTALL_PREFIX=.. -DCMAKE_INSTALL_BINDIR="exec" -DBUILD_WITH_WRFIO=ON ../src/UPP/
-  make -j 8
-  make install
-  popd
-  popd
-}
-
 # print settings
 settings () {
 cat << EOF_SETTINGS
