@@ -34,9 +34,9 @@ prepare_grib:
         - source {{ user.mpas_app }}/load_wflow_modules.sh {{ user.platform }}
         - conda activate ungrib
       executable: ungrib
-    gfs_files:
-      forecast_length: 12
+    gribfiles:
       interval_hours: 6
+      max_leadtime: 12
       offset: 0
       path: "{{ get_lbcs_data.rundir }}/gfs.t{cycle_hour:02d}z.pgrb2.0p25.f{forecast_hour:03d}"
     rundir: '{{ user.experiment_dir }}/{{cycle.strftime("%Y%m%d%H")}}/ungrib'
