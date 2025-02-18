@@ -35,9 +35,9 @@ prepare_grib:
         - source {{ user.mpas_app }}/load_wflow_modules.sh {{ user.platform }}
         - conda activate ungrib
       executable: ungrib
-    gfs_files:
-      forecast_length: !int "{{ forecast.mpas.length }}"
+    gribfiles:
       interval_hours: 6
+      max_leadtime: !int "{{ forecast.mpas.length }}"
       offset: 0
       path: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/{{ get_lbcs_data.external_model }}/rap.t{cycle_hour:02d}z.wrfnatf{forecast_hour:02d}.grib2'
     rundir: '{{ user.experiment_dir }}/{{cycle.strftime("%Y%m%d%H")}}/ungrib'
@@ -216,8 +216,8 @@ forecast:
       stream_list.atmosphere.surface: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.surface"
     files_to_link:
       <<: *mpas_init_files_to_link
-      CCN_ACTIVATE.BIN: /misc/whome/role.wrfruc/HRRRv5/fix.v8.2.2/CCN_ACTIVATE.BIN
-      CCN_ACTIVATE_DATA: /misc/whome/role.wrfruc/HRRRv5/fix.v8.2.2/CCN_ACTIVATE_DATA
+      CCN_ACTIVATE.BIN: /misc/whome/role.wrfruc/HRRRv5/fix/CCN_ACTIVATE.BIN
+      CCN_ACTIVATE_DATA: /misc/whome/role.wrfruc/HRRRv5/fix/CCN_ACTIVATE_DATA
     lateral_boundary_conditions:
       interval_hours: 6
       offset: 0
