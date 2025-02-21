@@ -2,11 +2,11 @@ workflow:
   tasks:
     metatask_post:
       var:
-        fhr: "{% <<for h in range(0, forecast.mpas['length'] + 1, 6) %}{{ ' %03d' % h }}{% endfor %}"
+        fhr: "{% for h in range(0, forecast.mpas['length'] + 1, 6) %}{{ ' %03d' % h }}{% endfor %}"
       task_mpassit_#fhr#:
         account: "{{ platform.account }}"
         command: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; ; &MPAS_APP;/scripts/mpassit.sh
-          -m {{ user.mpas_app }}/src/MPASSIT/modulefiles/build.{{ user.platform }}.intel
+          -m {{ user.mpas_app }}/src/MPASSIT/modulefiles/build.{{ user.platform }}.intel 
           -w {{ user.experiment_dir }}/${CYCLE}/mpassit
           -f #fhr#
           -i ${CYCLE}
@@ -57,6 +57,7 @@ workflow:
           CYCLE:
             cyclestr:
               value: "@Y-@m-@dT@H:@M:@S"
+              #value: 'fh=$((10##fhr# + 6 )) ; timestamp=$(date -d "@H:@M:@S @Y-@m-@d +$fh hour" "+%F_%T" ) ; find {{ user.experiment_dir }}/@Y@m@d@H/forecast/[dh]*.${timestamp}.nc 2>/dev/null |  test $(wc -l) == 2'
           LEAD: '#fhr#'
         dependency:
           taskdep:

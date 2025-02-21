@@ -259,6 +259,7 @@ post:
     fix_dir: /path/to/fix/files
     rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/mpassit'
   upp:
+    control_file: "{{ user.mpas_app }}/parm/upp/postxconfig-NT-hfip.txt" 
     execution:
       batchargs:
         walltime: 00:12:00
@@ -275,9 +276,9 @@ post:
       postxconfig-NT.txt: "{{ user.mpas_app }}/parm/upp/postxconfig-NT-hfip.txt"
     files_to_link:
       postcntrl.xml: "{{ user.mpas_app }}/parm/upp/hfip_postcntrl.xml"
-      rap_micro_lookup.dat: "{{ user.mpas_app }}/src/UPP/parm/rap_micro_lookup.dat"
-      nam_micro_lookup.dat: "{{ user.mpas_app }}/src/UPP/parm/nam_micro_lookup.dat"
-      hires_micro_lookup.dat: "{{ user.mpas_app }}/src/UPP/parm/hires_micro_lookup.dat"
+      rap_micro_lookup.dat: "{{ user.mpas_app }}/parm/upp/rap_micro_lookup.dat"
+      nam_micro_lookup.dat: "{{ user.mpas_app }}/parm/upp/nam_micro_lookup.dat"
+      hires_micro_lookup.dat: "{{ user.mpas_app }}/parm/upp/hires_micro_lookup.dat"
       params_grib2_tbl_new: "{{ user.mpas_app }}/src/UPP/parm/params_grib2_tbl_new"
       post_avblflds.xml: "{{ user.mpas_app }}/src/UPP/parm/post_avblflds.xml"
       abi_gr.SpcCoeff.bin: "{{ platform.crtm_dir }}/abi_gr.SpcCoeff.bin"

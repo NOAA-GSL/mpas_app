@@ -14,3 +14,7 @@ post:
     execution:
       batchargs:
         partition: kjet,xjet
+  upp:
+    execution:
+      batchargs:
+        partition: kjet, xjet
