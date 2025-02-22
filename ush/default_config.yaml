@@ -259,7 +259,7 @@ post:
     fix_dir: /path/to/fix/files
     rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/mpassit'
   upp:
-    control_file: "{{ user.mpas_app }}/parm/upp/postxconfig-NT-mpas_global.txt" 
+    control_file: "{{ user.mpas_app }}/parm/upp/postxconfig-NT-rrfs_mpas.txt"
     execution:
       batchargs:
         walltime: 00:12:00
