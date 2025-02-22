@@ -6,7 +6,7 @@ workflow:
       task_mpassit_#fhr#:
         account: "{{ platform.account }}"
         command: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; ; &MPAS_APP;/scripts/mpassit.sh
-          -m {{ user.mpas_app }}/src/MPASSIT/modulefiles/build.{{ user.platform }}.intel 
+          -m {{ user.mpas_app }}/src/MPASSIT/modulefiles/build.{{ user.platform }}.intel
           -w {{ user.experiment_dir }}/${CYCLE}/mpassit
           -f #fhr#
           -i ${CYCLE}
