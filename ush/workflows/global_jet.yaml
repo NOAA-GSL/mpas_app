@@ -83,6 +83,12 @@ post:
       batchargs:
         walltime: 00:12:00
         cores: 256
+  upp:
+    execution:
+      batchargs:
+        partition: xjet
+        nodes: 48
+        tasks_per_node: 12
 workflow:
   tasks:
     task_mpas_lbcs: !remove
