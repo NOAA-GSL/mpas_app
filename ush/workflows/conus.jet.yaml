@@ -338,6 +338,8 @@ post:
     control_file: "{{ user.mpas_app }}/parm/upp/postxconfig-NT-rrfs_mpas.txt"
     files_to_link:
       post_cntrl.xml: "{{ user.mpas_app }}/parm/upp/rrfs_mpas_postcntrl.xml"
+    files_to_copy:
+      postxconfig-NT.txt: "{{ user.mpas_app }}/parm/upp/postxconfig-NT-rrfs_mpas.txt"
     execution:
       batchargs:
         nodes: 48
