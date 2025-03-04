@@ -342,3 +342,5 @@ post:
       batchargs:
         nodes: 48
         tasks_per_node: 12
+      mpiargs:
+      - "--ntasks $SLURM_CPUS_ON_NODE"
