@@ -274,9 +274,9 @@ post:
       executable: "{{ user.mpas_app }}/exec/upp.x"
       mpicmd: srun
     files_to_copy:
-      postxconfig-NT.txt: "{{ user.mpas_app }}/parm/upp/postxconfig-NT-hfip.txt"
+      postxconfig-NT.txt: "{{ user.mpas_app }}/parm/upp/postxconfig-NT-rrfs_mpas.txt"
     files_to_link:
-      postcntrl.xml: "{{ user.mpas_app }}/parm/upp/hfip_postcntrl.xml"
+      postcntrl.xml: "{{ user.mpas_app }}/parm/upp/rrfs_mpas_postcntrl.xml"
       rap_micro_lookup.dat: "{{ user.mpas_app }}/parm/upp/rap_micro_lookup.dat"
       nam_micro_lookup.dat: "{{ user.mpas_app }}/parm/upp/nam_micro_lookup.dat"
       hires_micro_lookup.dat: "{{ user.mpas_app }}/parm/upp/hires_micro_lookup.dat"
