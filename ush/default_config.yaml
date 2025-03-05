@@ -48,7 +48,7 @@ create_ics:
   mpas_init: &mpas_init_config
     boundary_conditions:
       interval_hours: 6
-      length: !int "{{ forecast.mpas.length }}" 
+      length: 6 
       offset: 0
       path: "{{ prepare_grib.ungrib['rundir'] }}"
     execution:
