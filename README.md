@@ -1,6 +1,10 @@
 # mpas_app
 App for building and running the [MPAS-Model](https://github.com/NOAA-GSL/MPAS-Model)
 
+## Issues
+
+For bugs, questions, and requests relating to the app, please use GitHub Issues of the NOAA-GSL/mpas_app repository. These will be monitored closely and we will get back to you as quickly as we can. 
+
 ## Getting Started
 
 Clone the app and navigate to its directory:
@@ -19,15 +23,15 @@ git submodule update --init --recursive
 
 ## Building the Model
 
-Currently Hera, Jet, and Hercules are the only platforms supported.  To run the default build script:
+Currently Jet is the only platform supported.  To run the default build script:
 
-`./build.sh -p=<platform>`
+`./build.sh -p=jet`
 
 To see the different build options (including MPAS build options):
 
 `./build.sh -h`
 
-This builds the MPAS-Model and installs Miniconda inside the local clone.  The `ungrib` conda environment installed in the process includes a pre-built package to run WPS Ungrib tool.
+This builds the MPAS-Model (version `8.2.2`) and installs Miniconda inside the local clone.  The `ungrib` conda environment installed in the process includes a pre-built package to run WPS Ungrib tool.
 
 ### default_config.yaml
 
@@ -77,11 +81,11 @@ This block in your user YAML will remove the lateral boundary tasks from the wor
 
 ## Generate the Experiment
 
-Prior to generating and running the experiment, you must run the command `source load_wflow_modules.sh <platform>` from the `mpas_app` directory. 
+Prior to generating and running the experiment, you must run the command `source load_wflow_modules.sh jet` from the `mpas_app/` directory. 
 
-When you have a completed user config yaml, you can run the experiment_gen python script to generate the MPAS experiment:
+When you have a completed user config yaml, you can run the experiment_gen python script from the `ush/` directory to generate the MPAS experiment:
 
-`python experiment_gen.py [optional.yaml] <user_config.yaml>`
+`python experiment_gen.py workflows/conus.jet.yaml [optional.yaml] <user_config.yaml>`
 
 Any number of config YAMLs are accepted on the command line where the later the configuration setting is in the list, the higher priority it will have. In other words, the same setting altered in `optional.yaml` will be overwritten by the value in `user_config.yaml`.
 
@@ -89,10 +93,6 @@ This will create an experiment directory with your `experiment.yaml` file, which
 
 Logs are populated for each of the different tasks in the workflow, and `workflow.log` contains the submission and completion statuses in text format.
 
-## convert_mpas
+## Post-Processing 
 
-To remap the model output to a lat/lon grid you can copy the `convert_mpas` executable to the directory with the model output:
-
-`cp /lfs4/BMC/wrfruc/jderrico/mpas/exec/convert_mpas`
-
-The `convert_mpas` executable requires an additional `include_fields` file and a `target_domain` file, more information can be found [here](https://github.com/mgduda/convert_mpas). 
+`MPASSIT` and `UPP` are used for post-processing, which are included as submodules in the application, just as the `MPAS-Model` is. Settings for post-processing components can be adjusted in your user configuration YAML, following the same nested structure described above. 
