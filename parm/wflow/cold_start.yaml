@@ -52,7 +52,7 @@ workflow:
         ICS_or_LBCS: LBCS
         TIME_OFFSET_HRS: 0
         LBC_INTVL_HRS: 6
-        FCST_LEN: 12
+        FCST_LEN: !int "{{ forecast.mpas.length }}" 
         MPAS_APP: '&MPAS_APP;'
     task_ungrib:
       command: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; ; python &MPAS_APP;/scripts/ungrib.py'

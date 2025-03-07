@@ -36,7 +36,7 @@ prepare_grib:
       executable: ungrib
     gribfiles:
       interval_hours: 6
-      max_leadtime: 12
+      max_leadtime: !int "{{ forecast.mpas.length }}"
       offset: 0
       path: "{{ get_lbcs_data.rundir }}/gfs.t{cycle_hour:02d}z.pgrb2.0p25.f{forecast_hour:03d}"
     rundir: '{{ user.experiment_dir }}/{{cycle.strftime("%Y%m%d%H")}}/ungrib'
@@ -48,7 +48,7 @@ create_ics:
   mpas_init: &mpas_init_config
     boundary_conditions:
       interval_hours: 6
-      length: 6
+      length: !int "{{ forecast.mpas.length }}" 
       offset: 0
       path: "{{ prepare_grib.ungrib['rundir'] }}"
     execution:
