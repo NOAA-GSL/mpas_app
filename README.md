@@ -14,7 +14,7 @@ git clone https://github.com/NOAA-GSL/mpas_app.git --recursive
 cd mpas_app
 ```
 
-If you forget the ``--recursive`` flag when cloning, or if you switch branches in `mpas_app`, you can run the following command from the `mpas_app` directory:
+When switching branches in the `mpas_app`, or if you forget to use the `--recursive` flag when cloning, you can run the following command from the `mpas_app` directory:
 
 ```
 git submodule update --init --recursive
