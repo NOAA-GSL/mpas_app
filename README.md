@@ -94,6 +94,6 @@ This will create an experiment directory with an `experiment.yaml` file, which c
 
 Logs are generated for each of the different tasks in the workflow, and `workflow.log` contains the submission and completion statuses in text format.
 
-### Post-Processing 
+## Post-Processing 
 
 `MPASSIT` and `UPP` are used for post-processing and are included as submodules in the application, just like the `MPAS-Model`. Settings for post-processing components can be adjusted in your user configuration YAML, following the same nested structure described above. 
