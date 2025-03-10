@@ -9,6 +9,7 @@ user:
   workflow_blocks:
     - cold_start.yaml
     - post.yaml
+    - graphics.yaml
 data:
   mesh_files: /path/to/nonstandard/location
 platform:

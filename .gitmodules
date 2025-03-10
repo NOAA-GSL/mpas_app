@@ -7,3 +7,6 @@
 [submodule "src/UPP"]
 	path = src/UPP
 	url = https://github.com/NOAA-EMC/UPP.git
+[submodule "ush/pygraf"]
+	path = ush/pygraf
+	url = https://github.com/NOAA-GSL/pygraf.git
