@@ -3,7 +3,7 @@ App for building and running the [MPAS-Model](https://github.com/NOAA-GSL/MPAS-M
 
 ## Issues
 
-For bugs, questions, and requests related to the app, please use either GitHub Discussions or GitHub Issues in the `NOAA-GSL`/`mpas_app` repository.  These will be monitored closely, and we will get back to you as quickly as possible. 
+For bugs, questions, and requests related to the app, please use GitHub Issues in the `NOAA-GSL`/`mpas_app` repository.  These will be monitored closely, and we will get back to you as quickly as possible. 
 
 ## CONUS 3km Quickstart Guide (Jet only)
 
