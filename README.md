@@ -3,7 +3,33 @@ App for building and running the [MPAS-Model](https://github.com/NOAA-GSL/MPAS-M
 
 ## Issues
 
-For bugs, questions, and requests related to the app, please use either GitHub Discussions or GitHub Issues in the `NOAA-GSL`/`mpas_app` repository.  These will be monitored closely, and we will get back to you as quickly as possible. 
+For bugs, questions, and requests related to the app, please use GitHub Issues in the `NOAA-GSL`/`mpas_app` repository.  These will be monitored closely, and we will get back to you as quickly as possible. 
+
+## CONUS 3km Quickstart Guide (Jet only)
+
+More detailed information on how the app runs and making changes to the model inputs can be found [further down](#getting-started).
+
+1. Clone the app's `conus_jet` branch and navigate to its directory:
+```
+git clone https://github.com/NOAA-GSL/mpas_app.git -b conus_jet --recursive
+cd mpas_app
+```
+2. Build the Model and components: `./build.sh -p=jet`
+3. Create your user yaml in the `ush` directory: the file itself can be as simple as:
+```
+user:
+  experiment_dir: /path/to/exp/dir
+  platform: jet
+platform:
+  account: wrfruc
+```
+4. Load the `mpas_app` conda environment: `source load_wflow_modules.sh jet` from the `mpas_app/` directory
+5. Generate the experiment: 
+```
+cd ush
+python experiment_gen workflows/conus.jet.yaml <your_user_yaml.yaml>
+```
+This generates an experiment directory at the path specified in your user YAML that contains a Rocoto XML file, which is ready to use.
 
 ## Getting Started
 
