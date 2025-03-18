@@ -3,7 +3,7 @@ user:
   experiment_dir: ""
   first_cycle: !!timestamp 2023-09-15T00:00:00
   last_cycle:  !!timestamp 2023-09-15T00:00:00
-  mesh_label: conus
+  mesh_label: hrrrv5
   mpas_app: ""
   platform: big_computer
   workflow_blocks:
@@ -11,7 +11,7 @@ user:
     - post.yaml
     - graphics.yaml
 data:
-  mesh_files: /path/to/nonstandard/location
+  mesh_files: /misc/whome/role.wrfruc/HRRRv5/fix
 platform:
   scheduler: slurm
 get_ics_data:
