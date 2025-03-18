@@ -1551,7 +1551,7 @@ soilt: # Soil Temperature
     title: Soil Temperature at 30cm
   40cm:
     <<: *soilt_levs
-    title: Soil Temperature at 30cm
+    title: Soil Temperature at 40cm
   60cm:
     <<: *soilt_levs
     title: Soil Temperature at 60cm
