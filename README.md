@@ -27,7 +27,7 @@ platform:
 5. Generate the experiment: 
 ```
 cd ush
-python experiment_gen workflows/conus.jet.yaml <your_user_yaml.yaml>
+python experiment_gen.py workflows/conus.jet.yaml <your_user_yaml.yaml>
 ```
 This generates an experiment directory at the path specified in your user YAML that contains a Rocoto XML file, which is ready to use.
 
