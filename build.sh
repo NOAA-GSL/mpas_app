@@ -13,7 +13,7 @@ OPTIONS
       (e.g. hera | jet | hercules)
   -c, --compiler=COMPILER
       compiler to use; default depends on platform
-      (e.g. intel | gnu | cray | gccgfortran)
+      (e.g. intel | gnu | gcc)
   --continue
       continue with existing build
   --clean
