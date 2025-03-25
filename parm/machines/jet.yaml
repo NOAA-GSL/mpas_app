@@ -18,7 +18,7 @@ post:
     execution:
       batchargs:
         partition: kjet,xjet
-  graphics:
-    execution:
-      batchargs:
-        partition: kjet 
+graphics:
+  execution:
+    batchargs:
+      partition: kjet 
