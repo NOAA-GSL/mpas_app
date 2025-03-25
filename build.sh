@@ -80,7 +80,7 @@ install_mpas_init () {
   if [[ ${COMPILER} = "gnu" ]]; then
     build_target="gfortran"
   fi
-  make ${build_target} CORE=init_atmosphere ${MPAS_MAKE_OPTIONS}
+  make ${build_target:-intel-mpi} CORE=init_atmosphere ${MPAS_MAKE_OPTIONS}
   cp -v init_atmosphere_model ${EXEC_DIR}
   make clean CORE=init_atmosphere
   popd
@@ -93,7 +93,7 @@ install_mpas_model () {
   if [[ ${COMPILER} = "gnu" ]]; then
     build_target="gfortran"
   fi
-  make ${build_target} CORE=atmosphere ${MPAS_MAKE_OPTIONS}
+  make ${build_target:-intel-mpi} CORE=atmosphere ${MPAS_MAKE_OPTIONS}
   cp -v atmosphere_model ${EXEC_DIR}
   ./build_tables_tempo
   popd
@@ -111,16 +111,21 @@ install_mpassit () {
 }
 
 install_upp () {
-  pushd ${MPAS_APP_DIR}
   module purge
-  module use ./src/UPP/modulefiles
-  module load ${PLATFORM}
-  mkdir build_upp && pushd build_upp
-  cmake -DCMAKE_INSTALL_PREFIX=.. -DCMAKE_INSTALL_BINDIR="exec" -DBUILD_WITH_WRFIO=ON ../src/UPP/
+  module use $MPAS_APP_DIR/src/UPP/modulefiles
+  module load $PLATFORM
+  d=$MPAS_APP_DIR/build_upp
+  mkdir -pv $d
+  cd $d
+  args=(
+    -DCMAKE_INSTALL_PREFIX=$MPAS_APP_DIR
+    -DCMAKE_INSTALL_BINDIR="exec"
+    -DBUILD_WITH_WRFIO=ON
+    $MPAS_APP_DIR/src/UPP/
+  )
+  cmake ${args[*]} 
   make -j 8
   make install
-  popd
-  popd
 }
 
 # print settings

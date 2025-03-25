@@ -57,6 +57,7 @@ workflow:
     task_ungrib:
       command: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; ; python &MPAS_APP;/scripts/ungrib.py'
       account: "{{ platform.account }}"
+      exclusive: "true"
       join:
         cyclestr:
           value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
