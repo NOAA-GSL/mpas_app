@@ -17,7 +17,7 @@ post:
     execution:
       batchargs:
         partition: hera
-  graphics:
-    execution:
-      batchargs:
-        partition: hera
+graphics:
+  execution:
+    batchargs:
+      partition: hera
