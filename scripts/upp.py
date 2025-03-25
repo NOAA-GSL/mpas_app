@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from uwtools.api import config as uwconfig
-from uwtools.api import upp
+from uwtools.api.upp import UPP
 
 
 # Load the YAML config
@@ -18,16 +18,13 @@ LEAD = timedelta(hours=int(os.environ["LEAD"]))
 
 cycle = datetime.fromisoformat(CYCLE)
 
-# Extract driver config from experiment config
-expt_config = uwconfig.get_yaml_config(CONFIG_PATH)
-expt_config.dereference(context={"cycle": cycle, "leadtime": LEAD, **expt_config})
+# Run UPP
+upp_driver = UPP(config=CONFIG_PATH, cycle=cycle, leadtime=LEAD, key_path=["post"])
+upp_driver.run()
 
-driver_config = expt_config["post"]["upp"]
-rundir = Path(driver_config["rundir"])
-print(f"Will run in {rundir}")
+# Obtain run directory path
+upp_dir = Path(upp_driver.config["rundir"])
 
-# Run upp
-upp.execute(task="run", config=CONFIG_PATH, cycle=cycle, key_path=["post"], leadtime=LEAD)
-if not (rundir / "runscript.upp.done").is_file():
+if not (upp_dir / "runscript.upp.done").is_file():
     print("Error occurred running UPP. Please see component error logs.")
     sys.exit(1)
