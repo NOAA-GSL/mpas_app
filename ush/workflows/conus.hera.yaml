@@ -105,7 +105,7 @@ create_ics:
           config_nsoilcat: 16
           config_nvegopt: 2
         data_sources:
-          config_geog_data_path: '/mnt/lfs5/BMC/wrfruc/HRRRv5/geog/'
+          config_geog_data_path: '/scratch2/BMC/wrfruc/talcott/mpas/global/static/geog/'
           config_sfc_prefix: 'SST'
           config_fg_interval: !int "{{ create_ics.mpas_init['boundary_conditions']['interval_hours'] * 3600 }}"
           config_met_prefix: FILE
