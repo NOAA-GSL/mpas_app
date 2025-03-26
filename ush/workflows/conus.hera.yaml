@@ -3,7 +3,7 @@ user:
   experiment_dir: ""
   first_cycle: !!timestamp 2023-09-15T00:00:00
   last_cycle:  !!timestamp 2023-09-15T00:00:00
-  mesh_label: conus
+  mesh_label: hrrrv5
   mpas_app: ""
   platform: hera
   workflow_blocks:
