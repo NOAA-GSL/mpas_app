@@ -33,7 +33,7 @@ This generates an experiment directory at the path specified in your user YAML t
 
 ## Getting Started
 
-Clone the app and navigate to its directory:
+The mpas_app default is currently set to run on a 3-km CONUS mesh using RAP initial conditions and lateral boundary conditions.  To get started, clone the app and navigate to its directory:
 
 ```
 git clone https://github.com/NOAA-GSL/mpas_app.git --recursive
