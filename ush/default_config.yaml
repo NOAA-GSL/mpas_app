@@ -248,6 +248,9 @@ forecast:
     account: '{{ platform.account }}'
     scheduler: '{{ platform.scheduler }}'
 post:
+  compbined_files:
+    name: COMBINED.GrbF{{ '%02d' % (leadtime.total_seconds() // 3600) }}
+    path: "{{  user.experiment_dir }}/"
   mpassit:
     executable: "{{ user.mpas_app }}/exec/atmosphere_model/CCN_ACTIVATE.BIN"
     execution:
@@ -346,3 +349,14 @@ post:
         nampgb:
           numx: 2
     rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/upp/{{ "%03d" % (leadtime.total_seconds() / 3600) }}'
+graphics:
+  execution:
+    batchargs:
+      tasks_per_node: 40
+      walltime: "{{ forecast.mpas.execution.batchargs.walltime }}"
+      nodes: 1
+  config:
+    FCST_LENGTH: !int '{{ forecast.mpas.length }}'
+    PYGRAF: "{{ user.mpas_app }}/ush/pygraf"
+    OUTPUT_ROOT: "{{ user.experiment_dir }}"
+    MODEL_DESCRIPTOR: "MPAS Experiment"

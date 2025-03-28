@@ -5,13 +5,13 @@ user:
   last_cycle:  !!timestamp 2023-09-15T00:00:00
   mesh_label: hrrrv5
   mpas_app: ""
-  platform: big_computer
+  platform: hera
   workflow_blocks:
     - cold_start.yaml
     - post.yaml
     - graphics.yaml
 data:
-  mesh_files: /misc/whome/role.wrfruc/HRRRv5/fix
+  mesh_files: /scratch2/BMC/gsd-fv3-dev/mpas_dev/fix
 platform:
   scheduler: slurm
 get_ics_data:
@@ -30,12 +30,15 @@ prepare_grib:
   ungrib:
     execution:
       batchargs:
-        cores: 1
         walltime: 00:15:00
+        cores: 4
       envcmds:
         - source {{ user.mpas_app }}/load_wflow_modules.sh {{ user.platform }}
         - conda activate ungrib
       executable: ungrib
+      mpiargs:
+        - "--ntasks={{ prepare_grib.ungrib['execution']['batchargs']['cores'] }}"
+      mpicmd: srun
     gribfiles:
       interval_hours: 6
       max_leadtime: !int "{{ forecast.mpas.length }}"
@@ -85,10 +88,10 @@ create_ics:
       RRTMG_SW_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/RRTMG_SW_DATA.DBL"
       SOILPARM.TBL: "{{ user.mpas_app }}/src/MPAS-Model/SOILPARM.TBL"
       VEGPARM.TBL: "{{ user.mpas_app }}/src/MPAS-Model/VEGPARM.TBL"
-      MP_TEMPO_QRacrQS_DATA.DBL: /mnt/lfs5/BMC/gsd-fv3-dev/mpas_dev/hrrr_fix/tables_tempo/MP_TEMPO_QRacrQS_DATA.DBL
-      MP_TEMPO_freezeH2O_DATA.DBL: /mnt/lfs5/BMC/gsd-fv3-dev/mpas_dev/hrrr_fix/tables_tempo/MP_TEMPO_freezeH2O_DATA.DBL
-      MP_TEMPO_QIautQS_DATA.DBL: /mnt/lfs5/BMC/gsd-fv3-dev/mpas_dev/hrrr_fix/tables_tempo/MP_TEMPO_QIautQS_DATA.DBL
-      MP_TEMPO_HAILAWARE_QRacrQG_DATA.DBL: /mnt/lfs5/BMC/gsd-fv3-dev/mpas_dev/hrrr_fix/tables_tempo/MP_TEMPO_HAILAWARE_QRacrQG_DATA.DBL
+      MP_TEMPO_QRacrQS_DATA.DBL: /scratch2/BMC/gsd-fv3-dev/mpas_dev/fix/MP_TEMPO_QRacrQS_DATA.DBL
+      MP_TEMPO_freezeH2O_DATA.DBL: /scratch2/BMC/gsd-fv3-dev/mpas_dev/fix/MP_TEMPO_freezeH2O_DATA.DBL
+      MP_TEMPO_QIautQS_DATA.DBL: /scratch2/BMC/gsd-fv3-dev/mpas_dev/fix/MP_TEMPO_QIautQS_DATA.DBL
+      MP_TEMPO_HAILAWARE_QRacrQG_DATA.DBL: /scratch2/BMC/gsd-fv3-dev/mpas_dev/fix/MP_TEMPO_HAILAWARE_QRacrQG_DATA.DBL
     namelist:
       base_file: "{{ user.mpas_app }}/src/MPAS-Model/namelist.init_atmosphere"
       update_values: &mpas_init_update_values
@@ -102,7 +105,7 @@ create_ics:
           config_nsoilcat: 16
           config_nvegopt: 2
         data_sources:
-          config_geog_data_path: '/mnt/lfs5/BMC/wrfruc/HRRRv5/geog/'
+          config_geog_data_path: '/scratch2/BMC/wrfruc/talcott/mpas/global/static/geog/'
           config_sfc_prefix: 'SST'
           config_fg_interval: !int "{{ create_ics.mpas_init['boundary_conditions']['interval_hours'] * 3600 }}"
           config_met_prefix: FILE
@@ -123,7 +126,7 @@ create_ics:
           config_nsm: 30
           config_tc_vertical_grid: true
           config_blend_bdy_terrain: true
-          config_specified_zeta_levels: '/misc/whome/role.wrfruc/HRRRv5/fix/L60.txt'
+          config_specified_zeta_levels: '/scratch2/BMC/gsd-fv3-dev/mpas_dev/fix/L60.txt'
         interpolation_control:
           config_extrap_airtemp: 'lapse-rate'
         preproc_stages:
@@ -217,8 +220,8 @@ forecast:
       stream_list.atmosphere.surface: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.surface"
     files_to_link:
       <<: *mpas_init_files_to_link
-      CCN_ACTIVATE.BIN: /misc/whome/role.wrfruc/HRRRv5/fix/CCN_ACTIVATE.BIN
-      CCN_ACTIVATE_DATA: /misc/whome/role.wrfruc/HRRRv5/fix/CCN_ACTIVATE_DATA
+      CCN_ACTIVATE.BIN: /scratch2/BMC/gsd-fv3-dev/mpas_dev/fix/CCN_ACTIVATE.BIN
+      CCN_ACTIVATE_DATA: /scratch2/BMC/gsd-fv3-dev/mpas_dev/fix/CCN_ACTIVATE.BIN
     lateral_boundary_conditions:
       interval_hours: 6
       offset: 0
