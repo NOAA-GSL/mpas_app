@@ -1,9 +1,23 @@
 data:
   mesh_files: /scratch2/BMC/gsd-fv3-dev/mpas_dev/15km-conus/
 platform:
+  crtm_dir: /contrib/spack-stack/spack-stack-1.6.0/envs/unified-env-rocky8/install/intel/2021.5.0/crtm-fix-2.4.0.1_emc-zvwtu3t/fix
   scheduler: slurm
 forecast:
   mpas:
     execution:
       batchargs:
         partition: hera
+post:
+  mpassit:
+    execution:
+      batchargs:
+        partition: hera
+  upp:
+    execution:
+      batchargs:
+        partition: hera
+graphics:
+  execution:
+    batchargs:
+      partition: hera

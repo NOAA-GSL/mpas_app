@@ -49,9 +49,9 @@ git submodule update --init --recursive
 
 ## Building the Model
 
-Currently, Jet is the only platform supported on the `conus_jet` branch.  To run the default build script:
+Currently, Jet and Hera are the only platforms supported on the `conus_jet` branch.  To run the default build script:
 
-`./build.sh -p=jet`
+`./build.sh -p=<platform>`
 
 To see the different build options (including MPAS build options):
 
@@ -108,11 +108,11 @@ This block in your user YAML will remove the lateral boundary tasks from the wor
 
 ## Generate the Experiment
 
-Prior to generating and running the experiment, you must run the command `source load_wflow_modules.sh jet` from the `mpas_app/` directory. 
+Prior to generating and running the experiment, you must run the command `source load_wflow_modules.sh <platform>` from the `mpas_app/` directory. 
 
 When you have a completed user config YAML, you can run the `experiment_gen.py` script from the `ush/` directory to generate the MPAS experiment for a CONUS run:
 
-`python experiment_gen.py workflows/conus.jet.yaml [optional.yaml] <user_config.yaml>`
+`python experiment_gen.py workflows/conus.<platform>.yaml [optional.yaml] <user_config.yaml>`
 
 Any number of config YAMLs are accepted on the command line where the later the configuration setting is in the list, the higher priority it will have. In other words, the same setting altered in `optional.yaml` will be overwritten by the value in `user_config.yaml`.
 
