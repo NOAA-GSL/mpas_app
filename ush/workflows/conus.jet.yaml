@@ -16,6 +16,5 @@ create_ics:
 forecast:
   mpas:
     files_to_link:
-      <<: *mpas_init_files_to_link
       CCN_ACTIVATE.BIN: /misc/whome/role.wrfruc/HRRRv5/fix/CCN_ACTIVATE.BIN
       CCN_ACTIVATE_DATA: /misc/whome/role.wrfruc/HRRRv5/fix/CCN_ACTIVATE_DATA
