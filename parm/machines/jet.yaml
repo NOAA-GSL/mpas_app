@@ -7,7 +7,7 @@ forecast:
   mpas:
     execution:
       batchargs:
-        partition: kjet,xjet
+        partition: kjet
 post:
   mpassit:
     fix_dir: /misc/whome/role.wrfruc/HRRRv5/fix/MPASSIT/
