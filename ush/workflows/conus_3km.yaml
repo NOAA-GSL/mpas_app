@@ -74,6 +74,10 @@ create_ics:
       CAM_AEROPT_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/CAM_AEROPT_DATA.DBL"
       GENPARM.TBL: "{{ user.mpas_app }}/src/MPAS-Model/GENPARM.TBL"
       LANDUSE.TBL: "{{ user.mpas_app }}/src/MPAS-Model/LANDUSE.TBL"
+      MP_TEMPO_QRacrQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_QRacrQS_DATA.DBL"
+      MP_TEMPO_freezeH2O_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_freezeH2O_DATA.DBL"
+      MP_TEMPO_QIautQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_QIautQS_DATA.DBL"
+      MP_TEMPO_HAILAWARE_QRacrQG_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_HAILAWARE_QRacrQG_DATA.DBL"
       OZONE_DAT.TBL: "{{ user.mpas_app }}/src/MPAS-Model/OZONE_DAT.TBL"
       OZONE_LAT.TBL: "{{ user.mpas_app }}/src/MPAS-Model/OZONE_LAT.TBL"
       OZONE_PLEV.TBL: "{{ user.mpas_app }}/src/MPAS-Model/OZONE_PLEV.TBL"
@@ -207,6 +211,8 @@ forecast:
       stream_list.atmosphere.diagnostics: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.diagnostics"
       stream_list.atmosphere.output: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.output"
       stream_list.atmosphere.surface: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.surface"
+    files_to_link:
+      <<: *mpas_init_files_to_link
     lateral_boundary_conditions:
       interval_hours: 6
       offset: 0

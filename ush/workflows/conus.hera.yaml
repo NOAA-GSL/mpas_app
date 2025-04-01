@@ -1,11 +1,6 @@
 data:
   mesh_files: /scratch2/BMC/gsd-fv3-dev/mpas_dev/fix
 create_ics:
-    files_to_link: &mpas_init_files_to_link
-      MP_TEMPO_QRacrQS_DATA.DBL: /scratch2/BMC/gsd-fv3-dev/mpas_dev/fix/MP_TEMPO_QRacrQS_DATA.DBL
-      MP_TEMPO_freezeH2O_DATA.DBL: /scratch2/BMC/gsd-fv3-dev/mpas_dev/fix/MP_TEMPO_freezeH2O_DATA.DBL
-      MP_TEMPO_QIautQS_DATA.DBL: /scratch2/BMC/gsd-fv3-dev/mpas_dev/fix/MP_TEMPO_QIautQS_DATA.DBL
-      MP_TEMPO_HAILAWARE_QRacrQG_DATA.DBL: /scratch2/BMC/gsd-fv3-dev/mpas_dev/fix/MP_TEMPO_HAILAWARE_QRacrQG_DATA.DBL
     namelist:
       update_values:
         data_sources:

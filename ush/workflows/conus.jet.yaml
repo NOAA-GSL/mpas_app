@@ -2,11 +2,6 @@ data:
   mesh_files: /misc/whome/role.wrfruc/HRRRv5/fix
 create_ics:
   mpas_init:
-    files_to_link:
-      MP_TEMPO_QRacrQS_DATA.DBL: /mnt/lfs5/BMC/gsd-fv3-dev/mpas_dev/hrrr_fix/tables_tempo/MP_TEMPO_QRacrQS_DATA.DBL
-      MP_TEMPO_freezeH2O_DATA.DBL: /mnt/lfs5/BMC/gsd-fv3-dev/mpas_dev/hrrr_fix/tables_tempo/MP_TEMPO_freezeH2O_DATA.DBL
-      MP_TEMPO_QIautQS_DATA.DBL: /mnt/lfs5/BMC/gsd-fv3-dev/mpas_dev/hrrr_fix/tables_tempo/MP_TEMPO_QIautQS_DATA.DBL
-      MP_TEMPO_HAILAWARE_QRacrQG_DATA.DBL: /mnt/lfs5/BMC/gsd-fv3-dev/mpas_dev/hrrr_fix/tables_tempo/MP_TEMPO_HAILAWARE_QRacrQG_DATA.DBL
     namelist:
       update_values:
         data_sources:
