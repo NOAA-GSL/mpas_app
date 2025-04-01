@@ -235,10 +235,7 @@ RAP:
     url: https://noaa-rap-pds.s3.amazonaws.com/rap.{yyyymmdd}
     file_names:
       grib2:
-        anl:
-          - rap.t{hh}z.wrfnatf{fcst_hr:02d}.grib2
-        fcst:
-          - rap.t{hh}z.wrfnatf{fcst_hr:02d}.grib2
+        <<: *rap_file_names
 
 HRRR:
   hpss:
