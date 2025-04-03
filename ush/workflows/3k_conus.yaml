@@ -3,33 +3,32 @@ user:
   experiment_dir: ""
   first_cycle: !!timestamp 2023-09-15T00:00:00
   last_cycle:  !!timestamp 2023-09-15T00:00:00
-  mesh_label: conus
+  mesh_label: hrrrv5
   mpas_app: ""
   platform: big_computer
   workflow_blocks:
     - cold_start.yaml
     - post.yaml
-data:
-  mesh_files: /path/to/nonstandard/location
+    - graphics.yaml
 platform:
   scheduler: slurm
 get_ics_data:
   execution:
     cores: 1
     walltime: 00:10:00
-  external_model: GFS
+  external_model: RAP 
   rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/{{ get_ics_data.external_model }}'
 get_lbcs_data:
   execution:
     cores: 1
     walltime: 00:20:00
-  external_model: GFS
+  external_model: RAP
   rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/{{ get_lbcs_data.external_model }}'
 prepare_grib:
   ungrib:
     execution:
       batchargs:
-        cores: 1
+        cores: 4
         walltime: 00:15:00
       envcmds:
         - source {{ user.mpas_app }}/load_wflow_modules.sh {{ user.platform }}
@@ -37,11 +36,11 @@ prepare_grib:
       executable: ungrib
     gribfiles:
       interval_hours: 6
-      max_leadtime: !int "{{ forecast.mpas.length }}" 
+      max_leadtime: !int "{{ forecast.mpas.length }}"
       offset: 0
-      path: "{{ get_lbcs_data.rundir }}/gfs.t{cycle_hour:02d}z.pgrb2.0p25.f{forecast_hour:03d}"
+      path: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/{{ get_lbcs_data.external_model }}/rap.t{cycle_hour:02d}z.wrfnatf{forecast_hour:02d}.grib2'
     rundir: '{{ user.experiment_dir }}/{{cycle.strftime("%Y%m%d%H")}}/ungrib'
-    vtable: "{{ user.mpas_app }}/parm/ungrib/Vtable.GFS"
+    vtable: "{{ user.mpas_app }}/parm/ungrib/Vtable.raphrrr"
   platform:
     account: '{{ platform.account }}'
     scheduler: '{{ platform.scheduler }}'
@@ -54,7 +53,7 @@ create_ics:
       path: "{{ prepare_grib.ungrib['rundir'] }}"
     execution:
       batchargs:
-        cores: 12
+        cores: 768
         walltime: 01:30:00
       envcmds:
         - ulimit -s unlimited || true
@@ -75,6 +74,10 @@ create_ics:
       CAM_AEROPT_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/CAM_AEROPT_DATA.DBL"
       GENPARM.TBL: "{{ user.mpas_app }}/src/MPAS-Model/GENPARM.TBL"
       LANDUSE.TBL: "{{ user.mpas_app }}/src/MPAS-Model/LANDUSE.TBL"
+      MP_TEMPO_QRacrQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_QRacrQS_DATA.DBL"
+      MP_TEMPO_freezeH2O_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_freezeH2O_DATA.DBL"
+      MP_TEMPO_QIautQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_QIautQS_DATA.DBL"
+      MP_TEMPO_HAILAWARE_QRacrQG_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_HAILAWARE_QRacrQG_DATA.DBL"
       OZONE_DAT.TBL: "{{ user.mpas_app }}/src/MPAS-Model/OZONE_DAT.TBL"
       OZONE_LAT.TBL: "{{ user.mpas_app }}/src/MPAS-Model/OZONE_LAT.TBL"
       OZONE_PLEV.TBL: "{{ user.mpas_app }}/src/MPAS-Model/OZONE_PLEV.TBL"
@@ -89,16 +92,47 @@ create_ics:
       update_values: &mpas_init_update_values
         nhyd_model:
           config_init_case: 7
+        dimensions:
+          config_nvertlevels: 59
+          config_nsoillevels: 9
+          config_nfglevels: 51
+          config_nfgsoillevels: 9
+          config_nsoilcat: 16
+          config_nvegopt: 2
         data_sources:
+          config_sfc_prefix: 'SST'
           config_fg_interval: !int "{{ create_ics.mpas_init['boundary_conditions']['interval_hours'] * 3600 }}"
           config_met_prefix: FILE
+          config_landuse_data: 'MODIFIED_IGBP_MODIS_NOAH_15s'
+          config_topo_data: 'GMTED2010'
+          config_vegfrac_data: 'MODIS'
+          config_albedo_data: 'MODIS'
+          config_maxsnowalbedo_data: 'MODIS'
+          config_supersample_factor: 3
+          config_30s_supersample_factor: 1
+          config_use_spechumd: true
+          config_soilcat_data: 'BNU'
         vertical_grid:
+          config_ztop: 25878.712
+          config_nsmterrain: 1
+          config_smooth_surfaces: true
+          config_dzmin: 0.3
+          config_nsm: 30
+          config_tc_vertical_grid: true
           config_blend_bdy_terrain: true
+        interpolation_control:
+          config_extrap_airtemp: 'lapse-rate'
         preproc_stages:
           config_native_gwd_static: false
           config_static_interp: false
+          config_vertical_grid: true
+          config_met_interp: true
+          config_input_sst: false
+          config_frac_seaice: true
+          config_tempo_rap: false
         decomposition:
           config_block_decomp_file_prefix: "{{ user.mesh_label }}.graph.info.part."
+        physics_lsm_noahmp: !remove
     rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/mpas_ics'
     streams:
       input:
@@ -161,8 +195,8 @@ forecast:
     domain: regional
     execution:
       batchargs:
-        cores: 32
-        walltime: 01:30:00
+        cores: 800
+        walltime: 02:30:00
       envcmds:
         - ulimit -s unlimited || true
         - module use {{ user.mpas_app }}/modulefiles
@@ -188,13 +222,50 @@ forecast:
       base_file: "{{ user.mpas_app }}/src/MPAS-Model/namelist.atmosphere"
       update_values:
         nhyd_model:
-          config_dt: 60.0
+          config_time_integration_order: 2
+          config_dt: 20.0
+          config_split_dynamics_transport: true
+          config_number_of_sub_steps: 4
+          config_dynamics_split_steps: 3
+          config_horiz_mixing: '2d_smagorinsky'
+          config_len_disp: 3000.0
+          config_visc4_2dsmag: 0.05
+          config_scalar_advection: true
+          config_monotonic: true
+          config_coef_3rd_order: 0.25
+          config_epssm: 0.1
+          config_smdiv: 0.1
+        damping:
+          config_mpas_cam_coef: 2.0
+          config_rayleigh_damp_u: true
+          config_zd: 16000.0
+          config_xnutr: 0.2
+          config_number_cam_damping_levels: 8
         limited_area:
           config_apply_lbcs: true
         decomposition:
           config_block_decomp_file_prefix: "{{ user.mesh_label }}.graph.info.part."
         physics:
-          config_physics_suite: convection_permitting
+          config_sst_update: false
+          config_gvf_update: false
+          config_sstdiurn_update: false
+          config_frac_seaice: true
+          config_deepsoiltemp_update: false
+          config_radtlw_interval: '00:15:00'
+          config_radtsw_interval: '00:15:00'
+          config_bucket_update: 'none'
+          config_physics_suite: 'hrrrv5'
+          config_tempo_aerosolaware: true
+          config_tempo_hailaware: true
+          config_gwdo_scheme: 'bl_ugwp_gwdo'
+          config_lsm_scheme: 'sf_ruc'
+          num_soil_layers: 9
+          config_pbl_scheme: 'bl_mynnedmf'
+        soundings:
+          config_sounding_interval: 'none'
+        assimilation:
+          config_jedi_da: false
+        physics_lsm_noahmp: !remove
     rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/forecast'
     streams:
       input:
@@ -248,115 +319,25 @@ forecast:
     account: '{{ platform.account }}'
     scheduler: '{{ platform.scheduler }}'
 post:
-  compbined_files:
-    name: COMBINED.GrbF{{ '%02d' % (leadtime.total_seconds() // 3600) }}
-    path: "{{  user.experiment_dir }}/"
   mpassit:
     executable: "{{ user.mpas_app }}/exec/atmosphere_model/CCN_ACTIVATE.BIN"
     execution:
       batchargs:
-        walltime: 00:12:00
-        cores: 12
-        tasks_per_node: 12
+        walltime: 00:30:00
+        cores: 768
         native:
           - --exclusive 
     fix_dir: /path/to/fix/files
     rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/mpassit'
   upp:
     control_file: "{{ user.mpas_app }}/parm/upp/postxconfig-NT-rrfs_mpas.txt"
-    execution:
-      batchargs:
-        walltime: 00:12:00
-        cores: 48
-        native:
-          - --exclusive
-      envcmds:
-        - ulimit -s unlimited || true
-        - module use {{ user.mpas_app }}/src/UPP/modulefiles
-        - module load {{ user.platform }}
-      executable: "{{ user.mpas_app }}/exec/upp.x"
-      mpicmd: srun
+    files_to_link:
+      post_cntrl.xml: "{{ user.mpas_app }}/parm/upp/rrfs_mpas_postcntrl.xml"
     files_to_copy:
       postxconfig-NT.txt: "{{ user.mpas_app }}/parm/upp/postxconfig-NT-rrfs_mpas.txt"
-    files_to_link:
-      postcntrl.xml: "{{ user.mpas_app }}/parm/upp/rrfs_mpas_postcntrl.xml"
-      rap_micro_lookup.dat: "{{ user.mpas_app }}/parm/upp/rap_micro_lookup.dat"
-      nam_micro_lookup.dat: "{{ user.mpas_app }}/parm/upp/nam_micro_lookup.dat"
-      hires_micro_lookup.dat: "{{ user.mpas_app }}/parm/upp/hires_micro_lookup.dat"
-      params_grib2_tbl_new: "{{ user.mpas_app }}/src/UPP/parm/params_grib2_tbl_new"
-      post_avblflds.xml: "{{ user.mpas_app }}/src/UPP/parm/post_avblflds.xml"
-      abi_gr.SpcCoeff.bin: "{{ platform.crtm_dir }}/abi_gr.SpcCoeff.bin"
-      abi_gr.TauCoeff.bin: "{{ platform.crtm_dir }}/abi_gr.TauCoeff.bin"
-      AerosolCoeff.bin: "{{ platform.crtm_dir }}/AerosolCoeff.bin"
-      ahi_himawari8.SpcCoeff.bin: "{{ platform.crtm_dir }}/ahi_himawari8.SpcCoeff.bin"
-      ahi_himawari8.TauCoeff.bin: "{{ platform.crtm_dir }}/ahi_himawari8.TauCoeff.bin"
-      amsre_aqua.SpcCoeff.bin: "{{ platform.crtm_dir }}/amsre_aqua.SpcCoeff.bin"
-      amsre_aqua.TauCoeff.bin: "{{ platform.crtm_dir }}/amsre_aqua.TauCoeff.bin"
-      CloudCoeff.bin: "{{ platform.crtm_dir }}/CloudCoeff.bin"
-      FASTEM4.MWwater.EmisCoeff.bin: "{{ platform.crtm_dir }}/FASTEM4.MWwater.EmisCoeff.bin"
-      FASTEM5.MWwater.EmisCoeff.bin: "{{ platform.crtm_dir }}/FASTEM5.MWwater.EmisCoeff.bin"
-      FASTEM6.MWwater.EmisCoeff.bin: "{{ platform.crtm_dir }}/FASTEM6.MWwater.EmisCoeff.bin"
-      imgr_g11.SpcCoeff.bin: "{{ platform.crtm_dir }}/imgr_g11.SpcCoeff.bin"
-      imgr_g11.TauCoeff.bin: "{{ platform.crtm_dir }}/imgr_g11.TauCoeff.bin"
-      imgr_g12.SpcCoeff.bin: "{{ platform.crtm_dir }}/imgr_g12.SpcCoeff.bin"
-      imgr_g12.TauCoeff.bin: "{{ platform.crtm_dir }}/imgr_g12.TauCoeff.bin"
-      imgr_g13.SpcCoeff.bin: "{{ platform.crtm_dir }}/imgr_g13.SpcCoeff.bin"
-      imgr_g13.TauCoeff.bin: "{{ platform.crtm_dir }}/imgr_g13.TauCoeff.bin"
-      imgr_g15.SpcCoeff.bin: "{{ platform.crtm_dir }}/imgr_g15.SpcCoeff.bin"
-      imgr_g15.TauCoeff.bin: "{{ platform.crtm_dir }}/imgr_g15.TauCoeff.bin"
-      imgr_insat3d.SpcCoeff.bin: "{{ platform.crtm_dir }}/imgr_insat3d.SpcCoeff.bin"
-      imgr_insat3d.TauCoeff.bin: "{{ platform.crtm_dir }}/imgr_insat3d.TauCoeff.bin"
-      imgr_mt1r.SpcCoeff.bin: "{{ platform.crtm_dir }}/imgr_mt1r.SpcCoeff.bin"
-      imgr_mt1r.TauCoeff.bin: "{{ platform.crtm_dir }}/imgr_mt1r.TauCoeff.bin"
-      imgr_mt2.SpcCoeff.bin: "{{ platform.crtm_dir }}/imgr_mt2.SpcCoeff.bin"
-      imgr_mt2.TauCoeff.bin: "{{ platform.crtm_dir }}/imgr_mt2.TauCoeff.bin"
-      Nalli.IRwater.EmisCoeff.bin: "{{ platform.crtm_dir }}/Nalli.IRwater.EmisCoeff.bin"
-      NPOESS.IRice.EmisCoeff.bin: "{{ platform.crtm_dir }}/NPOESS.IRice.EmisCoeff.bin"
-      NPOESS.IRland.EmisCoeff.bin: "{{ platform.crtm_dir }}/NPOESS.IRland.EmisCoeff.bin"
-      NPOESS.IRsnow.EmisCoeff.bin: "{{ platform.crtm_dir }}/NPOESS.IRsnow.EmisCoeff.bin"
-      seviri_m10.SpcCoeff.bin: "{{ platform.crtm_dir }}/seviri_m10.SpcCoeff.bin"
-      seviri_m10.TauCoeff.bin: "{{ platform.crtm_dir }}/seviri_m10.TauCoeff.bin"
-      ssmi_f13.SpcCoeff.bin: "{{ platform.crtm_dir }}/ssmi_f13.SpcCoeff.bin"
-      ssmi_f13.TauCoeff.bin: "{{ platform.crtm_dir }}/ssmi_f13.TauCoeff.bin"
-      ssmi_f14.SpcCoeff.bin: "{{ platform.crtm_dir }}/ssmi_f14.SpcCoeff.bin"
-      ssmi_f14.TauCoeff.bin: "{{ platform.crtm_dir }}/ssmi_f14.TauCoeff.bin"
-      ssmi_f15.SpcCoeff.bin: "{{ platform.crtm_dir }}/ssmi_f15.SpcCoeff.bin"
-      ssmi_f15.TauCoeff.bin: "{{ platform.crtm_dir }}/ssmi_f15.TauCoeff.bin"
-      ssmis_f16.SpcCoeff.bin: "{{ platform.crtm_dir }}/ssmis_f16.SpcCoeff.bin"
-      ssmis_f16.TauCoeff.bin: "{{ platform.crtm_dir }}/ssmis_f16.TauCoeff.bin"
-      ssmis_f17.SpcCoeff.bin: "{{ platform.crtm_dir }}/ssmis_f17.SpcCoeff.bin"
-      ssmis_f17.TauCoeff.bin: "{{ platform.crtm_dir }}/ssmis_f17.TauCoeff.bin"
-      ssmis_f18.SpcCoeff.bin: "{{ platform.crtm_dir }}/ssmis_f18.SpcCoeff.bin"
-      ssmis_f18.TauCoeff.bin: "{{ platform.crtm_dir }}/ssmis_f18.TauCoeff.bin"
-      ssmis_f19.SpcCoeff.bin: "{{ platform.crtm_dir }}/ssmis_f19.SpcCoeff.bin"
-      ssmis_f19.TauCoeff.bin: "{{ platform.crtm_dir }}/ssmis_f19.TauCoeff.bin"
-      ssmis_f20.SpcCoeff.bin: "{{ platform.crtm_dir }}/ssmis_f20.SpcCoeff.bin"
-      ssmis_f20.TauCoeff.bin: "{{ platform.crtm_dir }}/ssmis_f20.TauCoeff.bin"
-      tmi_trmm.SpcCoeff.bin: "{{ platform.crtm_dir }}/tmi_trmm.SpcCoeff.bin"
-      tmi_trmm.TauCoeff.bin: "{{ platform.crtm_dir }}/tmi_trmm.TauCoeff.bin"
-      v.seviri_m10.SpcCoeff.bin: "{{ platform.crtm_dir }}/v.seviri_m10.SpcCoeff.bin"
-    namelist:
-      update_values:
-        model_inputs:
-          filename: "{{ post.mpassit.rundir }}/{{ '%03d' % (leadtime.total_seconds() / 3600) }}/MPAS-A_out.{{ (cycle + leadtime).strftime('%Y-%m-%d_%H.%M.%S') }}.nc"
-          ioform: netcdf
-          grib: grib2
-          datestr: "{{ (cycle + leadtime).strftime('%Y-%m-%d_%H:%M:%S') }}"
-          modelname: RAPR
-          submodelname: MPAS
-          filenameflux: "{{ filename }}"
-          filenameflat: "{{ post.upp.files_to_copy['postxconfig-NT.txt'] }}"
-        nampgb:
-          numx: 2
-    rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/upp/{{ "%03d" % (leadtime.total_seconds() / 3600) }}'
-graphics:
-  execution:
-    batchargs:
-      tasks_per_node: 40
-      walltime: "{{ forecast.mpas.execution.batchargs.walltime }}"
-      nodes: 1
-  config:
-    FCST_LENGTH: !int '{{ forecast.mpas.length }}'
-    PYGRAF: "{{ user.mpas_app }}/ush/pygraf"
-    OUTPUT_ROOT: "{{ user.experiment_dir }}"
-    MODEL_DESCRIPTOR: "MPAS Experiment"
+    execution:
+      batchargs:
+        nodes: 48
+        tasks_per_node: 12
+      mpiargs:
+      - "--ntasks $SLURM_CPUS_ON_NODE"  

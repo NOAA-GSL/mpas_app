@@ -1,0 +1,14 @@
+data:
+  mesh_files: /scratch2/BMC/gsd-fv3-dev/mpas_dev/fix
+create_ics:
+    namelist:
+      update_values:
+        data_sources:
+          config_geog_data_path: '/scratch2/BMC/wrfruc/talcott/mpas/global/static/geog/'
+        vertical_grid:
+          config_specified_zeta_levels: '/scratch2/BMC/gsd-fv3-dev/mpas_dev/fix/L60.txt'
+forecast:
+  mpas:
+    files_to_link:
+      CCN_ACTIVATE.BIN: /scratch2/BMC/gsd-fv3-dev/mpas_dev/fix/CCN_ACTIVATE.BIN
+      CCN_ACTIVATE_DATA: /scratch2/BMC/gsd-fv3-dev/mpas_dev/fix/CCN_ACTIVATE.BIN

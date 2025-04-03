@@ -16,6 +16,11 @@ load("szip")
 load("hdf5parallel/1.10.5")
 load("netcdf-hdf5parallel/4.7.0")
 
+prepend_path("MODULEPATH", " /mnt/lfs4/HFIP/hfv3gfs/nwprod/NCEPLIBS/modulefiles")
+
 setenv("CMAKE_C_COMPILER","mpiicc")
 setenv("CMAKE_CXX_COMPILER", "mpiicc")
 setenv("CMAKE_Fortran_COMPILER", "mpiifort")
+
+append_path("LIBRARY_PATH", "/lfs4/NAGAPE/wof/miniconda3_RL/lib")
+append_path("LD_LIBRARY_PATH", "/lfs4/NAGAPE/wof/miniconda3_RL/lib")

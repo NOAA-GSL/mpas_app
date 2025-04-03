@@ -1,0 +1,23 @@
+&config
+    grid_file_input_grid = "MESH_LABEL.init.nc"
+    hist_file_input_grid = "HISTFILE"
+    diag_file_input_grid = "DIAGFILE"
+    block_decomp_file    = "BLOCKFILE"
+    is_regional          = .true.
+    output_file          = "MPAS-A_out.FCSTTIME.nc"
+    interp_diag          = .true.
+    interp_hist          = .true.
+    wrf_mod_vars         = .true.
+    esmf_log             = .false.
+    target_grid_type = "lambert"
+    nx = 1800
+    ny = 1060
+    dx =3000.0
+    dy =3000.0
+    ref_lat = 38.5
+    ref_lon = -97.5
+    truelat1 = 38.5
+    truelat2 = 38.5
+    stand_lon = -97.5
+/
+
