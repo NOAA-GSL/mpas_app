@@ -27,7 +27,7 @@ platform:
 5. Generate the experiment: 
 ```
 cd ush
-python experiment_gen workflows/conus.<platform>.yaml <your_user_yaml.yaml>
+python experiment_gen workflows/3km_conus.yaml workflows/conus.<platform>.yaml <your_user_yaml.yaml>
 ```
 This generates an experiment directory at the path specified in your user YAML that contains a Rocoto XML file, which is ready to use.
 
@@ -112,7 +112,7 @@ Prior to generating and running the experiment, you must run the command `source
 
 When you have a completed user config YAML, you can run the `experiment_gen.py` script from the `ush/` directory to generate the MPAS experiment for a CONUS run:
 
-`python experiment_gen.py workflows/conus.<platform>.yaml [optional.yaml] <user_config.yaml>`
+`python experiment_gen.py workflows/3km_conus.yaml workflows/conus.<platform>.yaml [optional.yaml] <user_config.yaml>`
 
 Any number of config YAMLs are accepted on the command line where the later the configuration setting is in the list, the higher priority it will have. In other words, the same setting altered in `optional.yaml` will be overwritten by the value in `user_config.yaml`.
 
