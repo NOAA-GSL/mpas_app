@@ -14,12 +14,6 @@ post:
     execution:
       batchargs:
         partition: kjet,xjet
-post:
-  mpassit:
-    fix_dir: /misc/whome/role.wrfruc/HRRRv5/fix/MPASSIT/
-    execution:
-      batchargs:
-        partition: kjet,xjet
   upp:
     execution:
       batchargs:
