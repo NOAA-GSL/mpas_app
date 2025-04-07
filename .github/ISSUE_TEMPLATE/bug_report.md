@@ -24,20 +24,23 @@ If an issue already exists, please use that issue to add any additional informat
 <!--- Please provide any relevant information about your setup, including machine/compiler combination. -->
 <!-- Reference other issues or PRs in other repositories that this issue is related to, and how they are related. -->
 
-## Steps To Reproduce
+## Steps to reproduce
 <!--- Provide a link to a live example, a code snippet, and/or an explicit set of steps to reproduce this bug.
 1. Step 1
 2. Step 2
 3. See the bug... -->
 
-## Detailed Description of Fix (optional)
+## Path to working directory
+<!-- Provide the path to your files on disk. -->
+
+## Detailed description of fix (optional)
 <!--- Provide a detailed description of the change or addition you are proposing. -->
 
-## Additional Information (optional)
+## Additional information (optional)
 <!-- Any other relevant information that we should know to correctly understand and reproduce the issue. 
 Please describe in as much detail as possible. -->
 
-## Possible Implementation (optional)
+## Possible implementation (optional)
 <!--- Suggest an idea for implementing addition or change. -->
 
 ## Output (optional)

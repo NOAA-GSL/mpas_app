@@ -5,16 +5,16 @@ App for building and running the [MPAS-Model](https://github.com/NOAA-GSL/MPAS-M
 
 For bugs, questions, and requests related to the app, please use GitHub Issues in the `NOAA-GSL`/`mpas_app` repository.  These will be monitored closely, and we will get back to you as quickly as possible. 
 
-## CONUS 3km Quickstart Guide (Jet only)
+## CONUS 3km Quickstart Guide - Jet or Hera
 
 More detailed information on how the app runs and making changes to the model inputs can be found [further down](#getting-started).
 
-1. Clone the app's `conus_jet` branch and navigate to its directory:
+1. Clone the app's `main` branch and navigate to its directory:
 ```
-git clone https://github.com/NOAA-GSL/mpas_app.git -b conus_jet --recursive
+git clone https://github.com/NOAA-GSL/mpas_app.git --recursive
 cd mpas_app
 ```
-2. Build the Model and components: `./build.sh -p=jet`
+2. Build the Model and components: `./build.sh -p=<platform>`
 3. Create your user yaml in the `ush` directory: the file itself can be as simple as:
 ```
 user:
@@ -23,17 +23,17 @@ user:
 platform:
   account: wrfruc
 ```
-4. Load the `mpas_app` conda environment: `source load_wflow_modules.sh jet` from the `mpas_app/` directory
+4. Load the `mpas_app` conda environment: `source load_wflow_modules.sh <platform>` from the `mpas_app/` directory
 5. Generate the experiment: 
 ```
 cd ush
-python experiment_gen.py workflows/conus.jet.yaml <your_user_yaml.yaml>
+python experiment_gen.py workflows/3km_conus.yaml workflows/conus.<platform>.yaml <your_user_yaml.yaml>
 ```
 This generates an experiment directory at the path specified in your user YAML that contains a Rocoto XML file, which is ready to use.
 
 ## Getting Started
 
-Clone the app and navigate to its directory:
+The mpas_app default is currently set to run on a 3-km CONUS mesh using RAP initial conditions and lateral boundary conditions.  To get started, clone the app and navigate to its directory:
 
 ```
 git clone https://github.com/NOAA-GSL/mpas_app.git --recursive
@@ -49,7 +49,7 @@ git submodule update --init --recursive
 
 ## Building the Model
 
-Currently, Jet and Hera are the only platforms supported on the `conus_jet` branch.  To run the default build script:
+Currently, Jet and Hera are the only platforms supported on the `main` branch.  To run the default build script:
 
 `./build.sh -p=<platform>`
 
@@ -112,7 +112,7 @@ Prior to generating and running the experiment, you must run the command `source
 
 When you have a completed user config YAML, you can run the `experiment_gen.py` script from the `ush/` directory to generate the MPAS experiment for a CONUS run:
 
-`python experiment_gen.py workflows/conus.<platform>.yaml [optional.yaml] <user_config.yaml>`
+`python experiment_gen.py workflows/3km_conus.yaml workflows/conus.<platform>.yaml [optional.yaml] <user_config.yaml>`
 
 Any number of config YAMLs are accepted on the command line where the later the configuration setting is in the list, the higher priority it will have. In other words, the same setting altered in `optional.yaml` will be overwritten by the value in `user_config.yaml`.
 

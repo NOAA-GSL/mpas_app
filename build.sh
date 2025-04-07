@@ -111,6 +111,29 @@ install_mpassit () {
 }
 
 install_upp () {
+  pushd ${MPAS_APP_DIR}
+  module purge
+  module use ./src/UPP/modulefiles
+  module load ${PLATFORM}
+  mkdir build_upp && pushd build_upp
+  cmake -DCMAKE_INSTALL_PREFIX=.. -DCMAKE_INSTALL_BINDIR="exec" -DBUILD_WITH_WRFIO=ON ../src/UPP/
+  make -j 8
+  make install
+  popd
+}
+
+install_mpassit () {
+  MODULE_FILE="build.${PLATFORM}.${COMPILER}"
+  module purge
+  module use ${MPAS_APP_DIR}/src/MPASSIT/modulefiles
+  module load ${MODULE_FILE}
+  pushd ${MPAS_APP_DIR}/src/MPASSIT
+  ./build.sh ${PLATFORM}
+  cp -v bin/mpassit ${EXEC_DIR}
+  popd
+}
+
+install_upp () {
   module purge
   module use $MPAS_APP_DIR/src/UPP/modulefiles
   module load $PLATFORM
@@ -345,6 +368,3 @@ if [ "${CLEAN}" = true ]; then
        make ${MAKE_SETTINGS} clean 2>&1 | tee log.make
     fi
 fi
-
-
-
