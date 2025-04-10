@@ -335,11 +335,11 @@ fi
 
 printf "\nATMOS_ONLY: ${ATMOS_ONLY}\n"
 
-# if [ ${ATMOS_ONLY} = false ]; then
-#  install_mpas_init
-#fi
+if [ ${ATMOS_ONLY} = false ]; then
+   install_mpas_init
+fi
 
-#install_mpas_model
+install_mpas_model
 install_mpassit
 install_upp
 
