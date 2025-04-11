@@ -100,18 +100,11 @@ install_mpas_model () {
 }
 
 install_mpassit () {
-  MODULE_FILE="build.${PLATFORM}.${COMPILER}"
   module purge
-  export cmake_ver=3.28.1
-  export esmf_ver=8.4.0b08
-  module use ${MPAS_APP_DIR}/src/MPASSIT/modulefiles
-  module load ${MODULE_FILE}
   pushd ${MPAS_APP_DIR}/src/MPASSIT
-  ./build.sh ${PLATFORM} ${COMPILER}
+  ./build.sh ${PLATFORM} intel
   cp -v bin/mpassit ${EXEC_DIR}
   popd
-  unset cmake_ver
-  unset esmf_ver
 }
 
 install_upp () {
@@ -120,7 +113,7 @@ install_upp () {
   module load $PLATFORM
   d=$MPAS_APP_DIR/build_upp
   mkdir -pv $d
-  cd $d
+  pushd $d
   args=(
     -DCMAKE_INSTALL_PREFIX=$MPAS_APP_DIR
     -DCMAKE_INSTALL_BINDIR="exec"
@@ -130,6 +123,7 @@ install_upp () {
   cmake ${args[*]} 
   make -j 8
   make install
+  popd
 }
 
 # print settings
@@ -335,11 +329,11 @@ fi
 
 printf "\nATMOS_ONLY: ${ATMOS_ONLY}\n"
 
-if [ ${ATMOS_ONLY} = false ]; then
-  install_mpas_init
-fi
+#if [ ${ATMOS_ONLY} = false ]; then
+#  install_mpas_init
+#fi
 
-install_mpas_model
+#install_mpas_model
 install_mpassit
 install_upp
 
