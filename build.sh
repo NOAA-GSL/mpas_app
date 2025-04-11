@@ -336,7 +336,7 @@ fi
 printf "\nATMOS_ONLY: ${ATMOS_ONLY}\n"
 
 if [ ${ATMOS_ONLY} = false ]; then
-   install_mpas_init
+  install_mpas_init
 fi
 
 install_mpas_model
