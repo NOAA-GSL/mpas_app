@@ -311,7 +311,6 @@ post:
     name: COMBINED.GrbF{{ '%02d' % (leadtime.total_seconds() // 3600) }}
     path: "{{  user.experiment_dir }}/"
   mpassit:
-    executable: "{{ user.mpas_app }}/exec/atmosphere_model/CCN_ACTIVATE.BIN"
     execution:
       batchargs:
         walltime: 00:30:00
