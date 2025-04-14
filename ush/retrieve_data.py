@@ -240,16 +240,6 @@ def fill_template(template_str, cycle_date, templates_only=False, **kwargs):
         return f'{",".join((format_values.keys()))}'
     return template_str.format(**format_values)
 
-
-def create_target_path(target_path):
-    """
-    Append target path and create directory for ensemble members
-    """
-    if not os.path.exists(target_path):
-        os.makedirs(target_path)
-    return target_path
-
-
 def find_archive_files(paths, file_names, cycle_date, ens_group):
     """Given an equal-length set of archive paths and archive file
     names, and a cycle date, check HPSS via hsi to make sure at least
@@ -376,7 +366,7 @@ def get_requested_files(cla, file_templates, input_locs, method="disk", **kwargs
     locs_files = pair_locs_with_files(input_locs, file_templates, check_all)
     for mem in members:
         target_path = fill_template(cla.output_path, cla.cycle_date, mem=mem)
-        target_path = create_target_path(target_path)
+        os.makedirs(target_path, exist_ok=True)
 
         logging.info(f"Retrieved files will be placed here: \n {target_path}")
         os.chdir(target_path)
@@ -544,7 +534,7 @@ def hpss_requested_files(cla, file_names, store_specs, members=-1, ens_group=-1)
                     cla.cycle_date,
                     mem=mem,
                 )
-                output_path = create_target_path(output_path)
+                os.makedirs(output_path, exist_ok=True)
                 logging.info(f"Will place files in {os.path.abspath(output_path)}")
 
             source_paths = []
