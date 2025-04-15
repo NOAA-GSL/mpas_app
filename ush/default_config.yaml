@@ -1,3 +1,9 @@
+# The default settings for an MPAS App run.
+#
+# Several sections contain UW YAML that corresponds to UW Drivers. Documentation
+# for those settings can be found here:
+#   https://uwtools.readthedocs.io/en/main/sections/user_guide/yaml/components/index.html
+#
 user:
   cycle_frequency: 12
   experiment_dir: ""
@@ -11,14 +17,18 @@ user:
     interval_hours: 6
     offset_hours: 0
   mesh_label: hrrrv5
+  # mpas_app is the path to the clone and is set by experiment_gen.py
   mpas_app: ""
+  # platform is a user-required setting
   platform: big_computer
   workflow_blocks:
     - cold_start.yaml
     - post.yaml
 data:
+  # Known locations to mesh_files are updated from parm/machines/*.yaml files
   mesh_files: /path/to/nonstandard/location
 platform:
+  # Supported scheduler options include Slurm, PBSPro, and LSF
   scheduler: slurm
 get_ics_data:
   execution:
@@ -31,6 +41,7 @@ get_lbcs_data:
     walltime: 00:20:00
   rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/{{ user.lbcs.external_model }}'
 prepare_grib_ics:
+  # ungrib settings follow UW Tools driver YAML
   ungrib:
     execution:
       batchargs:
@@ -51,6 +62,7 @@ prepare_grib_ics:
     account: '{{ platform.account }}'
     scheduler: '{{ platform.scheduler }}'
 prepare_grib_lbcs:
+  # ungrib settings follow UW Tools driver YAML
   ungrib:
     execution:
       batchargs:
@@ -71,6 +83,7 @@ prepare_grib_lbcs:
     account: '{{ platform.account }}'
     scheduler: '{{ platform.scheduler }}'
 create_ics:
+  # mpas_init settings follow UW Tools driver YAML
   mpas_init: &mpas_init_config
     boundary_conditions:
       interval_hours: 2
@@ -151,6 +164,7 @@ create_ics:
     account: '{{ platform.account }}'
     scheduler: '{{ platform.scheduler }}'
 create_lbcs:
+  # mpas_init settings follow UW Tools driver YAML
   mpas_init:
     <<: *mpas_init_config
     boundary_conditions:
@@ -194,6 +208,7 @@ create_lbcs:
     account: '{{ platform.account }}'
     scheduler: '{{ platform.scheduler }}'
 forecast:
+  # mpas settings follow UW Tools driver YAML
   mpas:
     domain: regional
     execution:
@@ -307,9 +322,13 @@ forecast:
     account: '{{ platform.account }}'
     scheduler: '{{ platform.scheduler }}'
 post:
+  # combined_files is a simple tasks that concatenates grib files. Please see
+  # parm/wflow/post.yaml for information on the task.
   compbined_files:
     name: COMBINED.GrbF{{ '%02d' % (leadtime.total_seconds() // 3600) }}
     path: "{{  user.experiment_dir }}/"
+  # mpassit settings are not associated with a UW Driver. Please see the
+  # parm/wflow/post.yaml for information on how its runscript is called.
   mpassit:
     execution:
       batchargs:
@@ -320,6 +339,7 @@ post:
     fix_dir: /path/to/fix/files
     rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/mpassit'
   upp:
+    # upp settings follow UW Tools driver YAML
     control_file: "{{ user.mpas_app }}/parm/upp/postxconfig-NT-rrfs_mpas.txt"
     execution:
       batchargs:
@@ -408,6 +428,7 @@ post:
           numx: 2
     rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/upp/{{ "%03d" % (leadtime.total_seconds() / 3600) }}'
 graphics:
+  # the graphics task calls a bash run script that runs pygraf
   execution:
     batchargs:
       tasks_per_node: 40
