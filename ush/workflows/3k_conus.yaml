@@ -20,12 +20,12 @@ get_ics_data:
   execution:
     cores: 1
     walltime: 00:10:00
-  rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/{{ get_ics_data.external_model }}'
+  rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/{{ user.ics.external_model }}'
 get_lbcs_data:
   execution:
     cores: 1
     walltime: 00:20:00
-  rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/{{ get_lbcs_data.external_model }}'
+  rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/{{ user.lbcs.external_model }}'
 prepare_grib_ics:
   ungrib: &ungrib_settings
     execution:
