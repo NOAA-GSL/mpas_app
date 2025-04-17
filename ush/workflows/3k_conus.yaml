@@ -6,6 +6,10 @@ user:
   mesh_label: hrrrv5
   mpas_app: ""
   platform: big_computer
+  ics:
+    external_model: RAP
+  lbcs:
+    external_model: RAP
   workflow_blocks:
     - cold_start.yaml
     - post.yaml
@@ -16,93 +20,34 @@ get_ics_data:
   execution:
     cores: 1
     walltime: 00:10:00
-  external_model: RAP 
-  rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/{{ get_ics_data.external_model }}'
+  rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/{{ user.ics.external_model }}'
 get_lbcs_data:
   execution:
     cores: 1
     walltime: 00:20:00
-  external_model: RAP
-  rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/{{ get_lbcs_data.external_model }}'
-prepare_grib:
-  ungrib:
+  rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/{{ user.lbcs.external_model }}'
+prepare_grib_ics:
+  ungrib: &ungrib_settings
     execution:
       batchargs:
         cores: 4
         walltime: 00:15:00
-      envcmds:
-        - source {{ user.mpas_app }}/load_wflow_modules.sh {{ user.platform }}
-        - conda activate ungrib
-      executable: ungrib
-    gribfiles:
-      interval_hours: 6
-      max_leadtime: !int "{{ forecast.mpas.length }}"
-      offset: 0
-      path: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/{{ get_lbcs_data.external_model }}/rap.t{cycle_hour:02d}z.wrfnatf{forecast_hour:02d}.grib2'
-    rundir: '{{ user.experiment_dir }}/{{cycle.strftime("%Y%m%d%H")}}/ungrib'
-    vtable: "{{ user.mpas_app }}/parm/ungrib/Vtable.raphrrr"
-  platform:
-    account: '{{ platform.account }}'
-    scheduler: '{{ platform.scheduler }}'
+prepare_grib_lbcs:
+  ungrib:
+    <<: *ungrib_settings
 create_ics:
   mpas_init: &mpas_init_config
-    boundary_conditions:
-      interval_hours: 6
-      length: !int "{{ forecast.mpas.length }}"
-      offset: 0
-      path: "{{ prepare_grib.ungrib['rundir'] }}"
     execution:
       batchargs:
         cores: 768
         walltime: 01:30:00
-      envcmds:
-        - ulimit -s unlimited || true
-        - module use {{ user.mpas_app }}/modulefiles
-        - module load build_{{ user.platform }}_intel
-      executable: "{{ user.mpas_app }}/exec/init_atmosphere_model"
-      mpiargs:
-        - "--ntasks={{ create_ics.mpas_init['execution']['batchargs']['cores']}}"
-      mpicmd: srun
-    files_to_copy: &mpas_init_files_to_copy
-      "{{ user.mesh_label }}.static.nc": "{{ data.mesh_files }}/{{ user.mesh_label }}.static.nc"
-      "{{ user.mesh_label }}.graph.info.part.{{create_ics.mpas_init['execution']['batchargs']['cores']}}": '{{ user.experiment_dir }}/{{ user.mesh_label }}.graph.info.part.{{create_ics.mpas_init["execution"]["batchargs"]["cores"]}}'
-      stream_list.atmosphere.diagnostics: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.diagnostics"
-      stream_list.atmosphere.output: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.output"
-      stream_list.atmosphere.surface: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.surface"
-    files_to_link: &mpas_init_files_to_link
-      CAM_ABS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/CAM_ABS_DATA.DBL"
-      CAM_AEROPT_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/CAM_AEROPT_DATA.DBL"
-      GENPARM.TBL: "{{ user.mpas_app }}/src/MPAS-Model/GENPARM.TBL"
-      LANDUSE.TBL: "{{ user.mpas_app }}/src/MPAS-Model/LANDUSE.TBL"
-      MP_TEMPO_QRacrQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_QRacrQS_DATA.DBL"
-      MP_TEMPO_freezeH2O_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_freezeH2O_DATA.DBL"
-      MP_TEMPO_QIautQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_QIautQS_DATA.DBL"
-      MP_TEMPO_HAILAWARE_QRacrQG_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_HAILAWARE_QRacrQG_DATA.DBL"
-      OZONE_DAT.TBL: "{{ user.mpas_app }}/src/MPAS-Model/OZONE_DAT.TBL"
-      OZONE_LAT.TBL: "{{ user.mpas_app }}/src/MPAS-Model/OZONE_LAT.TBL"
-      OZONE_PLEV.TBL: "{{ user.mpas_app }}/src/MPAS-Model/OZONE_PLEV.TBL"
-      RRTMG_LW_DATA: "{{ user.mpas_app }}/src/MPAS-Model/RRTMG_LW_DATA"
-      RRTMG_LW_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/RRTMG_LW_DATA.DBL"
-      RRTMG_SW_DATA: "{{ user.mpas_app }}/src/MPAS-Model/RRTMG_SW_DATA"
-      RRTMG_SW_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/RRTMG_SW_DATA.DBL"
-      SOILPARM.TBL: "{{ user.mpas_app }}/src/MPAS-Model/SOILPARM.TBL"
-      VEGPARM.TBL: "{{ user.mpas_app }}/src/MPAS-Model/VEGPARM.TBL"
     namelist:
-      base_file: "{{ user.mpas_app }}/src/MPAS-Model/namelist.init_atmosphere"
       update_values: &mpas_init_update_values
-        nhyd_model:
-          config_init_case: 7
         dimensions:
           config_nvertlevels: 59
           config_nsoillevels: 9
-          config_nfglevels: 51
-          config_nfgsoillevels: 9
-          config_nsoilcat: 16
-          config_nvegopt: 2
         data_sources:
           config_sfc_prefix: 'SST'
-          config_fg_interval: !int "{{ create_ics.mpas_init['boundary_conditions']['interval_hours'] * 3600 }}"
-          config_met_prefix: FILE
           config_landuse_data: 'MODIFIED_IGBP_MODIS_NOAH_15s'
           config_topo_data: 'GMTED2010'
           config_vegfrac_data: 'MODIS'
@@ -130,94 +75,9 @@ create_ics:
           config_input_sst: false
           config_frac_seaice: true
           config_tempo_rap: false
-        decomposition:
-          config_block_decomp_file_prefix: "{{ user.mesh_label }}.graph.info.part."
         physics_lsm_noahmp: !remove
-    rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/mpas_ics'
-    streams:
-      input:
-        filename_template: "{{ user.mesh_label }}.static.nc"
-        input_interval: initial_only
-        type: input
-        mutable: false
-        io_type: "pnetcdf,cdf5"
-      output:
-        filename_template: "{{ user.mesh_label }}.init.nc"
-        output_interval: initial_only
-        type: output
-        mutable: false
-        io_type: "pnetcdf,cdf5"
-        packages: initial_conds
-        clobber_mode: overwrite
-  platform:
-    account: '{{ platform.account }}'
-    scheduler: '{{ platform.scheduler }}'
-create_lbcs:
-  mpas_init:
-    <<: *mpas_init_config
-    files_to_copy:
-      <<: *mpas_init_files_to_copy
-      "{{ user.mesh_label }}.init.nc": "{{ create_ics.mpas_init['rundir'] }}/{{ user.mesh_label }}.init.nc"
-    namelist:
-      base_file: "{{ user.mpas_app }}/src/MPAS-Model/namelist.init_atmosphere"
-      update_values:
-        <<: *mpas_init_update_values
-        nhyd_model:
-          config_init_case: 9
-    rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/mpas_lbcs'
-    streams:
-      input:
-        filename_template: "{{ user.mesh_label }}.init.nc"
-        input_interval: initial_only
-        type: input
-        mutable: false
-        io_type: "pnetcdf,cdf5"
-      surface:
-        filename_template: x1.40962.sfc_update.nc
-        type: output
-        filename_interval: "none"
-        packages: sfc_update
-        output_interval: "{{ 24 * 3600 }}"
-        clobber_mode: overwrite
-        mutable: false
-      lbc:
-        type: output
-        filename_template: lbc.$Y-$M-$D_$h.$m.$s.nc
-        filename_interval: output_interval
-        packages: lbcs
-        output_interval: 06:00:00
-        mutable: false
-  platform:
-    account: '{{ platform.account }}'
-    scheduler: '{{ platform.scheduler }}'
 forecast:
   mpas:
-    domain: regional
-    execution:
-      batchargs:
-        cores: 800
-        walltime: 02:30:00
-      envcmds:
-        - ulimit -s unlimited || true
-        - module use {{ user.mpas_app }}/modulefiles
-        - module load build_{{ user.platform }}_intel
-      executable: "{{ user.mpas_app }}/exec/atmosphere_model"
-      mpiargs:
-        - "--ntasks={{ forecast.mpas['execution']['batchargs']['cores']}}"
-      mpicmd: srun
-    files_to_copy:
-      "{{ user.mesh_label }}.init.nc": "{{ create_ics.mpas_init['rundir'] }}/{{ user.mesh_label }}.init.nc"
-      "{{ user.mesh_label }}.graph.info.part.{{forecast.mpas['execution']['batchargs']['cores']}}": '{{ user.experiment_dir }}/{{ user.mesh_label }}.graph.info.part.{{forecast.mpas["execution"]["batchargs"]["cores"]}}'
-      stream_list.atmosphere.diagnostics: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.diagnostics"
-      stream_list.atmosphere.output: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.output"
-      stream_list.atmosphere.surface: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.surface"
-    files_to_link:
-      <<: *mpas_init_files_to_link
-    lateral_boundary_conditions:
-      interval_hours: 6
-      offset: 0
-      path: "{{ create_lbcs.mpas_init['rundir'] }}"
-    length: 6
     namelist:
       base_file: "{{ user.mpas_app }}/src/MPAS-Model/namelist.atmosphere"
       update_values:
@@ -266,78 +126,11 @@ forecast:
         assimilation:
           config_jedi_da: false
         physics_lsm_noahmp: !remove
-    rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/forecast'
-    streams:
-      input:
-        mutable: false
-        type: input
-        filename_template: "{{ user.mesh_label }}.init.nc"
-        io_type: "pnetcdf,cdf5"
-        input_interval: initial_only
-      restart:
-        mutable: false
-        type: "input;output"
-        filename_template: "restart.$Y-$M-$D_$h.$m.$s.nc"
-        io_type: "pnetcdf,cdf5"
-        input_interval: initial_only
-        output_interval: "1_00:00:00"
-        clobber_mode: overwrite
-      output:
-        mutable: true
-        type: output
-        filename_template: "history.$Y-$M-$D_$h.$m.$s.nc"
-        output_interval: "06:00:00"
-        files:
-          - stream_list.atmosphere.output
-        clobber_mode: overwrite
-      diagnostics:
-        mutable: true
-        type: output
-        filename_template: "diag.$Y-$M-$D_$h.$m.$s.nc"
-        output_interval: "06:00:00"
-        files:
-          - stream_list.atmosphere.diagnostics
-        clobber_mode: overwrite
-      surface:
-        mutable: true
-        type: input
-        filename_template: "x1.40962.sfc_update.nc"
-        io_type: "pnetcdf,cdf5"
-        filename_interval: "none"
-        input_interval: "none"
-        files:
-          - stream_list.atmosphere.surface
-      lbc_in:
-        mutable: false
-        type: input
-        filename_template: "lbc.$Y-$M-$D_$h.$m.$s.nc"
-        filename_interval: "input_interval"
-        io_type: "pnetcdf,cdf5"
-        packages: limited_area
-        input_interval: 06:00:00
-  platform:
-    account: '{{ platform.account }}'
-    scheduler: '{{ platform.scheduler }}'
 post:
-  mpassit:
-    executable: "{{ user.mpas_app }}/exec/atmosphere_model/CCN_ACTIVATE.BIN"
-    execution:
-      batchargs:
-        walltime: 00:30:00
-        cores: 768
-        native:
-          - --exclusive 
-    fix_dir: /path/to/fix/files
-    rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/mpassit'
   upp:
-    control_file: "{{ user.mpas_app }}/parm/upp/postxconfig-NT-rrfs_mpas.txt"
-    files_to_link:
-      post_cntrl.xml: "{{ user.mpas_app }}/parm/upp/rrfs_mpas_postcntrl.xml"
-    files_to_copy:
-      postxconfig-NT.txt: "{{ user.mpas_app }}/parm/upp/postxconfig-NT-rrfs_mpas.txt"
     execution:
       batchargs:
-        nodes: 48
+        nodes: 4
         tasks_per_node: 12
       mpiargs:
       - "--ntasks $SLURM_CPUS_ON_NODE"  

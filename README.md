@@ -23,7 +23,10 @@ user:
 platform:
   account: wrfruc
 ```
-4. Load the `mpas_app` conda environment: `source load_wflow_modules.sh <platform>` from the `mpas_app/` directory
+4. Load the `mpas_app` conda environment. From the `mpas_app/` directory:
+```
+source load_wflow_modules.sh <platform>
+```
 5. Generate the experiment: 
 ```
 cd ush
@@ -33,7 +36,7 @@ This generates an experiment directory at the path specified in your user YAML t
 
 ## Getting Started
 
-The mpas_app default is currently set to run on a 3-km CONUS mesh using RAP initial conditions and lateral boundary conditions.  To get started, clone the app and navigate to its directory:
+The `mpas_app` default is currently set to run on a 3-km CONUS mesh using GFS initial conditions and lateral boundary conditions.  To get started, clone the app and navigate to its directory:
 
 ```
 git clone https://github.com/NOAA-GSL/mpas_app.git --recursive
@@ -57,25 +60,31 @@ To see the different build options (including MPAS build options):
 
 `./build.sh -h`
 
-This builds the MPAS-Model (version `8.2.2`) and installs Miniconda inside the local clone.  The `ungrib` conda environment installed in the process includes a pre-built package to run WPS Ungrib tool.  The build can take up to an hour to complete.
+This builds the MPAS-Model (based on MPAS release version `8.2.2`) and installs Miniconda inside the local clone.  The `ungrib` conda environment installed in the process includes a pre-built package to run WPS Ungrib tool.  The MPAS App build can take up to an hour to complete.
 
 ### default_config.yaml
 
-`default_config.yaml` is the default YAML config file located in the `ush` directory of `mpas_app`.  
+`default_config.yaml` is the default YAML config file located in the `ush` directory of `mpas_app`. It is structured so that the top-level blocks are named based on the action they take in the MPAS App workflow, while the sub-sections often follow [`UW Tools YAML`](https://uwtools.readthedocs.io/en/main/sections/user_guide/yaml/components/index.html) for specific drivers.
 
-The `grid_files` field references the decomposed domain files from the previous step.
+The `user:` section is the most likely to need changing. Here there are a handful of common high-level configuration options that include cycle dates and cycling frequency, controls for boundary conditions, the mesh for the forecast grid, and the workflow blocks for which tasks to run.
 
-The fields under `prepare_ungrib` will retrieve the data you need for RAP initial conditions and lateral boundary conditions from AWS by default and will ungrib them.
+The configuration settings under `get_ics_data` and `get_lbcs_data` define resources and configuration that retrieve the data needed for initial conditions and lateral boundary conditions from AWS by default.
 
-Next, the `create_ics` part of the workflow creates the MPAS initial conditions using 4 cores and copies and links the files needed from when the model was built.  It also updates the `init_atmosphere` namelist.  Additional files, such as the runtime tables from the MPAS `physics_wrf/files` directory will go in this section of your user config YAML. The input/output file names are modified in the `streams:` field and the keys correspond to the template in the `parm/` directory.
+The configuration settings under `prepare_grib_ics` and `prepare_grib_lbcs` define how the grib files will be processed with ungrib. The `ungrib:` blocks follow the [`UW YAML`](https://uwtools.readthedocs.io/en/main/sections/user_guide/yaml/components/ungrib.html) for the ungrib driver.
 
-A similar process is followed to create the lateral boundary conditions in the `create_lbcs` part of the workflow, the namelist and streams fields can be modified in the user config YAML.
+The `create_ics` and `create_lbcs` blocks define the [`mpas_init driver UW YAML`](https://uwtools.readthedocs.io/en/main/sections/user_guide/yaml/components/mpas_init.html). These sections are where namelist and streams XML settings for the `init_atmosphere_model` may be updated. The defaults also define all the necessary files to be linked or copied into the run directories, such as runtime tables from the MPAS `physics_wrf/files` directory and `stream_list` files.
 
-Finally, the `forecast` step runs the MPAS `atmosphere` executable.  If you want to add additional physics, you should add them in the physics field of the atmosphere namelist user config (see below).
+
+The `forecast` section defines the MPAS `atmosphere_model` executable configuration. It follows the [`mpas driver UW YAML documentation`](https://uwtools.readthedocs.io/en/main/sections/user_guide/yaml/components/mpas_init.html).  If you want to add additional physics, you should add them in the physics field of the atmosphere namelist user config (see below).
+
+The `post` section configures three tasks in the workflow: a helper task that combines grib files (the command is coded directly into the Rocoto task), the MPASSIT run script (not a UW Driver), and the [`upp UW Driver`](https://uwtools.readthedocs.io/en/main/sections/user_guide/yaml/components/upp.html).
+
+Any of the default settings can be overridden by providing a user YAML (see next section) that matches the same structure as the default settings.
+
 
 ### User Config YAML
 
-Your user config (e.g. `<your_name>.yaml`) is how you update the default configuration with different settings.  Rather than going through and changing all of the different namelist and streams files that the MPAS Model produces, you only need to create and update the single user config file in the `ush` directory.  The file itself can be as simple as:
+A user-provided config (e.g. `<your_name>.yaml`) can be provided during the configuration step to update the default configuration with different settings.  Rather than editing the default YAML or modifying files in run directories, track all changes in a single place that will define the full experiment for reproducible results.  The file itself can be as simple as:
 ```
 user:
   experiment_dir: /path/to/exp/dir
@@ -83,7 +92,7 @@ user:
 platform:
   account: wrfruc
 ```
-To update additional fields, you add the nested structure from `default_config.yaml` with the additional information.  For example, to modify the physics for the `atmosphere` executable to include Thompson microphysics, you would add the following to the user config YAML:
+To update additional fields, you add the nested structure from `default_config.yaml` with the desired values.  For example, to modify the physics for the `atmosphere` executable to include Thompson microphysics, add the following to the user config YAML:
 ```
 forecast:
   mpas:
@@ -103,16 +112,22 @@ workflow:
     task_mpas_lbcs: !remove
 ```
 
-This block in your user YAML will remove the lateral boundary tasks from the workflow.
+This block in the user YAML will remove the lateral boundary tasks from the workflow.
 
 
 ## Generate the Experiment
 
-Prior to generating and running the experiment, you must run the command `source load_wflow_modules.sh <platform>` from the `mpas_app/` directory. 
+Prior to generating and running the experiment, the appropriate environment will need to be activated. From the `mpas_app/` directory., run:
 
-When you have a completed user config YAML, you can run the `experiment_gen.py` script from the `ush/` directory to generate the MPAS experiment for a CONUS run:
+```
+source load_wflow_modules.sh <platform>
+```
 
-`python experiment_gen.py workflows/3km_conus.yaml workflows/conus.<platform>.yaml [optional.yaml] <user_config.yaml>`
+With user YAML named, `user_config.yaml`, create a fully configured experiment by running the following from the ``mpas_app/ush/` directory:
+
+```
+python experiment_gen.py workflows/3km_conus.yaml workflows/conus.<platform>.yaml [optional.yaml] user_config.yaml
+```
 
 Any number of config YAMLs are accepted on the command line where the later the configuration setting is in the list, the higher priority it will have. In other words, the same setting altered in `optional.yaml` will be overwritten by the value in `user_config.yaml`.
 
@@ -122,4 +137,4 @@ Logs are generated for each of the different tasks in the workflow, and `workflo
 
 ## Post-Processing 
 
-`MPASSIT` and `UPP` are used for post-processing and are included as submodules in the application, just like the `MPAS-Model`. Settings for post-processing components can be adjusted in your user configuration YAML, following the same nested structure described above. 
+`MPASSIT` and `UPP` are used for post-processing and are included as submodules in the application, just like the `MPAS-Model`. Settings for post-processing components can be adjusted in your user configuration YAML, following the same nested structure described above.

@@ -1,8 +1,12 @@
 data:
-  mesh_files: /lfs5/BMC/gsd-fv3-dev/mpas_dev/meshes/15km-conus/
+  mesh_files: "{{ platform.hrrr_fix }}"
 platform:
   scheduler: slurm
   crtm_dir: /misc/contrib/spack-stack/spack-stack-1.6.0/envs/unified-env-rocky8/install/intel/2021.5.0/crtm-fix-2.4.0.1_emc-bscege4/fix
+  geog_data:
+    global: /lfs5/BMC/wrfruc/Michael.Barlage/mpas/data/mpas_static
+    raphrrr: /mnt/lfs5/BMC/wrfruc/HRRRv5/geog
+  hrrr_fix: /misc/whome/role.wrfruc/HRRRv5/fix
 forecast:
   mpas:
     execution:

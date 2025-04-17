@@ -1,31 +1,47 @@
+# The default settings for an MPAS App run.
+#
+# Several sections contain UW YAML that corresponds to UW Drivers. Documentation
+# for those settings can be found here:
+#   https://uwtools.readthedocs.io/en/main/sections/user_guide/yaml/components/index.html
+#
 user:
   cycle_frequency: 12
   experiment_dir: ""
   first_cycle: !!timestamp 2023-09-15T00:00:00
   last_cycle:  !!timestamp 2023-09-15T00:00:00
-  mesh_label: conus
+  ics:
+    external_model: GFS
+    offset_hours: 0
+  lbcs:
+    external_model: GFS
+    interval_hours: 6
+    offset_hours: 0
+  mesh_label: hrrrv5
+  # mpas_app is the path to the clone and is set by experiment_gen.py
   mpas_app: ""
+  # platform is a user-required setting
   platform: big_computer
   workflow_blocks:
     - cold_start.yaml
     - post.yaml
 data:
+  # Known locations to mesh_files are updated from parm/machines/*.yaml files
   mesh_files: /path/to/nonstandard/location
 platform:
+  # Supported scheduler options include Slurm, PBSPro, and LSF
   scheduler: slurm
 get_ics_data:
   execution:
     cores: 1
     walltime: 00:10:00
-  external_model: GFS
-  rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/{{ get_ics_data.external_model }}'
+  rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/{{ user.ics.external_model }}'
 get_lbcs_data:
   execution:
     cores: 1
     walltime: 00:20:00
-  external_model: GFS
-  rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/{{ get_lbcs_data.external_model }}'
-prepare_grib:
+  rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/{{ user.lbcs.external_model }}'
+prepare_grib_ics:
+  # ungrib settings follow UW Tools driver YAML
   ungrib:
     execution:
       batchargs:
@@ -36,25 +52,47 @@ prepare_grib:
         - conda activate ungrib
       executable: ungrib
     gribfiles:
-      interval_hours: 6
+      interval_hours: 1
+      max_leadtime: !int "{{ user.ics.offset_hours }}"
+      offset: !int "{{ user.ics.offset_hours }}"
+      path: /path/to/user/grib/files
+    rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/ungrib_ics'
+    vtable: /path/to/user/vtable
+  platform:
+    account: '{{ platform.account }}'
+    scheduler: '{{ platform.scheduler }}'
+prepare_grib_lbcs:
+  # ungrib settings follow UW Tools driver YAML
+  ungrib:
+    execution:
+      batchargs:
+        cores: 1
+        walltime: 00:15:00
+      envcmds:
+        - source {{ user.mpas_app }}/load_wflow_modules.sh {{ user.platform }}
+        - conda activate ungrib
+      executable: ungrib
+    gribfiles:
+      interval_hours: !int '{{ user.lbcs.interval_hours }}'
       max_leadtime: !int "{{ forecast.mpas.length }}" 
-      offset: 0
-      path: "{{ get_lbcs_data.rundir }}/gfs.t{cycle_hour:02d}z.pgrb2.0p25.f{forecast_hour:03d}"
-    rundir: '{{ user.experiment_dir }}/{{cycle.strftime("%Y%m%d%H")}}/ungrib'
-    vtable: "{{ user.mpas_app }}/parm/ungrib/Vtable.GFS"
+      offset: !int "{{ user.lbcs.offset_hours }}"
+      path: /path/to/user/grib/files
+    rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/ungrib_lbcs'
+    vtable: /path/to/user/vtable
   platform:
     account: '{{ platform.account }}'
     scheduler: '{{ platform.scheduler }}'
 create_ics:
+  # mpas_init settings follow UW Tools driver YAML
   mpas_init: &mpas_init_config
     boundary_conditions:
-      interval_hours: 6
-      length: !int "{{ forecast.mpas.length }}"
-      offset: 0
-      path: "{{ prepare_grib.ungrib['rundir'] }}"
+      interval_hours: 2
+      length: !int "{{ user.ics.offset_hours }}"
+      offset: !int "{{ user.ics.offset_hours }}"
+      path: "{{ prepare_grib_ics.ungrib.rundir }}"
     execution:
       batchargs:
-        cores: 12
+        cores: 128
         walltime: 01:30:00
       envcmds:
         - ulimit -s unlimited || true
@@ -62,11 +100,11 @@ create_ics:
         - module load build_{{ user.platform }}_intel
       executable: "{{ user.mpas_app }}/exec/init_atmosphere_model"
       mpiargs:
-        - "--ntasks={{ create_ics.mpas_init['execution']['batchargs']['cores']}}"
+        - "--ntasks={{ create_ics.mpas_init.execution.batchargs.cores }}"
       mpicmd: srun
     files_to_copy: &mpas_init_files_to_copy
       "{{ user.mesh_label }}.static.nc": "{{ data.mesh_files }}/{{ user.mesh_label }}.static.nc"
-      "{{ user.mesh_label }}.graph.info.part.{{create_ics.mpas_init['execution']['batchargs']['cores']}}": '{{ user.experiment_dir }}/{{ user.mesh_label }}.graph.info.part.{{create_ics.mpas_init["execution"]["batchargs"]["cores"]}}'
+      "{{ user.mesh_label }}.graph.info.part.{{create_ics.mpas_init.execution.batchargs.cores }}": '{{ user.experiment_dir }}/{{ user.mesh_label }}.graph.info.part.{{ create_ics.mpas_init.execution.batchargs.cores }}'
       stream_list.atmosphere.diagnostics: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.diagnostics"
       stream_list.atmosphere.output: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.output"
       stream_list.atmosphere.surface: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.surface"
@@ -89,11 +127,18 @@ create_ics:
       update_values: &mpas_init_update_values
         nhyd_model:
           config_init_case: 7
+        dimensions:
+          config_nsoilcat: 16
+          config_nsoillevels: 9
+          config_nvegopt: 2
+          config_nvertlevels: 59
         data_sources:
-          config_fg_interval: !int "{{ create_ics.mpas_init['boundary_conditions']['interval_hours'] * 3600 }}"
+          config_fg_interval: !int "{{ user.lbcs.interval_hours * 3600 }}"
           config_met_prefix: FILE
         vertical_grid:
           config_blend_bdy_terrain: true
+          config_ztop: 25878.712
+          config_specified_zeta_levels: '{{ platform.hrrr_fix }}/L60.txt'
         preproc_stages:
           config_native_gwd_static: false
           config_static_interp: false
@@ -119,8 +164,14 @@ create_ics:
     account: '{{ platform.account }}'
     scheduler: '{{ platform.scheduler }}'
 create_lbcs:
+  # mpas_init settings follow UW Tools driver YAML
   mpas_init:
     <<: *mpas_init_config
+    boundary_conditions:
+      interval_hours: !int "{{ user.lbcs.interval_hours }}"
+      length: !int "{{ forecast.mpas.length }}"
+      offset: 0
+      path: "{{ prepare_grib_lbcs.ungrib.rundir }}"
     files_to_copy:
       <<: *mpas_init_files_to_copy
       "{{ user.mesh_label }}.init.nc": "{{ create_ics.mpas_init['rundir'] }}/{{ user.mesh_label }}.init.nc"
@@ -151,50 +202,73 @@ create_lbcs:
         filename_template: lbc.$Y-$M-$D_$h.$m.$s.nc
         filename_interval: output_interval
         packages: lbcs
-        output_interval: 06:00:00
+        output_interval: "{{ '%d:00:00' % (user.lbcs.interval_hours) }}"
         mutable: false
   platform:
     account: '{{ platform.account }}'
     scheduler: '{{ platform.scheduler }}'
 forecast:
+  # mpas settings follow UW Tools driver YAML
   mpas:
     domain: regional
     execution:
       batchargs:
-        cores: 32
-        walltime: 01:30:00
+        cores: 800
+        walltime: 02:30:00
       envcmds:
         - ulimit -s unlimited || true
         - module use {{ user.mpas_app }}/modulefiles
         - module load build_{{ user.platform }}_intel
       executable: "{{ user.mpas_app }}/exec/atmosphere_model"
       mpiargs:
-        - "--ntasks={{ forecast.mpas['execution']['batchargs']['cores']}}"
+        - "--ntasks={{ forecast.mpas.execution.batchargs.cores }}"
       mpicmd: srun
     files_to_copy:
-      "{{ user.mesh_label }}.init.nc": "{{ create_ics.mpas_init['rundir'] }}/{{ user.mesh_label }}.init.nc"
-      "{{ user.mesh_label }}.graph.info.part.{{forecast.mpas['execution']['batchargs']['cores']}}": '{{ user.experiment_dir }}/{{ user.mesh_label }}.graph.info.part.{{forecast.mpas["execution"]["batchargs"]["cores"]}}'
+      "{{ user.mesh_label }}.init.nc": "{{ create_ics.mpas_init.rundir }}/{{ user.mesh_label }}.init.nc"
+      "{{ user.mesh_label }}.graph.info.part.{{forecast.mpas.execution.batchargs.cores }}": '{{ user.experiment_dir }}/{{ user.mesh_label }}.graph.info.part.{{forecast.mpas.execution.batchargs.cores }}'
       stream_list.atmosphere.diagnostics: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.diagnostics"
       stream_list.atmosphere.output: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.output"
       stream_list.atmosphere.surface: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.surface"
     files_to_link:
       <<: *mpas_init_files_to_link
+      CCN_ACTIVATE.BIN: "{{ platform.hrrr_fix }}/CCN_ACTIVATE.BIN"
+      CCN_ACTIVATE_DATA: "{{ platform.hrrr_fix }}/CCN_ACTIVATE_DATA"
+      COMPATIBILITY: "{{ user.mpas_app }}/src/MPAS-Model/src/core_atmosphere/physics/physics_wrf/files/COMPATIBILITY"
+      MP_TEMPO_QRacrQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_QRacrQS_DATA.DBL"
+      MP_TEMPO_freezeH2O_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_freezeH2O_DATA.DBL"
+      MP_TEMPO_QIautQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_QIautQS_DATA.DBL"
+      MP_TEMPO_HAILAWARE_QRacrQG_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_HAILAWARE_QRacrQG_DATA.DBL"
     lateral_boundary_conditions:
-      interval_hours: 6
+      interval_hours: !int "{{ user.lbcs.interval_hours }}"
       offset: 0
-      path: "{{ create_lbcs.mpas_init['rundir'] }}"
+      path: "{{ create_lbcs.mpas_init.rundir }}"
     length: 6
     namelist:
       base_file: "{{ user.mpas_app }}/src/MPAS-Model/namelist.atmosphere"
       update_values:
         nhyd_model:
-          config_dt: 60.0
+          config_dt: 20.0
         limited_area:
           config_apply_lbcs: true
         decomposition:
           config_block_decomp_file_prefix: "{{ user.mesh_label }}.graph.info.part."
         physics:
-          config_physics_suite: convection_permitting
+          config_sst_update: false
+          config_gvf_update: false
+          config_sstdiurn_update: false
+          config_frac_seaice: true
+          config_deepsoiltemp_update: false
+          config_radtlw_interval: '00:15:00'
+          config_radtsw_interval: '00:15:00'
+          config_bucket_update: 'none'
+          config_physics_suite: 'hrrrv5'
+          config_tempo_aerosolaware: true
+          config_tempo_hailaware: true
+          config_gwdo_scheme: 'bl_ugwp_gwdo'
+          config_lsm_scheme: 'sf_ruc'
+          num_soil_layers: 9
+          config_pbl_scheme: 'bl_mynnedmf'
+
     rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/forecast'
     streams:
       input:
@@ -243,31 +317,35 @@ forecast:
         filename_interval: "input_interval"
         io_type: "pnetcdf,cdf5"
         packages: limited_area
-        input_interval: 06:00:00
+        input_interval: "{{ '%d:00:00' % (user.lbcs.interval_hours) }}"
   platform:
     account: '{{ platform.account }}'
     scheduler: '{{ platform.scheduler }}'
 post:
+  # combined_files is a simple tasks that concatenates grib files. Please see
+  # parm/wflow/post.yaml for information on the task.
   compbined_files:
     name: COMBINED.GrbF{{ '%02d' % (leadtime.total_seconds() // 3600) }}
     path: "{{  user.experiment_dir }}/"
+  # mpassit settings are not associated with a UW Driver. Please see the
+  # parm/wflow/post.yaml for information on how its runscript is called.
   mpassit:
-    executable: "{{ user.mpas_app }}/exec/atmosphere_model/CCN_ACTIVATE.BIN"
     execution:
       batchargs:
-        walltime: 00:12:00
-        cores: 12
-        tasks_per_node: 12
+        walltime: 00:30:00
+        cores: 768
         native:
-          - --exclusive 
+          - --exclusive
     fix_dir: /path/to/fix/files
     rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/mpassit'
   upp:
+    # upp settings follow UW Tools driver YAML
     control_file: "{{ user.mpas_app }}/parm/upp/postxconfig-NT-rrfs_mpas.txt"
     execution:
       batchargs:
         walltime: 00:12:00
-        cores: 48
+        nodes: 4
+        tasks_per_node: 12
         native:
           - --exclusive
       envcmds:
@@ -350,6 +428,7 @@ post:
           numx: 2
     rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/upp/{{ "%03d" % (leadtime.total_seconds() / 3600) }}'
 graphics:
+  # the graphics task calls a bash run script that runs pygraf
   execution:
     batchargs:
       tasks_per_node: 40

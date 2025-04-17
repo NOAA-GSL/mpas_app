@@ -17,11 +17,12 @@ use_uwtools_logger()
 # Load the YAML config
 CONFIG_PATH = os.environ["CONFIG_PATH"]
 CYCLE = os.environ["CYCLE"]
+KEY_PATH = os.environ["KEY_PATH"]
 
 cycle = datetime.fromisoformat(CYCLE)
 
 # Run ungrib
-ungrib_driver = Ungrib(config=CONFIG_PATH, cycle=cycle, key_path=["prepare_grib"])
+ungrib_driver = Ungrib(config=CONFIG_PATH, cycle=cycle, key_path=[KEY_PATH])
 ungrib_driver.run()
 
 # Obtain ungrib run directory path

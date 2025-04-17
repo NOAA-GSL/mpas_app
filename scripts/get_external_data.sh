@@ -18,7 +18,7 @@ python -u ${MPAS_APP}/ush/retrieve_data.py \
     --config ${MPAS_APP}/parm/data_locations.yml \
     --cycle_date ${YYYYMMDDHH} \
     --data_stores aws \
-    --data_type RAP \
+    --data_type ${EXTERNAL_MODEL} \
     --fcst_hrs $fcst_hours \
     --file_fmt grib2 \
     --ics_or_lbcs ${ICS_or_LBCS} \
