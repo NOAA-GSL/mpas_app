@@ -11,7 +11,7 @@ GFS:
         namelist:
           update_values:
             dimensions:
-              config_nfglevels: 51
+              config_nfglevels: 57
               config_nfgsoillevels: 4
   lbcs:
     prepare_grib_lbcs:
@@ -24,7 +24,7 @@ GFS:
         namelist:
           update_values:
             dimensions:
-              config_nfglevels: 51
+              config_nfglevels: 57
               config_nfgsoillevels: 4
 
 
@@ -56,3 +56,17 @@ RAP:
               config_nfglevels: 51
               config_nfgsoillevels: 9
 
+RRFS:
+  ics:
+    prepare_grib_ics:
+      ungrib:
+        gribfiles:
+          path: '{{ get_lbcs_data.rundir }}/rrfs.t{cycle_hour:02d}z.natlev.3km.f{forecast_hour:02d}.na.grib2'
+        vtable: "user.mpas_app/parm/ungrib/Vtable.RRFS"
+    create_ics:
+      mpas_init:
+        namelist:
+          update_values:
+            dimensions:
+              config_nfglevels: 66
+              config_nfgsoillevels: 9

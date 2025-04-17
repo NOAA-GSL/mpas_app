@@ -122,6 +122,7 @@ create_ics:
       RRTMG_SW_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/RRTMG_SW_DATA.DBL"
       SOILPARM.TBL: "{{ user.mpas_app }}/src/MPAS-Model/SOILPARM.TBL"
       VEGPARM.TBL: "{{ user.mpas_app }}/src/MPAS-Model/VEGPARM.TBL"
+      QNWFA_QNIFA_SIGMA_MONTHLY.dat: "{{ data.mesh_files }}/QNWFA_QNIFA_SIGMA_MONTHLY.dat"
     namelist:
       base_file: "{{ user.mpas_app }}/src/MPAS-Model/namelist.init_atmosphere"
       update_values: &mpas_init_update_values

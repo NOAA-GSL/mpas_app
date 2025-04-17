@@ -94,19 +94,18 @@ workflow:
           attrs:
             task: get_lbcs_data
     task_mpas_ics: &mpas_init_task
-      command: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; ; python &MPAS_APP;/scripts/mpas_init.py'
+      command:
+        cyclestr:
+          value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; && &MPAS_APP;/scripts/mpas_init.py
+            -c &EXPERIMENT_CONFIG;
+            --cycle @Y-@m-@dT@H:@M:@S
+            --key-path create_ics'
       account: "{{ platform.account }}"
       join:
         cyclestr:
           value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ create_ics.mpas_init.execution.batchargs.walltime }}"
       cores: !int "{{ create_ics.mpas_init.execution.batchargs.cores }}"
-      envars:
-        CONFIG_PATH: '&EXPERIMENT_CONFIG;'
-        CYCLE:
-          cyclestr:
-            value: "@Y-@m-@dT@H:@M:@S"
-        EXPT_SECT: create_ics
       dependency:
         taskdep:
           attrs:
