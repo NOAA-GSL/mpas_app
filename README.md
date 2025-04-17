@@ -30,7 +30,7 @@ source load_wflow_modules.sh <platform>
 5. Generate the experiment: 
 ```
 cd ush
-python experiment_gen workflows/3km_conus.yaml workflows/conus.<platform>.yaml <your_user_yaml.yaml>
+python experiment_gen.py workflows/3km_conus.yaml workflows/conus.<platform>.yaml <your_user_yaml.yaml>
 ```
 This generates an experiment directory at the path specified in your user YAML that contains a Rocoto XML file, which is ready to use.
 

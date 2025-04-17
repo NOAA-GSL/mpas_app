@@ -13,7 +13,7 @@ OPTIONS
       (e.g. hera | jet | hercules)
   -c, --compiler=COMPILER
       compiler to use; default depends on platform
-      (e.g. intel | gnu | cray | gccgfortran)
+      (e.g. intel | gnu | gcc)
   --continue
       continue with existing build
   --clean
@@ -77,7 +77,10 @@ install_mpas_init () {
   pushd ${MPAS_APP_DIR}/src/MPAS-Model
   make clean CORE=atmosphere
   make clean CORE=init_atmosphere
-  make intel-mpi CORE=init_atmosphere ${MPAS_MAKE_OPTIONS}
+  if [[ ${COMPILER} = "gnu" ]]; then
+    build_target="gfortran"
+  fi
+  make ${build_target:-intel-mpi} CORE=init_atmosphere ${MPAS_MAKE_OPTIONS}
   cp -v init_atmosphere_model ${EXEC_DIR}
   make clean CORE=init_atmosphere
   popd
@@ -87,33 +90,39 @@ install_mpas_model () {
 
   pushd ${MPAS_APP_DIR}/src/MPAS-Model
   make clean CORE=atmosphere
-  make intel-mpi CORE=atmosphere ${MPAS_MAKE_OPTIONS}
+  if [[ ${COMPILER} = "gnu" ]]; then
+    build_target="gfortran"
+  fi
+  make ${build_target:-intel-mpi} CORE=atmosphere ${MPAS_MAKE_OPTIONS}
   cp -v atmosphere_model ${EXEC_DIR}
   ./build_tables_tempo
   popd
 }
 
 install_mpassit () {
-  MODULE_FILE="build.${PLATFORM}.${COMPILER}"
   module purge
-  module use ${MPAS_APP_DIR}/src/MPASSIT/modulefiles
-  module load ${MODULE_FILE}
   pushd ${MPAS_APP_DIR}/src/MPASSIT
-  ./build.sh ${PLATFORM}
+  ./build.sh ${PLATFORM} intel
   cp -v bin/mpassit ${EXEC_DIR}
   popd
 }
 
 install_upp () {
-  pushd ${MPAS_APP_DIR}
   module purge
-  module use ./src/UPP/modulefiles
-  module load ${PLATFORM}
-  mkdir build_upp && pushd build_upp
-  cmake -DCMAKE_INSTALL_PREFIX=.. -DCMAKE_INSTALL_BINDIR="exec" -DBUILD_WITH_WRFIO=ON ../src/UPP/
+  module use $MPAS_APP_DIR/src/UPP/modulefiles
+  module load $PLATFORM
+  d=$MPAS_APP_DIR/build_upp
+  mkdir -pv $d
+  pushd $d
+  args=(
+    -DCMAKE_INSTALL_PREFIX=$MPAS_APP_DIR
+    -DCMAKE_INSTALL_BINDIR="exec"
+    -DBUILD_WITH_WRFIO=ON
+    $MPAS_APP_DIR/src/UPP/
+  )
+  cmake ${args[*]} 
   make -j 8
   make install
-  popd
   popd
 }
 
@@ -160,11 +169,6 @@ SINGLE_PRECISION=false
 # Make options
 CLEAN=false
 
-# process required arguments
-if [[ ("$1" == "--help") || ("$1" == "-h") ]]; then
-  usage
-  exit 0
-fi
 
 # process optional arguments
 while :; do
@@ -213,6 +217,7 @@ if [ -z $PLATFORM ] ; then
   usage
   exit 0
 fi
+
 # set PLATFORM (MACHINE)
 MACHINE="${PLATFORM}"
 printf "PLATFORM(MACHINE)=${PLATFORM}\n" >&2
@@ -220,6 +225,11 @@ printf "PLATFORM(MACHINE)=${PLATFORM}\n" >&2
 if [ ! -d "${CONDA_BUILD_DIR}" ]; then
   install_miniforge
   install_conda_envs
+fi
+
+# check if COMPILER is set to gcc and reset as gnu
+if [ "${COMPILER}" = "gcc" ]; then
+  export COMPILER="gnu"
 fi
 
 # Conda environment should have linux utilities to perform these tasks on macos.
@@ -333,6 +343,3 @@ if [ "${CLEAN}" = true ]; then
        make ${MAKE_SETTINGS} clean 2>&1 | tee log.make
     fi
 fi
-
-
-
