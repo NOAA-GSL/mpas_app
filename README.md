@@ -77,7 +77,7 @@ The `create_ics` and `create_lbcs` blocks define the [`mpas_init driver UW YAML`
 
 The `forecast` section defines the MPAS `atmosphere_model` executable configuration. It follows the [`mpas driver UW YAML documentation`](https://uwtools.readthedocs.io/en/main/sections/user_guide/yaml/components/mpas_init.html).  If you want to add additional physics, you should add them in the physics field of the atmosphere namelist user config (see below).
 
-The `post` section configures three tasks in the workflow: a helper task that compbines grib files (the command is coded directly into the Rocoto task), the MPASSIT run script (not a UW Driver), and the [`upp UW Driver`](https://uwtools.readthedocs.io/en/main/sections/user_guide/yaml/components/upp.html).
+The `post` section configures three tasks in the workflow: a helper task that combines grib files (the command is coded directly into the Rocoto task), the MPASSIT run script (not a UW Driver), and the [`upp UW Driver`](https://uwtools.readthedocs.io/en/main/sections/user_guide/yaml/components/upp.html).
 
 Any of the default settings can be overridden by providing a user YAML (see next section) that matches the same structure as the default settings.
 
@@ -117,7 +117,7 @@ This block in the user YAML will remove the lateral boundary tasks from the work
 
 ## Generate the Experiment
 
-Prior to generating and running the experiment, the appropriate environment will need to be acticvated. From the `mpas_app/` directory., run:
+Prior to generating and running the experiment, the appropriate environment will need to be activated. From the `mpas_app/` directory., run:
 
 ```
 source load_wflow_modules.sh <platform>
