@@ -58,15 +58,24 @@ RAP:
 
 RRFS:
   ics:
-    prepare_grib_ics:
+    prepare_grib_ics: &rrfs_grib_ics
       ungrib:
         gribfiles:
           path: '{{ get_lbcs_data.rundir }}/rrfs.t{cycle_hour:02d}z.natlev.3km.f{forecast_hour:02d}.na.grib2'
         vtable: "user.mpas_app/parm/ungrib/Vtable.RRFS"
-    create_ics:
+      wgrib:
+        budget_fields: '{{ data.mesh_files }}/budget_fields.txt'
+        neighbor_fields: '{{ data.mesh_files }}/neighbor_fields.txt'
+        grid_specs: "lambert:266:25.000000 234.862000:2000:3000.000000 18.281000:1450:3000.000000"
+        grid_vectors: "UGRD:VGRD:USTM:VSTM:VUCSH:VVCSH"
+    prepare_grib_lbcs:
+      <<: *rrfs_grib_ics
+    create_ics: &rrfs_init
       mpas_init:
         namelist:
           update_values:
             dimensions:
               config_nfglevels: 66
               config_nfgsoillevels: 9
+    create_lbcs:
+      <<: *rrfs_init

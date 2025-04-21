@@ -61,6 +61,11 @@ prepare_grib_ics:
   platform:
     account: '{{ platform.account }}'
     scheduler: '{{ platform.scheduler }}'
+  wgrib:
+    budget_fields: '{{ data.mesh_files }}/budget_fields.txt'
+    neighbor_fields: '{{ data.mesh_files }}/neighbor_fields.txt'
+    grid_specs: "lambert:266:25.000000 234.862000:2000:3000.000000 18.281000:1450:3000.000000"
+    grid_vectors: "UGRD:VGRD:USTM:VSTM:VUCSH:VVCSH"
 prepare_grib_lbcs:
   # ungrib settings follow UW Tools driver YAML
   ungrib:
