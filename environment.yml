@@ -1,9 +1,7 @@
 name: mpas_app
 channels:
-  - conda-forge
   - ufs-community
-  - anaconda
-  - defaults
+  - conda-forge
 dependencies:
   - metis=5.1.0=hf484d3e_4
   - numpy=1.26*
