@@ -2,6 +2,7 @@
 The run script for the mpas init_atmosphere
 """
 
+import inspect
 import os
 import sys
 from datetime import datetime
@@ -12,6 +13,7 @@ from uwtools.api import config as uwconfig
 from uwtools.api.mpas_init import MPASInit
 from uwtools.api.logging import use_uwtools_logger
 
+from utils import run_shell_cmd
 
 def parse_args(argv):
     """
@@ -75,27 +77,12 @@ def variables_from_fix(expt_config, driver_config):
     for variable in ("shdmax", "shdmin"):
         fix_file = files_to_link[f"{variable}.{mesh_label}.nc"]
         cmd = f"module load nco ; ncks -A -v {variable} {fix_file} {init_file}"
-        try:
-            output = check_output(
-                cmd,
-                cwd=mpas_init_dir,
-                encoding="utf=8",
-                shell=True,
-                stderr=STDOUT,
-                text=True,
+        run_shell_cmd(
+            cmd=cmd,
+            cwd=driver_config["rundir"],
+            log_output=True,
+            task_name.inspect.stack()[0][3],
             )
-            logfunc = log.info
-            success = True
-        except CalledProcessError as e:
-            output = e.output
-            log.error("%sFailed with status: %s", pre, e.returncode)
-            logfunc = log.error
-            success = False
-        if output and (log_output or not success):
-            logfunc("%sOutput:", pre)
-            for line in output.split("\n"):
-                logfunc("%s%s%s", pre, INDENT, line)
-
 
 
 if __name__ == "__main__":
