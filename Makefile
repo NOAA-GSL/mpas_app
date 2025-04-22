@@ -1,5 +1,7 @@
+DEVPKGS = $(shell cat devpkgs)
 ENVNAME = mpas_app
-TARGETS = devenv env format lint test typecheck unittest
+ENVPATH = $(shell find $(CONDA_PREFIX)/envs -maxdepth 1 -type d -name $(ENVNAME))
+TARGETS = devenv env format lint rmenv test typecheck unittest
 
 .PHONY: $(TARGETS)
 
@@ -7,9 +9,9 @@ all:
 	$(error Valid targets are: $(TARGETS))
 
 devenv: env
-	conda update -f dev.yml
+	conda install -y -n $(ENVNAME) $(DEVPKGS)
 
-env:
+env: rmenv
 	conda env create
 
 format:
@@ -19,7 +21,7 @@ lint:
 	ruff check .
 
 rmenv:
-	conda env remove -y -n $(ENVNAME)
+	$(if $(ENVPATH),conda env remove -y -n $(ENVNAME))
 
 test: lint typecheck unittest
 
