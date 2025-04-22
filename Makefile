@@ -29,4 +29,4 @@ typecheck:
 	mypy --install-types --non-interactive .
 
 unittest:
-	pytest --cov=foo -n 4 .
+	pytest -n 4 .
