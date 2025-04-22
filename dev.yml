@@ -1,0 +1,10 @@
+channels:
+  - conda-forge
+dependencies:
+  - jq
+  - make
+  - mypy
+  - pytest
+  - pytest-cov
+  - pytest-xdist
+  - ruff
