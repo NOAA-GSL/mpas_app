@@ -1,7 +1,7 @@
-DEVPKGS = $(shell cat devpkgs)
-ENVNAME = mpas_app
-ENVPATH = $(shell ls $(CONDA_PREFIX)/envs/$(ENVNAME) 2>/dev/null)
-TARGETS = devenv env format lint rmenv test typecheck unittest
+DEVPKGS  = $(shell cat devpkgs)
+ENVNAME  = mpas_app
+ENVPATH  = $(shell ls $(CONDA_PREFIX)/envs/$(ENVNAME) 2>/dev/null)
+TARGETS  = devenv env format lint rmenv test typecheck unittest
 
 .PHONY: $(TARGETS)
 
@@ -29,4 +29,4 @@ typecheck:
 	mypy --install-types --non-interactive .
 
 unittest:
-	pytest -n 4 .
+	pytest --cov -n 4 tests

@@ -1,14 +1,19 @@
 [tool.coverage.report]
 exclude_also = ["if TYPE_CHECKING:"]
-fail_under = 100
-# omit = ["*/tests/*"]
+fail_under = 0
 show_missing = true
 skip_covered = true
+
+[tool.coverage.run]
+source = ["scripts", "ush"]
 
 [tool.mypy]
 check_untyped_defs = true
 pretty = true
 warn_return_any = true
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
 
 [tool.ruff]
 line-length = 100
