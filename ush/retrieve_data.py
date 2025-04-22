@@ -757,7 +757,7 @@ def main(argv):
         # Make sure a path was provided.
         if not cla.input_file_path:
             raise argparse.ArgumentTypeError(
-                ("You must provide an input_file_path when choosing  disk as a data store!")
+                ("You must provide an input_file_path when choosing disk as a data store!")
             )
 
     if "hpss" in cla.data_stores:
