@@ -8,8 +8,8 @@ from datetime import datetime
 from pathlib import Path
 
 from uwtools.api import config as uwconfig
-from uwtools.api.mpas_init import MPASInit
 from uwtools.api.logging import use_uwtools_logger
+from uwtools.api.mpas_init import MPASInit
 
 use_uwtools_logger()
 

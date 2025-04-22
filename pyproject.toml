@@ -15,7 +15,7 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["ALL"]
-#ignore = [
+ignore = [
 #  "ANN001",  # missing-type-function-argument
 #  "ANN002",  # missing-type-args
 #  "ANN003",  # missing-type-kwargs
@@ -25,7 +25,7 @@ select = ["ALL"]
 #  "ANN401",  # any-type
 #  "C408",    # unnecessary-collection-call
 #  "C901",    # complex-structure
-#  "COM812",  # missing-trailing-comma
+  "COM812",  # missing-trailing-comma
 #  "D100",    # undocumented-public-module
 #  "D101",    # undocumented-public-class
 #  "D102",    # undocumented-public-method
@@ -34,8 +34,8 @@ select = ["ALL"]
 #  "D105",    # undocumented-magic-method
 #  "D107",    # undocumented-public-init
 #  "D200",    # unnecessary-multiline-docstring
-#  "D203",    # incorrect-blank-line-before-class
-#  "D212",    # multi-line-summary-first-line
+  "D203",    # incorrect-blank-line-before-class
+  "D212",    # multi-line-summary-first-line
 #  "D401",    # non-imperative-mood
 #  "E731",    # lambda-assignment
 #  "ERA001",  # commented-out-code
@@ -50,7 +50,7 @@ select = ["ALL"]
 #  "S603",    # subprocess-without-shell-equals-true
 #  "T201",    # print
 #  "UP031",   # printf-string-formatting
-#]
+]
 
 #[tool.ruff.lint.per-file-ignores]
 #"tests/*" = [

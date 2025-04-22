@@ -8,8 +8,8 @@ from datetime import datetime
 from pathlib import Path
 
 from uwtools.api import config as uwconfig
-from uwtools.api.ungrib import Ungrib
 from uwtools.api.logging import use_uwtools_logger
+from uwtools.api.ungrib import Ungrib
 
 use_uwtools_logger()
 
