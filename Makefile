@@ -1,6 +1,6 @@
 DEVPKGS = $(shell cat devpkgs)
 ENVNAME = mpas_app
-ENVPATH = $(shell find $(CONDA_PREFIX)/envs -maxdepth 1 -type d -name $(ENVNAME))
+ENVPATH = $(shell ls $(CONDA_PREFIX)/envs/$(ENVNAME) 2>/dev/null)
 TARGETS = devenv env format lint rmenv test typecheck unittest
 
 .PHONY: $(TARGETS)
