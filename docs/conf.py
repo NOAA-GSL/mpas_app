@@ -1,8 +1,8 @@
 # See https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-from pathlib import Path
 import datetime as dt
 import sys
+from pathlib import Path
 
 sys.path.insert(0, Path("../src").absolute())
 
@@ -25,6 +25,7 @@ user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Ge
 version = "0.0.0"
 
 extlinks = {}
+
 
 def setup(app):
     app.add_css_file("custom.css")

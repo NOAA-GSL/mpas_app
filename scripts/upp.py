@@ -10,7 +10,6 @@ from pathlib import Path
 from uwtools.api import config as uwconfig
 from uwtools.api.upp import UPP
 
-
 # Load the YAML config
 CONFIG_PATH = os.environ["CONFIG_PATH"]
 CYCLE = os.environ["CYCLE"]

@@ -25,9 +25,7 @@ def create_grid_files(expt_dir: Path, mesh_file_path: Path, nprocs: int) -> None
     mesh_file = expt_dir / mesh_file_path.name
     cmd = f"gpmetis -minconn -contig -niter=200 {mesh_file} {nprocs}"
     try:
-        output = check_output(
-            cmd, encoding="utf=8", shell=True, stderr=STDOUT, text=True
-        )
+        output = check_output(cmd, encoding="utf=8", shell=True, stderr=STDOUT, text=True)
     except CalledProcessError as e:
         output = e.output
         print("Error running command:")
@@ -112,7 +110,7 @@ def main(user_config_files: list[Path, str]) -> None:
         ("create_lbcs", "mpas_init"),
         ("forecast", "mpas"),
         ("post", "mpassit"),
-        ):
+    ):
         if sect in experiment_config:
             resources = experiment_config[sect][driver]["execution"]["batchargs"]
             if (cores := resources.get("cores")) is None:
@@ -125,16 +123,12 @@ def main(user_config_files: list[Path, str]) -> None:
 
 
 if __name__ == "__main__":
-
     use_uwtools_logger()
 
     parser = argparse.ArgumentParser(
         description="Configure an experiment with the following input:"
     )
-    parser.add_argument(
-            "user_config_files",
-            nargs="+",
-            help="Paths to the user config files.")
+    parser.add_argument("user_config_files", nargs="+", help="Paths to the user config files.")
 
     args = parser.parse_args()
     path_list = [Path(p) for p in args.user_config_files]
