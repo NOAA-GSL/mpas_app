@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 # ruff: noqa: G004
-# ruff: noqa: PGH003
 
 """
 This script helps users pull data from known data streams, including
