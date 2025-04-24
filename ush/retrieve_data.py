@@ -2,7 +2,6 @@
 
 # ruff: noqa: G004
 # ruff: noqa: PGH003
-# type: ignore
 
 """
 This script helps users pull data from known data streams, including
@@ -59,7 +58,7 @@ def clean_up_output_dir(expected_subdir, local_archive, output_path, source_path
 
     # Check to make sure the files exist on disk
     for file_path in expand_source_paths:
-        local_file_path = str(Path(Path.getcwd(), file_path.lstrip("/")))
+        local_file_path = str(Path.cwd() / file_path.lstrip("/"))
         logging.debug("Moving %s to %s", local_file_path, output_path)
         if not Path(local_file_path).exists():
             logging.info("File does not exist: %s", local_file_path)
@@ -359,7 +358,7 @@ def get_requested_files(cla, file_templates, input_locs, method="disk", **kwargs
 
     input_locs = input_locs if isinstance(input_locs, list) else [input_locs]
 
-    orig_path = Path.getcwd()
+    orig_path = Path.cwd()
     unavailable = []
 
     locs_files = pair_locs_with_files(input_locs, file_templates, check_all)
@@ -512,7 +511,7 @@ def hpss_requested_files(cla, file_names, store_specs, members=-1, ens_group=-1)
 
             output_path = Path(fill_template(cla.output_path, cla.cycle_date, mem=mem))
             logging.info(f"Will place files in {output_path.resolve()}")
-            logging.debug(f"CWD: {Path.getcwd()}")
+            logging.debug(f"CWD: {Path.cwd()}")
 
             if mem != -1:
                 archive_internal_dir = fill_template(
@@ -570,7 +569,7 @@ def hpss_requested_files(cla, file_names, store_specs, members=-1, ens_group=-1)
                         output_path=output_path,
                         source_paths=source_paths,
                     ).get("hpss", [])
-                )
+                )  # type: ignore[assignment]
 
             # Once we go through all the archives, the union of all
             # "unavailable" files should equal the "expected" list of
@@ -578,13 +577,13 @@ def hpss_requested_files(cla, file_names, store_specs, members=-1, ens_group=-1)
             # are missing from one of the files attempted. If any
             # additional files are reported as unavailable, then
             # something has gone wrong.
-            unavailable = set.union(*unavailable.values())
+            unavailable = set.union(*unavailable.values())  # type: ignore[arg-type,assignment]
 
     # Break loop if unexpected files were found or if files were found
     # A successful file found does not equal the expected file list and
     # returns an empty set function.
     if expected != unavailable:
-        return unavailable - expected
+        return unavailable - expected  # type: ignore[operator]
 
     # If this loop has completed successfully without returning early, then all files have been
     # found.
@@ -851,7 +850,7 @@ def get_ens_groups(members):
     if members is None:
         return {-1: [-1]}
 
-    ens_groups = {}
+    ens_groups: dict = {}
     for mem in members:
         ens_group = (mem - 1) // 10 + 1
         if ens_groups.get(ens_group) is None:
