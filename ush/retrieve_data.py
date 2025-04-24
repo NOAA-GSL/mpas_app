@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-# ruff: noqa: G004
-
 """
 This script helps users pull data from known data streams, including
 URLS and HPSS (only on supported NOAA platforms), or from user-supplied
@@ -88,9 +86,8 @@ def copy_file(source, destination, copy_cmd):
     """
 
     if not Path(source).exists():
-        logging.info(
-            "File does not exist on disk \n %s \n try using: --input_file_path <your_path>", source
-        )
+        msg = "File does not exist on disk \n %s \n try using: --input_file_path <your_path>"
+        logging.info(msg, source)
         return False
 
     # Using subprocess here because system copy is much faster than
@@ -138,11 +135,7 @@ def download_file(url):
     cmd = f"wget -q -c -T 15 -t 2 {url}"
     logging.debug("Running command: \n %s", cmd)
     try:
-        subprocess.run(
-            cmd,
-            check=True,
-            shell=True,
-        )
+        subprocess.run(cmd, check=True, shell=True)
     except subprocess.CalledProcessError as err:
         logging.info(err)
         return False
@@ -373,8 +366,8 @@ def get_requested_files(cla, file_templates, input_locs, method="disk", **kwargs
             for loc, templates in locs_files:
                 templates_list = templates if isinstance(templates, list) else [templates]
 
-                logging.debug(f"Looking for files like {templates_list}")
-                logging.debug(f"They should be here: {loc}")
+                logging.debug("Looking for files like %s", templates_list)
+                logging.debug("They should be here: %s", loc)
 
                 template_loc = loc
                 for tmpl_num, template in enumerate(templates_list):
@@ -387,8 +380,8 @@ def get_requested_files(cla, file_templates, input_locs, method="disk", **kwargs
                         fcst_hr=fcst_hr,
                         mem=mem,
                     )
-                    logging.info(f"Getting file: {input_loc}")
-                    logging.debug(f"Target path: {target_path}")
+                    logging.info("Getting file: %s", input_loc)
+                    logging.debug("Target path: %s", target_path)
                     if method == "disk":
                         if cla.symlink:
                             retrieved = copy_file(input_loc, target_path, "ln -sf")
@@ -406,7 +399,7 @@ def get_requested_files(cla, file_templates, input_locs, method="disk", **kwargs
                         # when downloading from AWS
                         time.sleep(5)
 
-                    logging.debug(f"Retrieved status: {retrieved}")
+                    logging.debug("Retrieved status: %s", retrieved)
                     if not retrieved:
                         unavailable.append(input_loc)
 
@@ -414,7 +407,7 @@ def get_requested_files(cla, file_templates, input_locs, method="disk", **kwargs
                     # Start on the next fcst hour if all files were
                     # found from a loc/template combo
                     break
-                logging.debug(f"Some files were not retrieved: {unavailable}")
+                logging.debug("Some files were not retrieved: %s", unavailable)
                 logging.debug("Will check other locations for missing files")
 
     os.chdir(orig_path)
@@ -433,11 +426,11 @@ def hsi_single_file(file_path, mode="ls"):
     """
     cmd = f"hsi {mode} {file_path}"
 
-    logging.info(f"Running command \n {cmd}")
+    logging.info("Running command \n %s", cmd)
     try:
         subprocess.run(cmd, check=True, shell=True)
     except subprocess.CalledProcessError:
-        logging.warning(f"{file_path} is not available!")
+        logging.warning("%s is not available!", file_path)
         return ""
 
     return file_path
@@ -473,7 +466,7 @@ def hpss_requested_files(cla, file_names, store_specs, members=-1, ens_group=-1)
     unavailable = {}
     existing_archives = {}
 
-    logging.debug(f"Will try to look for:  {list(zip(archive_paths, archive_file_names))}")
+    logging.debug("Will try to look for: %s", list(zip(archive_paths, archive_file_names)))
 
     existing_archives, which_archive = find_archive_files(
         archive_paths,
@@ -482,14 +475,14 @@ def hpss_requested_files(cla, file_names, store_specs, members=-1, ens_group=-1)
         ens_group=ens_group,
     )
 
-    logging.debug(f"Found existing archives: {existing_archives}")
+    logging.debug("Found existing archives: %s", existing_archives)
 
     if not existing_archives:
         logging.warning("No archive files were found!")
         unavailable["archive"] = list(zip(archive_paths, archive_file_names))
         return unavailable
 
-    logging.info(f"Files in archive are named: {file_names}")
+    logging.info("Files in archive are named: %s", file_names)
 
     archive_internal_dirs = store_specs.get("archive_internal_dir", [""])
     if isinstance(archive_internal_dirs, dict):
@@ -498,7 +491,7 @@ def hpss_requested_files(cla, file_names, store_specs, members=-1, ens_group=-1)
     # which_archive matters for choosing the correct file names within,
     # but we can safely just try all options for the
     # archive_internal_dir
-    logging.debug(f"Checking archive number {which_archive} in list.")
+    logging.debug("Checking archive number %s in list.", which_archive)
 
     for archive_internal_dir_tmpl in archive_internal_dirs:
         for mem in members:
@@ -509,8 +502,8 @@ def hpss_requested_files(cla, file_names, store_specs, members=-1, ens_group=-1)
             )
 
             output_path = Path(fill_template(cla.output_path, cla.cycle_date, mem=mem))
-            logging.info(f"Will place files in {output_path.resolve()}")
-            logging.debug(f"CWD: {Path.cwd()}")
+            logging.info("Will place files in %s", output_path.resolve())
+            logging.debug("CWD: %s", Path.cwd())
 
             if mem != -1:
                 archive_internal_dir = fill_template(
@@ -519,7 +512,7 @@ def hpss_requested_files(cla, file_names, store_specs, members=-1, ens_group=-1)
                     mem=mem,
                 )
                 output_path.mkdir(parents=True, exist_ok=True)
-                logging.info(f"Will place files in {output_path.resolve()}")
+                logging.info("Will place files in %s", output_path.resolve())
 
             source_paths = [
                 fill_template(
@@ -545,7 +538,7 @@ def hpss_requested_files(cla, file_names, store_specs, members=-1, ens_group=-1)
                 else:
                     cmd = f"htar -xvf {local_path} {' '.join(source_paths)}"
 
-                logging.info(f"Running command \n {cmd}")
+                logging.info("Running command \n %s", cmd)
 
                 try:
                     r = subprocess.run(cmd, check=False, shell=True)
@@ -660,7 +653,7 @@ def path_exists(arg):
         raise argparse.ArgumentTypeError(msg)
 
     if not os.access(arg, os.X_OK | os.W_OK):
-        logging.error(f"{arg} is not writeable!")
+        logging.error("%s is not writeable!", arg)
         raise argparse.ArgumentTypeError(msg)
 
     return arg
@@ -694,7 +687,7 @@ def write_summary_file(cla, data_store, file_templates):
                 )
         output_path = fill_template(cla.output_path, cla.cycle_date, mem=mem)
         summary_fp = Path(output_path, cla.summary_file)
-        logging.info(f"Writing a summary file to {summary_fp}")
+        logging.info("Writing a summary file to %s", summary_fp)
         file_contents = dedent(
             f"""
             DATA_SRC={data_store}
@@ -704,7 +697,7 @@ def write_summary_file(cla, data_store, file_templates):
             EXTRN_MDL_FHRS=( {" ".join([str(i) for i in cla.fcst_hrs])} )
             """
         )
-        logging.info(f"Contents: {file_contents}")
+        logging.info("Contents: %s", file_contents)
         summary_fp.write_text(file_contents)
 
 
@@ -770,11 +763,11 @@ def main(argv):
             cla.data_stores = ["disk"]
             raise KeyError(msg)
         logging.info(msg)
-        logging.info(f"Checking provided disk location {cla.input_file_path}")
+        logging.info("Checking provided disk location %s", cla.input_file_path)
 
     unavailable = {}
     for data_store in cla.data_stores:
-        logging.info(f"Checking {data_store} for {cla.data_type}")
+        logging.info("Checking %s for %s", data_store, cla.data_type)
         store_specs = known_data_info.get(data_store, {})
 
         if data_store == "disk":
@@ -785,7 +778,7 @@ def main(argv):
                 use_cla_tmpl=True,
             )
 
-            logging.debug(f"User supplied file names are: {file_templates}")
+            logging.debug("User supplied file names are: %s", file_templates)
             unavailable = get_requested_files(
                 cla,
                 check_all=known_data_info.get("check_all", False),
