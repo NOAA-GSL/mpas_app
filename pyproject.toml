@@ -42,13 +42,12 @@ ignore = [
   "D404",    # docstring-starts-with-this
   "D417",    # undocumented-param
   "FBT002",  # boolean-default-value-positional-argument
-  "INP001",  # PM FIX
   "LOG015",  # root-logger-call
   "PLR0912", # too-many-branches
   "PLR2004", # magic-value-comparison
-  "PTH207", # glob
+  "PTH207",  # glob
   "S101",    # assert
-  "S310", # suspicious-url-open-usage
+  "S310",    # suspicious-url-open-usage
   "S602",    # subprocess-popen-with-shell-equals-true
   "T201",    # print
   "TRY400",  # error-instead-of-exception

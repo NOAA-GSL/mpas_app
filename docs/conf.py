@@ -1,5 +1,7 @@
 # See https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+# ruff: noqa: INP001
+
 import datetime as dt
 import sys
 from pathlib import Path
