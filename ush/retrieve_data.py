@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# ruff: noqa: G004
+# ruff: noqa: PGH003
 # type: ignore
 
 """

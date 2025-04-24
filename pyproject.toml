@@ -59,4 +59,3 @@ ignore = [
 "tests/*" = [
   "PT013",   # pytest-incorrect-pytest-import
 ]
-"ush/retrieve_data.py" = ["G004", "PGH003"]
