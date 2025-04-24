@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 The run script for the mpas init_atmosphere.
 """
@@ -10,23 +12,26 @@ from pathlib import Path
 from uwtools.api.logging import use_uwtools_logger
 from uwtools.api.mpas_init import MPASInit
 
-use_uwtools_logger()
+
+def main():
+    use_uwtools_logger()
+
+    # Load the YAML config
+    config_path = os.environ["CONFIG_PATH"]
+    expt_sect = os.environ["EXPT_SECT"]
+    cycle = datetime.fromisoformat(os.environ["CYCLE"])
+
+    # Run mpas_init
+    mpas_init_driver = MPASInit(config=config_path, cycle=cycle, key_path=[expt_sect])
+    mpas_init_driver.run()
+
+    # Obtain MPAS init run directory path
+    mpas_init_dir = Path(mpas_init_driver.config["rundir"])
+
+    if not (mpas_init_dir / "runscript.mpas_init.done").is_file():
+        print("Error occurred running mpas_init. Please see component error logs.")
+        sys.exit(1)
 
 
-# Load the YAML config
-CONFIG_PATH = os.environ["CONFIG_PATH"]
-CYCLE = os.environ["CYCLE"]
-EXPT_SECT = os.environ["EXPT_SECT"]
-
-cycle = datetime.fromisoformat(CYCLE)
-
-# Run mpas_init
-mpas_init_driver = MPASInit(config=CONFIG_PATH, cycle=cycle, key_path=[EXPT_SECT])
-mpas_init_driver.run()
-
-# Obtain MPAS init run directory path
-mpas_init_dir = Path(mpas_init_driver.config["rundir"])
-
-if not (mpas_init_dir / "runscript.mpas_init.done").is_file():
-    print("Error occurred running mpas_init. Please see component error logs.")
-    sys.exit(1)
+if __name__ == "__main__":
+    main()

@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 Creates the experiment directory and populates it with necessary configuration and workflow files.
 """
