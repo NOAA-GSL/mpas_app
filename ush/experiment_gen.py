@@ -32,7 +32,7 @@ def create_grid_files(expt_dir: Path, mesh_file_path: Path, nprocs: int) -> None
         sys.exit(1)
 
 
-def main(user_config_files: list[Path, str]) -> None:
+def main(user_config_files):
     """
     Stage the Rocoto XML and experiment YAML in the desired experiment
     directory.
@@ -76,12 +76,9 @@ def main(user_config_files: list[Path, str]) -> None:
     workflow_blocks = experiment_config["user"]["workflow_blocks"]
     workflow_blocks = [mpas_app / "parm" / "wflow" / b for b in workflow_blocks]
 
-    workflow_config = None
+    workflow_config = get_yaml_config({})
     for workflow_block in workflow_blocks:
-        if workflow_config is None:
-            workflow_config = get_yaml_config(workflow_block)
-        else:
-            workflow_config.update_from(get_yaml_config(workflow_block))
+        workflow_config.update_from(get_yaml_config(workflow_block))
     workflow_config.update_from(experiment_config)
 
     realize(

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-# pylint: disable-all
+
+# type: ignore
+
 """
 This script helps users pull data from known data streams, including
 URLS and HPSS (only on supported NOAA platforms), or from user-supplied

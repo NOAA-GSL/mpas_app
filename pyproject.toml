@@ -25,56 +25,38 @@ ignore = [
   "ANN002",  # missing-type-args
   "ANN003",  # missing-type-kwargs
   "ANN201",  # missing-return-type-class-method
-#  "ANN202",  # missing-return-type-private-function
-#  "ANN204",  # missing-return-type-special-method
-#  "ANN401",  # any-type
   "C408",    # unnecessary-collection-call
   "C901",    # complex-structure
   "COM812",  # missing-trailing-comma
   "D100",    # undocumented-public-module
-#  "D101",    # undocumented-public-class
-#  "D102",    # undocumented-public-method
   "D103",    # undocumented-public-function
   "D104",    # undocumented-public-package
-#  "D105",    # undocumented-magic-method
-#  "D107",    # undocumented-public-init
   "D200",    # unnecessary-multiline-docstring
-  "D203",    # incorrect-blank-line-before-class
   "D202",    # blank-line-after-function
+  "D203",    # incorrect-blank-line-before-class
   "D205",    # missing-blank-line-after-summary
   "D209",    # new-line-after-last-paragraph
   "D212",    # multi-line-summary-first-line
   "D213",    # multi-line-summary-second-line
   "D401",    # non-imperative-mood
   "D404",    # docstring-starts-with-this
-#  "D415",    # ends-in-punctuation
   "D417",    # undocumented-param
-#  "E731",    # lambda-assignment
-#  "ERA001",  # commented-out-code
-#  "FBT001",  # boolean-type-hint-positional-argument
   "FBT002",  # boolean-default-value-positional-argument
-#  "FLY002",  # static-join-to-f-string
-#  "N813",    # camelcase-imported-as-lowercase
-#  "PLR0911", # too-many-return-statements
+  "INP001",  # PM FIX
+  "LOG015",  # root-logger-call
   "PLR0912", # too-many-branches
-#  "PLR0913", # too-many-arguments
+  "PLR2004", # magic-value-comparison
+  "PTH207", # glob
   "S101",    # assert
   "S310", # suspicious-url-open-usage
   "S602",    # subprocess-popen-with-shell-equals-true
   "T201",    # print
   "TRY400",  # error-instead-of-exception
   "UP031",   # printf-string-formatting
-  "LOG015",  # root-logger-call
-  "G004", # PM FIX
-  "PLR2004", # magic-value-comparison
-  "PTH207", # glob
-  "INP001",  # PM FIX
 ]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = [
-#  "N802",    # invalid-function-name
-#  "PLR2004", # magic-value-comparison
   "PT013",   # pytest-incorrect-pytest-import
-#  "SLF001",  # private-member-access
 ]
+"ush/retrieve_data.py" = ["G004", "PGH003"]
