@@ -48,27 +48,27 @@ def clean_up_output_dir(expected_subdir, local_archive, output_path, source_path
 
     unavailable = {}
     expand_source_paths = []
-    logging.debug(f"Cleaning up local paths: {source_paths}")
+    logging.debug("Cleaning up local paths: %s", source_paths)
     for p in source_paths:
         expand_source_paths.extend(glob.glob(p.lstrip("/")))
 
     # Check to make sure the files exist on disk
     for file_path in expand_source_paths:
         local_file_path = os.path.join(os.getcwd(), file_path.lstrip("/"))
-        logging.debug(f"Moving {local_file_path} to {output_path}")
+        logging.debug("Moving %s to %s", local_file_path, output_path)
         if not os.path.exists(local_file_path):
-            logging.info(f"File does not exist: {local_file_path}")
+            logging.info("File does not exist: %s", local_file_path)
             unavailable["hpss"] = expand_source_paths
         else:
             file_name = os.path.basename(file_path)
             expected_output_loc = os.path.join(output_path, file_name)
             if not local_file_path == expected_output_loc:
-                logging.info(f"Moving {local_file_path} to {expected_output_loc}")
+                logging.info("Moving %s to %s", local_file_path, expected_output_loc)
                 shutil.move(local_file_path, expected_output_loc)
 
     # Clean up directories from inside archive, if they exist
     if os.path.exists(expected_subdir) and expected_subdir != "./":
-        logging.info(f"Removing {expected_subdir}")
+        logging.info("Removing %s", expected_subdir)
         os.removedirs(expected_subdir)
 
     # If an archive exists on disk, remove it
@@ -87,14 +87,14 @@ def copy_file(source, destination, copy_cmd):
 
     if not os.path.exists(source):
         logging.info(
-            f"File does not exist on disk \n {source} \n try using: --input_file_path <your_path>"
+            "File does not exist on disk \n %s \n try using: --input_file_path <your_path>", source
         )
         return False
 
     # Using subprocess here because system copy is much faster than
     # python copy options.
     cmd = f"{copy_cmd} {source} {destination}"
-    logging.info(f"Running command: \n {cmd}")
+    logging.info("Running command: \n %s", cmd)
     try:
         subprocess.run(
             cmd,
@@ -133,7 +133,7 @@ def download_file(url):
     # -T timeout seconds
     # -t number of tries
     cmd = f"wget -q -c -T 15 -t 2 {url}"
-    logging.debug(f"Running command: \n {cmd}")
+    logging.debug("Running command: \n %s", cmd)
     try:
         subprocess.run(
             cmd,
@@ -266,7 +266,7 @@ def find_archive_files(paths, file_names, cycle_date, ens_group):
 
         if existing_archives:
             for existing_archive in existing_archives.values():
-                logging.info(f"Found HPSS file: {existing_archive}")
+                logging.info("Found HPSS file: %s", existing_archive)
             return existing_archives, list_item
 
     return "", 0
@@ -346,7 +346,7 @@ def get_requested_files(cla, file_templates, input_locs, method="disk", **kwargs
 
     check_all = kwargs.get("check_all", False)
 
-    logging.info(f"Getting files named like {file_templates}")
+    logging.info("Getting files named like %s", file_templates)
 
     # Make sure we're dealing with lists for input locations and file
     # templates. Makes it easier to loop and zip.
@@ -362,11 +362,11 @@ def get_requested_files(cla, file_templates, input_locs, method="disk", **kwargs
         target_path = fill_template(cla.output_path, cla.cycle_date, mem=mem)
         os.makedirs(target_path, exist_ok=True)
 
-        logging.info(f"Retrieved files will be placed here: \n {target_path}")
+        logging.info("Retrieved files will be placed here: \n %s", target_path)
         os.chdir(target_path)
 
         for fcst_hr in cla.fcst_hrs:
-            logging.debug(f"Looking for fhr = {fcst_hr}")
+            logging.debug("Looking for fhr = %s", fcst_hr)
             for loc, templates in locs_files:
                 templates = templates if isinstance(templates, list) else [templates]
 
@@ -846,8 +846,8 @@ def main(argv):
                 write_summary_file(cla, data_store, file_templates)
             break
 
-        logging.debug(f"Some unavailable files: {unavailable}")
-        logging.warning(f"Requested files are unavailable from {data_store}")
+        logging.debug("Some unavailable files: %s", unavailable)
+        logging.warning("Requested files are unavailable from %s", data_store)
 
     if unavailable:
         logging.error("Could not find any of the requested files.")
@@ -883,7 +883,7 @@ def parse_args(argv):
         "Allowable Python templates for paths, urls, and file names are "
         " defined in the fill_template function and include:\n"
         f"{'-' * 120}\n"
-        f"{fill_template('null', dt.datetime.now(), templates_only=True)}"
+        f"{fill_template('null', dt.datetime.now(tz=dt.timezone.utc), templates_only=True)}"
     )
     parser = argparse.ArgumentParser(
         description=description,
@@ -1019,19 +1019,18 @@ def parse_args(argv):
 
     # Check required arguments for various conditions
     if not args.ics_or_lbcs and args.file_set in ["anl", "fcst"]:
-        raise argparse.ArgumentTypeError(
-            f"--ics_or_lbcs is a required argument when --file_set = {args.file_set}"
-        )
+        msg = f"--ics_or_lbcs is a required argument when --file_set = {args.file_set}"
+        raise argparse.ArgumentTypeError(msg)
 
     # Check valid arguments for various conditions
     valid_data_stores = ["hpss", "nomads", "aws", "disk", "remote"]
     for store in args.data_stores:
         if store not in valid_data_stores:
-            raise argparse.ArgumentTypeError(
-                f"Invalid value '{store}' provided "
-                f"for --data_stores; valid values are {valid_data_stores}"
+            msg = "Invalid value '%s' provided for --data_stores; valid values are %s" % (
+                store,
+                valid_data_stores,
             )
-
+            raise argparse.ArgumentTypeError(msg)
     return args
 
 

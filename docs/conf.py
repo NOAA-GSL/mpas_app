@@ -9,7 +9,7 @@ sys.path.insert(0, Path("../src").absolute())
 autoclass_content = "both"
 autodoc_mock_imports = []
 autodoc_typehints = "description"
-copyright = str(dt.datetime.now().year)
+copyright = str(dt.datetime.now(tz=dt.timezone.utc).year)
 extensions = ["sphinx.ext.autodoc", "sphinx.ext.extlinks", "sphinx.ext.intersphinx"]
 extlinks_detect_hardcoded_links = True
 html_logo = str(Path("static", "logo.png"))
