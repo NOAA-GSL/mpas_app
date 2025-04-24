@@ -7,7 +7,6 @@ import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from uwtools.api import config as uwconfig
 from uwtools.api.upp import UPP
 
 # Load the YAML config

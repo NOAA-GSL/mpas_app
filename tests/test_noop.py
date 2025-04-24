@@ -1,6 +1,5 @@
-import scripts
-import ush
 from pytest import fixture
+
 
 @fixture
 def n():

@@ -126,6 +126,7 @@ def download_file(url):
 
     Return:
       boolean value reflecting state of download.
+
     """
 
     # wget flags:
@@ -195,6 +196,7 @@ def fill_template(template_str, cycle_date, templates_only=False, **kwargs):
 
     Return:
       filled template string
+
     """
 
     # Parse keyword args
@@ -236,7 +238,7 @@ def fill_template(template_str, cycle_date, templates_only=False, **kwargs):
     )
 
     if templates_only:
-        return f"{','.join((format_values.keys()))}"
+        return f"{','.join(format_values.keys())}"
     return template_str.format(**format_values)
 
 
@@ -277,7 +279,6 @@ def get_file_templates(cla, known_data_info, data_store, use_cla_tmpl=False):
     the command line, or from the known data information dict.
 
     Arguments:
-
        cla              command line arguments Namespace object
        known_data_info  dict from data_locations yaml file
        data_store       string corresponding to a key in the
@@ -286,6 +287,7 @@ def get_file_templates(cla, known_data_info, data_store, use_cla_tmpl=False):
 
     Returns:
        file_templates   a list of file templates
+
     """
 
     file_templates = known_data_info.get(data_store, {}).get("file_names")
@@ -315,7 +317,6 @@ def get_file_templates(cla, known_data_info, data_store, use_cla_tmpl=False):
 
 def get_requested_files(cla, file_templates, input_locs, method="disk", **kwargs):
     # pylint: disable=too-many-locals
-
     """This function copies files from disk locations
     or downloads files from a url, depending on the option specified for
     user.
@@ -324,7 +325,6 @@ def get_requested_files(cla, file_templates, input_locs, method="disk", **kwargs
     writeable.
 
     Arguments:
-
     cla            Namespace object containing command line arguments
     file_templates a list of file templates
     input_locs      A string containing a single data location, either a url
@@ -332,13 +332,14 @@ def get_requested_files(cla, file_templates, input_locs, method="disk", **kwargs
     method         Choice of disk or download to indicate protocol for
                    retrieval
 
-    Keyword args:
+    Keyword Args:
     members        a list integers corresponding to the ensemble members
     check_all      boolean flag that indicates all urls should be
                    checked for all files
 
     Returns:
     unavailable  a list of locations/files that were unretrievable
+
     """
 
     members = kwargs.get("members", "")
@@ -411,9 +412,8 @@ def get_requested_files(cla, file_templates, input_locs, method="disk", **kwargs
                     # Start on the next fcst hour if all files were
                     # found from a loc/template combo
                     break
-                else:
-                    logging.debug(f"Some files were not retrieved: {unavailable}")
-                    logging.debug("Will check other locations for missing files")
+                logging.debug(f"Some files were not retrieved: {unavailable}")
+                logging.debug("Will check other locations for missing files")
 
     os.chdir(orig_path)
     return unavailable
@@ -447,7 +447,6 @@ def hsi_single_file(file_path, mode="ls"):
 
 def hpss_requested_files(cla, file_names, store_specs, members=-1, ens_group=-1):
     # pylint: disable=too-many-locals
-
     """This function interacts with the "hpss" protocol in a provided
     data store specs file to download a set of files requested by the
     user. Depending on the type of archive file (zip or tar), it will
@@ -563,7 +562,6 @@ def hpss_requested_files(cla, file_names, store_specs, members=-1, ens_group=-1)
                         # Continue if files missing from archive; we will check later if this is
                         # an acceptable condition
                         logging.warning("One or more files not found in zip archive")
-                        pass
                     else:
                         raise Exception("Error running archive extraction command")
 
@@ -613,7 +611,7 @@ def config_exists(arg):
         msg = f"{arg} does not exist!"
         raise argparse.ArgumentTypeError(msg)
 
-    with open(arg, "r") as config_path:
+    with open(arg) as config_path:
         cfg = yaml.load(config_path, Loader=yaml.SafeLoader)
     return cfg
 
@@ -757,7 +755,7 @@ def main(argv):
         # Make sure a path was provided.
         if not cla.input_file_path:
             raise argparse.ArgumentTypeError(
-                ("You must provide an input_file_path when choosing disk as a data store!")
+                "You must provide an input_file_path when choosing disk as a data store!"
             )
 
     if "hpss" in cla.data_stores:
