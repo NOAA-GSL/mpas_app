@@ -1,5 +1,5 @@
 """
-The run script for the mpas forecast
+The run script for the mpas forecast.
 """
 
 import os

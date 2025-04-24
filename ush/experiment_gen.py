@@ -3,7 +3,6 @@ Creates the experiment directory and populates it with necessary configuration a
 """
 
 import argparse
-import os
 import sys
 from pathlib import Path
 from shutil import copy
@@ -40,7 +39,7 @@ def main(user_config_files: list[Path, str]) -> None:
     """
 
     # Set up the experiment
-    mpas_app = Path(os.path.dirname(__file__)).parent.absolute()
+    mpas_app = Path(__file__).parent.parent.resolve()
     experiment_config = get_yaml_config(Path("./default_config.yaml"))
     user_config = get_yaml_config({})
     for cfg_file in user_config_files:
@@ -69,7 +68,7 @@ def main(user_config_files: list[Path, str]) -> None:
     # Build the experiment directory
     experiment_path = Path(experiment_config["user"]["experiment_dir"])
     print(f"Experiment will be set up here: {experiment_path}")
-    os.makedirs(experiment_path, exist_ok=True)
+    Path(experiment_path).mkdir(parents=True, exist_ok=True)
 
     experiment_file = experiment_path / "experiment.yaml"
 

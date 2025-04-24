@@ -1,5 +1,5 @@
 """
-The run script for ungrib
+The run script for ungrib.
 """
 
 import os

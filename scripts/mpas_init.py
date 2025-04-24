@@ -1,5 +1,5 @@
 """
-The run script for the mpas init_atmosphere
+The run script for the mpas init_atmosphere.
 """
 
 import os
