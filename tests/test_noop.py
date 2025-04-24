@@ -9,3 +9,7 @@ def n():
 
 def test_n(n):
     assert n == 42
+
+
+def test_regtest_n(n):
+    assert n == 42
