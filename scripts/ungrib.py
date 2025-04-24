@@ -16,16 +16,16 @@ from uwtools.api.ungrib import Ungrib
 def main():
     use_uwtools_logger()
 
-    # Load the YAML config
+    # Load the YAML config.
     config_path = os.environ["CONFIG_PATH"]
     key_path = os.environ["KEY_PATH"]
     cycle = datetime.fromisoformat(os.environ["CYCLE"])
 
-    # Run ungrib
+    # Run ungrib.
     ungrib_driver = Ungrib(config=config_path, cycle=cycle, key_path=[key_path])
     ungrib_driver.run()
 
-    # Obtain ungrib run directory path
+    # Obtain ungrib run directory path.
     ungrib_dir = Path(ungrib_driver.config["rundir"])
 
     if not (ungrib_dir / "runscript.ungrib.done").is_file():

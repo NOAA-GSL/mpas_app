@@ -13,7 +13,7 @@ from uwtools.api.upp import UPP
 
 
 def main():
-    # Load the YAML config
+    # Load the YAML config.
     config_path = os.environ["CONFIG_PATH"]
     lead = timedelta(hours=int(os.environ["LEAD"]))
     cycle = datetime.fromisoformat(os.environ["CYCLE"])
@@ -22,7 +22,7 @@ def main():
     upp_driver = UPP(config=config_path, cycle=cycle, leadtime=lead, key_path=["post"])
     upp_driver.run()
 
-    # Obtain run directory path
+    # Obtain run directory path.
     upp_dir = Path(upp_driver.config["rundir"])
 
     if not (upp_dir / "runscript.upp.done").is_file():

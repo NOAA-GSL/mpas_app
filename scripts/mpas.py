@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-The run script for the mpas forecast.
+The run script for the MPAS forecast.
 """
 
 import os
@@ -16,15 +16,15 @@ from uwtools.api.mpas import MPAS
 def main():
     use_uwtools_logger()
 
-    # Load the YAML config
+    # Load the YAML config.
     config_path = os.environ["CONFIG_PATH"]
     cycle = datetime.fromisoformat(os.environ["CYCLE"])
 
-    # Run mpas
+    # Run MPAS.
     mpas_driver = MPAS(config=config_path, cycle=cycle, key_path=["forecast"])
     mpas_driver.run()
 
-    # Obtain run directory path
+    # Obtain run directory path.
     mpas_dir = Path(mpas_driver.config["rundir"])
 
     if not (mpas_dir / "runscript.mpas.done").is_file():

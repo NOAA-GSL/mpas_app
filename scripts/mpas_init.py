@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-The run script for the mpas init_atmosphere.
+The run script for the MPAS init_atmosphere.
 """
 
 import os
@@ -16,16 +16,16 @@ from uwtools.api.mpas_init import MPASInit
 def main():
     use_uwtools_logger()
 
-    # Load the YAML config
+    # Load the YAML config.
     config_path = os.environ["CONFIG_PATH"]
     expt_sect = os.environ["EXPT_SECT"]
     cycle = datetime.fromisoformat(os.environ["CYCLE"])
 
-    # Run mpas_init
+    # Run MPAS Init.
     mpas_init_driver = MPASInit(config=config_path, cycle=cycle, key_path=[expt_sect])
     mpas_init_driver.run()
 
-    # Obtain MPAS init run directory path
+    # Obtain MPAS Init run directory path.
     mpas_init_dir = Path(mpas_init_driver.config["rundir"])
 
     if not (mpas_init_dir / "runscript.mpas_init.done").is_file():
