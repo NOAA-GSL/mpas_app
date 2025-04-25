@@ -1,20 +1,18 @@
+#!/usr/bin/env python3
+
 """
 Creates the experiment directory and populates it with necessary configuration and workflow files.
 """
 
 import argparse
-import logging
-import os
 import sys
 from pathlib import Path
 from shutil import copy
 from subprocess import STDOUT, CalledProcessError, check_output
-from typing import Optional
 
 from uwtools.api import rocoto
 from uwtools.api.config import get_yaml_config, realize
 from uwtools.api.logging import use_uwtools_logger
-from uwtools.config.formats.base import Config
 
 
 def create_grid_files(expt_dir: Path, mesh_file_path: Path, nprocs: int) -> None:
@@ -36,14 +34,14 @@ def create_grid_files(expt_dir: Path, mesh_file_path: Path, nprocs: int) -> None
         sys.exit(1)
 
 
-def main(user_config_files: list[Path, str]) -> None:
+def main(user_config_files):
     """
     Stage the Rocoto XML and experiment YAML in the desired experiment
     directory.
     """
 
     # Set up the experiment
-    mpas_app = Path(os.path.dirname(__file__)).parent.absolute()
+    mpas_app = Path(__file__).parent.parent.resolve()
     experiment_config = get_yaml_config(Path("./default_config.yaml"))
     user_config = get_yaml_config({})
     for cfg_file in user_config_files:
@@ -71,8 +69,8 @@ def main(user_config_files: list[Path, str]) -> None:
 
     # Build the experiment directory
     experiment_path = Path(experiment_config["user"]["experiment_dir"])
-    print("Experiment will be set up here: {}".format(experiment_path))
-    os.makedirs(experiment_path, exist_ok=True)
+    print(f"Experiment will be set up here: {experiment_path}")
+    Path(experiment_path).mkdir(parents=True, exist_ok=True)
 
     experiment_file = experiment_path / "experiment.yaml"
 
@@ -80,12 +78,9 @@ def main(user_config_files: list[Path, str]) -> None:
     workflow_blocks = experiment_config["user"]["workflow_blocks"]
     workflow_blocks = [mpas_app / "parm" / "wflow" / b for b in workflow_blocks]
 
-    workflow_config = None
+    workflow_config = get_yaml_config({})
     for workflow_block in workflow_blocks:
-        if workflow_config is None:
-            workflow_config = get_yaml_config(workflow_block)
-        else:
-            workflow_config.update_from(get_yaml_config(workflow_block))
+        workflow_config.update_from(get_yaml_config(workflow_block))
     workflow_config.update_from(experiment_config)
 
     realize(

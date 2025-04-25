@@ -1,6 +1,6 @@
 #!/bin/bash -eu
 
-dirs=( docs scripts ush )
+dirs=( docs scripts tests ush )
 
 echo "=> Formatting code"
 ruff format ${dirs[*]}

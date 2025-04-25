@@ -1,5 +1,7 @@
+#!/usr/bin/env python3
+
 """
-The run script for the mpas forecast
+The run script for the MPAS forecast.
 """
 
 import os
@@ -7,26 +9,28 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-from uwtools.api import config as uwconfig
 from uwtools.api.logging import use_uwtools_logger
 from uwtools.api.mpas import MPAS
 
-use_uwtools_logger()
+
+def main():
+    use_uwtools_logger()
+
+    # Load the YAML config.
+    config_path = os.environ["CONFIG_PATH"]
+    cycle = datetime.fromisoformat(os.environ["CYCLE"])
+
+    # Run MPAS.
+    mpas_driver = MPAS(config=config_path, cycle=cycle, key_path=["forecast"])
+    mpas_driver.run()
+
+    # Obtain run directory path.
+    mpas_dir = Path(mpas_driver.config["rundir"])
+
+    if not (mpas_dir / "runscript.mpas.done").is_file():
+        print("Error occurred running mpas. Please see component error logs.")
+        sys.exit(1)
 
 
-# Load the YAML config
-CONFIG_PATH = os.environ["CONFIG_PATH"]
-CYCLE = os.environ["CYCLE"]
-
-cycle = datetime.fromisoformat(CYCLE)
-
-# Run mpas
-mpas_driver = MPAS(config=CONFIG_PATH, cycle=cycle, key_path=["forecast"])
-mpas_driver.run()
-
-# Obtain run directory path
-mpas_dir = Path(mpas_driver.config["rundir"])
-
-if not (mpas_dir / "runscript.mpas.done").is_file():
-    print("Error occurred running mpas. Please see component error logs.")
-    sys.exit(1)
+if __name__ == "__main__":
+    main()
