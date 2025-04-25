@@ -30,7 +30,7 @@ source load_wflow_modules.sh <platform>
 5. Generate the experiment: 
 ```
 cd ush
-python experiment_gen.py workflows/3km_conus.yaml workflows/conus.<platform>.yaml <your_user_yaml.yaml>
+./experiment_gen.py workflows/3km_conus.yaml workflows/conus.<platform>.yaml <your_user_yaml.yaml>
 ```
 This generates an experiment directory at the path specified in your user YAML that contains a Rocoto XML file, which is ready to use.
 
@@ -126,7 +126,8 @@ source load_wflow_modules.sh <platform>
 With user YAML named, `user_config.yaml`, create a fully configured experiment by running the following from the ``mpas_app/ush/` directory:
 
 ```
-python experiment_gen.py workflows/3km_conus.yaml workflows/conus.<platform>.yaml [optional.yaml] user_config.yaml
+cd ush
+./experiment_gen.py workflows/3km_conus.yaml workflows/conus.<platform>.yaml [optional.yaml] user_config.yaml
 ```
 
 Any number of config YAMLs are accepted on the command line where the later the configuration setting is in the list, the higher priority it will have. In other words, the same setting altered in `optional.yaml` will be overwritten by the value in `user_config.yaml`.
