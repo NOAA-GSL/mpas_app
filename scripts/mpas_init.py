@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
-The run script for the mpas init_atmosphere.
+The run script for the MPAS init_atmosphere.
 """
 
 import datetime as dt

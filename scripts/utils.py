@@ -25,7 +25,7 @@ def run_shell_cmd(
     :param env: Environment variables to set before running cmd.
     :param log_output: Log output from successful cmd? (Error output is always logged.)
     :param taskname: Name of task executing this command, for logging.
-    :return: A result object providing combined stder/stdout output and success values.
+    :return: A result object providing combined stderr/stdout output and success values.
     """
     pre = f"{taskname}: " if taskname else ""
     msg = f"%sRunning: {cmd}"
