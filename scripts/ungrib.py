@@ -18,7 +18,7 @@ def parse_args(argv):
     Parse arguments for the script.
     """
     parser = ArgumentParser(
-        description="Script that runs UPP via uwtools API.",
+        description="Script that runs ungrib via uwtools API.",
     )
     parser.add_argument(
         "-c",
