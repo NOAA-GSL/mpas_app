@@ -57,7 +57,12 @@ workflow:
         FCST_LEN: !int "{{ forecast.mpas.length }}" 
         MPAS_APP: '&MPAS_APP;'
     task_ungrib_ics:
-      command: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; ; python &MPAS_APP;/scripts/ungrib.py'
+      command:
+        cyclestr:
+          value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; && &MPAS_APP;/scripts/ungrib.py
+            -c &EXPERIMENT_CONFIG;
+            --cycle @Y-@m-@dT@H:@M:@S
+            --key-path prepare_grib_ics'
       account: "{{ platform.account }}"
       exclusive: "true"
       join:
@@ -65,48 +70,40 @@ workflow:
           value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ prepare_grib_ics.ungrib.execution.batchargs.walltime }}"
       cores: !int "{{ prepare_grib_ics.ungrib.execution.batchargs.cores }}"
-      envars:
-        CONFIG_PATH: '&EXPERIMENT_CONFIG;'
-        CYCLE:
-          cyclestr:
-            value: "@Y-@m-@dT@H:@M:@S"
-        KEY_PATH: prepare_grib_ics
       dependency:
         taskdep:
           attrs:
             task: get_ics_data
     task_ungrib_lbcs:
-      command: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; ; python &MPAS_APP;/scripts/ungrib.py'
+      command:
+        cyclestr:
+          value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; && &MPAS_APP;/scripts/ungrib.py
+            -c &EXPERIMENT_CONFIG;
+            --cycle @Y-@m-@dT@H:@M:@S
+            --key-path prepare_grib_lbcs'
       account: "{{ platform.account }}"
       join:
         cyclestr:
           value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ prepare_grib_lbcs.ungrib.execution.batchargs.walltime }}"
       cores: !int "{{ prepare_grib_lbcs.ungrib.execution.batchargs.cores }}"
-      envars:
-        CONFIG_PATH: '&EXPERIMENT_CONFIG;'
-        CYCLE:
-          cyclestr:
-            value: "@Y-@m-@dT@H:@M:@S"
-        KEY_PATH: prepare_grib_lbcs
       dependency:
         taskdep:
           attrs:
             task: get_lbcs_data
     task_mpas_ics: &mpas_init_task
-      command: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; ; python &MPAS_APP;/scripts/mpas_init.py'
+      command:
+        cyclestr:
+          value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; && &MPAS_APP;/scripts/mpas_init.py
+            -c &EXPERIMENT_CONFIG;
+            --cycle @Y-@m-@dT@H:@M:@S
+            --key-path create_ics'
       account: "{{ platform.account }}"
       join:
         cyclestr:
           value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ create_ics.mpas_init.execution.batchargs.walltime }}"
       cores: !int "{{ create_ics.mpas_init.execution.batchargs.cores }}"
-      envars:
-        CONFIG_PATH: '&EXPERIMENT_CONFIG;'
-        CYCLE:
-          cyclestr:
-            value: "@Y-@m-@dT@H:@M:@S"
-        EXPT_SECT: create_ics
       dependency:
         taskdep:
           attrs:
