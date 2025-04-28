@@ -373,7 +373,7 @@ def get_requested_files(cla, file_templates, input_locs, method="disk", **kwargs
                 for tmpl_num, template in enumerate(templates_list):
                     if isinstance(loc, list) and len(loc) == len(templates_list):
                         template_loc = loc[tmpl_num]
-                    input_loc = str(Path(template_loc, template))
+                    input_loc = os.path.join(template_loc, template)
                     input_loc = fill_template(
                         input_loc,
                         cla.cycle_date,
