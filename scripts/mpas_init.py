@@ -70,5 +70,4 @@ if __name__ == "__main__":
         config_file=args.config_file,
         cycle=args.cycle,
         key_path=args.key_path,
-        member=args.member,
     )
