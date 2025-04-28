@@ -53,7 +53,7 @@ prepare_grib_ics:
       executable: ungrib
     gribfiles:
       interval_hours: 1
-      max_leadtime: !int "{{ user.ics.offset_hours }}"
+      max_leadtime: 0
       offset: !int "{{ user.ics.offset_hours }}"
       path: /path/to/user/grib/files
     rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/ungrib_ics'

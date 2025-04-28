@@ -237,6 +237,17 @@ RAP:
       grib2:
         <<: *rap_file_names
 
+RRFS:
+  aws:
+    protocol: download
+    url: https://noaa-rrfs-pds.s3.amazonaws.com/rrfs_a/rrfs.{yyyymmdd}/{hh}
+    file_names:
+      grib2:
+        anl:
+          - rrfs.t{hh}z.natlev.3km.f{fcst_hr:03d}.na.grib2
+        fcst:
+          - rrfs.t{hh}z.natlev.3km.f{fcst_hr:03d}.na.grib2
+
 HRRR:
   hpss:
     protocol: htar
