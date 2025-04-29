@@ -1,294 +1,198 @@
-# This file tracks known data store locations for data used as input to
-# the SRW App configuations.
-#
-# The contents should be organized as follows:
-#
-# Top level: A key corresponding to an external model file or
-# observation dataset accepted by the SRW App.
-#
-# 2nd level: A key corresponding to a named datastore for a given data
-# set. This could be nomads, aws, hpss, etc.
-#
-# 3rd level required:
-#
-# protocol:
-#   indication of how a set of files will be retrieved. Options:
-#   download or htar. The requirements for each protocol are described
-#   below
-#
-# file_names:
-#   Each data store will require an entry that describes the names of
-#   files to be extracted from the data store. These entries are
-#   expected as lists to indicate when multiple files should be
-#   retrieved.  anl and fcst subsections indicate the naming convention
-#   for that type of file. Both are required for external models ICS and
-#   LBCS. Each file name may (and likely should) include templates.
-#
-#   If the SRW App accepts different file formats, as it does for
-#   GFS, an intermediary level indicating the value associate with a
-#   GFS_FILE_FMT_* variable.
-#
-# 3rd level optional:
-#
-#  for download protocol:
-#     url: required. the URL to the location of the data file. May include
-#          templates.
-#
-#  for htar protocol:
-#     archive_path: a list of paths to the potential location of the
-#                   archive file on HPSS. since there may be multiple
-#                   options for a given external model file, the list
-#                   will be searched in order listed below.
-#     archive_file_names: the name of the archive file. this could
-#                   differ for each archive_path option, so one entry is
-#                   needed (even if it's identical) for each entry of
-#                   archive_path provided
-#     archive_internal_dir: (optional) a path to data files stored
-#                   inside a given archive file
-#
-#
-#
+timevars:
+  bin6: "{% set low_end = (cycle.hour // 6 * 6) %}{{ '{:2d}-{:02d}'.format(low_end, (low_end+5)) }}"
+  dd: "{{ cycle.strftime('%d') }}"
+  hh: "{{ cycle.strftime('%H') }}"
+  jjj: "{{ cycle.strftime('%j') }}"
+  min: "{{ cycle.strftime('%M') }}"
+  mm: "{{ cycle.strftime('%m') }}"
+  yy: "{{ cycle.strftime('%y') }}"
+  yyyy: "{{ cycle.strftime('%Y') }}"
+  yyyymm: "{{ cycle.strftime('%Y%m') }}"
+  yyyymmdd: "{{ cycle.strftime('%Y%m%d') }}"
+  yyyymmddhh: "{{ cycle.strftime('%Y%m%d%H') }}"
+
+
 GFS:
-  nomads:
-    protocol: download
-    url: https://nomads.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/gfs.{yyyymmdd}/{hh}/atmos
-    file_names: &gfs_file_names
+  file_names: &gfs_file_names
+    anl:
       grib2:
-        anl:
-          - gfs.t{hh}z.pgrb2.0p25.f000
-        fcst:
-          - gfs.t{hh}z.pgrb2.0p25.f{fcst_hr:03d}
+        - gfs.t{{hh}}z.pgrb2.0p25.f000
       nemsio:
-        anl:
-          - gfs.t{hh}z.atmanl.nemsio
-          - gfs.t{hh}z.sfcanl.nemsio
-        fcst:
-          - gfs.t{hh}z.atmf{fcst_hr:03d}.nemsio
-          - gfs.t{hh}z.sfcf{fcst_hr:03d}.nemsio
+        - gfs.t{{hh}}z.atmanl.nemsio
+        - gfs.t{{hh}}z.sfcanl.nemsio
       netcdf:
-        anl:
-          - gfs.t{hh}z.atmanl.nc
-          - gfs.t{hh}z.sfcanl.nc
-        fcst:
-          - gfs.t{hh}z.atmf{fcst_hr:03d}.nc
-          - gfs.t{hh}z.sfcf{fcst_hr:03d}.nc
+        - gfs.t{{hh}}z.atmanl.nc
+        - gfs.t{{hh}}z.sfcanl.nc
+    fcst:
+      grib2:
+        - gfs.t{{hh}}z.pgrb2.0p25.f{fcst_hr:03d}
+      nemsio:
+        - gfs.t{{hh}}z.atmf{fcst_hr:03d}.nemsio
+        - gfs.t{{hh}}z.sfcf{fcst_hr:03d}.nemsio
+      netcdf:
+        - gfs.t{{hh}}z.atmf{fcst_hr:03d}.nc
+        - gfs.t{{hh}}z.sfcf{fcst_hr:03d}.nc
+  nomads:
+    locations:
+      - https://nomads.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/gfs.{{ yyyymmdd }}/{{ hh }}/atmos
   hpss:
-    protocol: htar
-    archive_path:
-      - /NCEPPROD/hpssprod/runhistory/rh{yyyy}/{yyyymm}/{yyyymmdd}
-      - /NCEPPROD/hpssprod/runhistory/rh{yyyy}/{yyyymm}/{yyyymmdd}
-      - /NCEPPROD/hpssprod/runhistory/rh{yyyy}/{yyyymm}/{yyyymmdd}
-      - /NCEPPROD/hpssprod/runhistory/rh{yyyy}/{yyyymm}/{yyyymmdd}
-    archive_internal_dir:
+    archive_paths:
+      - /NCEPPROD/hpssprod/runhistory/rh{{yyyy}}/{{yyyymm}}/{{yyyymmdd}}
+    archive_internal_dirs:
       - ./gfs.{yyyymmdd}/{hh}
       - ./gfs.{yyyymmdd}/{hh}/atmos
     archive_file_names:
-      grib2:
-        anl:
-          - gpfs_dell1_nco_ops_com_gfs_prod_gfs.{yyyymmdd}_{hh}.gfs_pgrb2.tar
-          - com_gfs_prod_gfs.{yyyymmdd}_{hh}.gfs_pgrb2.tar
-          - com_gfs_v16.2_gfs.{yyyymmdd}_{hh}.gfs_pgrb2.tar
-          - com_gfs_v16.3_gfs.{yyyymmdd}_{hh}.gfs_pgrb2.tar
-        fcst:
-          - gpfs_dell1_nco_ops_com_gfs_prod_gfs.{yyyymmdd}_{hh}.gfs_pgrb2.tar
-          - com_gfs_prod_gfs.{yyyymmdd}_{hh}.gfs_pgrb2.tar
-          - com_gfs_v16.2_gfs.{yyyymmdd}_{hh}.gfs_pgrb2.tar
-          - com_gfs_v16.3_gfs.{yyyymmdd}_{hh}.gfs_pgrb2.tar
-      nemsio:
-        anl:
-          - gpfs_dell1_nco_ops_com_gfs_prod_gfs.{yyyymmdd}_{hh}.gfs_nemsioa.tar
-          - com_gfs_prod_gfs.{yyyymmdd}_{hh}.gfs_nemsioa.tar
-        fcst:
-          - ['gpfs_dell1_nco_ops_com_gfs_prod_gfs.{yyyymmdd}_{hh}.gfs_nemsioa.tar', 'gpfs_dell1_nco_ops_com_gfs_prod_gfs.{yyyymmdd}_{hh}.gfs_nemsiob.tar']
-          - ['com_gfs_prod_gfs.{yyyymmdd}_{hh}.gfs_nemsioa.tar', 'com_gfs_prod_gfs.{yyyymmdd}_{hh}.gfs_nemsiob.tar']
-      netcdf:
-        anl:
-          - gpfs_dell1_nco_ops_com_gfs_prod_gfs.{yyyymmdd}_{hh}.gfs_nca.tar
-          - com_gfs_prod_gfs.{yyyymmdd}_{hh}.gfs_nca.tar
-          - com_gfs_v16.2_gfs.{yyyymmdd}_{hh}.gfs_nca.tar
-          - com_gfs_v16.3_gfs.{yyyymmdd}_{hh}.gfs_nca.tar
-        fcst:
-          - ['gpfs_dell1_nco_ops_com_gfs_prod_gfs.{yyyymmdd}_{hh}.gfs_nca.tar', 'gpfs_dell1_nco_ops_com_gfs_prod_gfs.{yyyymmdd}_{hh}.gfs_ncb.tar']
-          - ['com_gfs_prod_gfs.{yyyymmdd}_{hh}.gfs_nca.tar', 'com_gfs_prod_gfs.{yyyymmdd}_{hh}.gfs_ncb.tar']
-          - ['com_gfs_v16.2_gfs.{yyyymmdd}_{hh}.gfs_nca.tar', 'com_gfs_v16.2_gfs.{yyyymmdd}_{hh}.gfs_ncb.tar']
-          - ['com_gfs_v16.3_gfs.{yyyymmdd}_{hh}.gfs_nca.tar', 'com_gfs_v16.3_gfs.{yyyymmdd}_{hh}.gfs_ncb.tar']
-    file_names:
-      <<: *gfs_file_names
+      anl:
+        grib2:
+          - gpfs_dell1_nco_ops_com_gfs_prod_gfs.{{yyyymmdd}}_{{hh}}.gfs_pgrb2.tar
+          - com_gfs_prod_gfs.{{yyyymmdd}}_{{hh}}.gfs_pgrb2.tar
+          - com_gfs_v16.2_gfs.{{yyyymmdd}}_{{hh}}.gfs_pgrb2.tar
+          - com_gfs_v16.3_gfs.{{yyyymmdd}}_{{hh}}.gfs_pgrb2.tar
+        nemsio:
+          - gpfs_dell1_nco_ops_com_gfs_prod_gfs.{{yyyymmdd}}_{{hh}}.gfs_nemsioa.tar
+          - com_gfs_prod_gfs.{{yyyymmdd}}_{{hh}}.gfs_nemsioa.tar
+        netcdf:
+          - gpfs_dell1_nco_ops_com_gfs_prod_gfs.{{yyyymmdd}}_{{hh}}.gfs_nca.tar
+          - com_gfs_prod_gfs.{{yyyymmdd}}_{{hh}}.gfs_nca.tar
+          - com_gfs_v16.2_gfs.{{yyyymmdd}}_{{hh}}.gfs_nca.tar
+          - com_gfs_v16.3_gfs.{{yyyymmdd}}_{{hh}}.gfs_nca.tar
+      fcst:
+        grib2:
+          - gpfs_dell1_nco_ops_com_gfs_prod_gfs.{{yyyymmdd}}_{{hh}}.gfs_pgrb2.tar
+          - com_gfs_prod_gfs.{{yyyymmdd}}_{{hh}}.gfs_pgrb2.tar
+          - com_gfs_v16.2_gfs.{{yyyymmdd}}_{{hh}}.gfs_pgrb2.tar
+          - com_gfs_v16.3_gfs.{{yyyymmdd}}_{{hh}}.gfs_pgrb2.tar
+        nemsio:
+          - ['gpfs_dell1_nco_ops_com_gfs_prod_gfs.{{yyyymmdd}}_{{hh}}.gfs_nemsioa.tar', 'gpfs_dell1_nco_ops_com_gfs_prod_gfs.{{yyyymmdd}}_{{hh}}.gfs_nemsiob.tar']
+          - ['com_gfs_prod_gfs.{{yyyymmdd}}_{{hh}}.gfs_nemsioa.tar', 'com_gfs_prod_gfs.{{yyyymmdd}}_{{hh}}.gfs_nemsiob.tar']
+        netcdf:
+          - ['gpfs_dell1_nco_ops_com_gfs_prod_gfs.{{yyyymmdd}}_{{hh}}.gfs_nca.tar', 'gpfs_dell1_nco_ops_com_gfs_prod_gfs.{{yyyymmdd}}_{{hh}}.gfs_ncb.tar']
+          - ['com_gfs_prod_gfs.{{yyyymmdd}}_{{hh}}.gfs_nca.tar', 'com_gfs_prod_gfs.{{yyyymmdd}}_{{hh}}.gfs_ncb.tar']
+          - ['com_gfs_v16.2_gfs.{{yyyymmdd}}_{{hh}}.gfs_nca.tar', 'com_gfs_v16.2_gfs.{{yyyymmdd}}_{{hh}}.gfs_ncb.tar']
+          - ['com_gfs_v16.3_gfs.{{yyyymmdd}}_{{hh}}.gfs_nca.tar', 'com_gfs_v16.3_gfs.{{yyyymmdd}}_{{hh}}.gfs_ncb.tar']
+
   aws:
-    protocol: download
-    url: https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.{yyyymmdd}/{hh}/atmos
-    file_names:
-      <<: *gfs_file_names
+    locations:
+      - https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.{{yyyymmdd}}/{{hh}}/atmos
 
 GDAS:
+  file_names:
+     anl: &gdas_file_names
+       nemsio:
+         - gdas.t{{hh}}z.atmf{fcst_hr:03d}.nemsio
+         - gdas.t{{hh}}z.sfcf{fcst_hr:03d}.nemsio
+       netcdf:
+         - gdas.t{{hh}}z.atmf{fcst_hr:03d}.nc
+         - gdas.t{{hh}}z.sfcf{fcst_hr:03d}.nc
+     fcst:
+       <<: *gdas_file_names
   hpss:
     protocol: htar
-    archive_path:
-      - /NCEPPROD/5year/hpssprod/runhistory/rh{yyyy}/{yyyymm}/{yyyymmdd}
-      - /NCEPPROD/5year/hpssprod/runhistory/rh{yyyy}/{yyyymm}/{yyyymmdd}
+    archive_paths:
+      - /NCEPPROD/5year/hpssprod/runhistory/rh{{yyyy}}/{{yyyymm}}/{{yyyymmdd}}
     archive_internal_dir:
-      - ./enkfgdas.{yyyymmdd}/{hh}/atmos/mem{mem:03d}
-      - ./enkfgdas.{yyyymmdd}/{hh}/mem{mem:03d}
+      - ./enkfgdas.{{yyyymmdd}}/{{hh}}/atmos/mem{mem:03d}
+      - ./enkfgdas.{{yyyymmdd}}/{{hh}}/mem{mem:03d}
     archive_file_names:
-      nemsio:
-        anl:
-          - com_gfs_prod_enkfgdas.{yyyymmdd}_{hh}.enkfgdas_grp{ens_group}.tar
-          - gpfs_dell1_nco_ops_com_gfs_prod_enkfgdas.{yyyymmdd}_{hh}.enkfgdas_grp{ens_group}.tar
-        fcst:
-          - com_gfs_prod_enkfgdas.{yyyymmdd}_{hh}.enkfgdas_grp{ens_group}.tar
-          - gpfs_dell1_nco_ops_com_gfs_prod_enkfgdas.{yyyymmdd}_{hh}.enkfgdas_grp{ens_group}.tar
-      netcdf:
-        anl:
-          - com_gfs_prod_enkfgdas.{yyyymmdd}_{hh}.enkfgdas_grp{ens_group}.tar
-          - gpfs_dell1_nco_ops_com_gfs_prod_enkfgdas.{yyyymmdd}_{hh}.enkfgdas_grp{ens_group}.tar
-        fcst:
-          - com_gfs_prod_enkfgdas.{yyyymmdd}_{hh}.enkfgdas_grp{ens_group}.tar
-          - gpfs_dell1_nco_ops_com_gfs_prod_enkfgdas.{yyyymmdd}_{hh}.enkfgdas_grp{ens_group}.tar
-    file_names:
-      nemsio:
-        anl:
-          - gdas.t{hh}z.atmf{fcst_hr:03d}.nemsio
-          - gdas.t{hh}z.sfcf{fcst_hr:03d}.nemsio
-        fcst:
-          - gdas.t{hh}z.atmf{fcst_hr:03d}.nemsio
-          - gdas.t{hh}z.sfcf{fcst_hr:03d}.nemsio
-      netcdf:
-        anl:
-          - gdas.t{hh}z.atmf{fcst_hr:03d}.nc
-          - gdas.t{hh}z.sfcf{fcst_hr:03d}.nc
-        fcst:
-          - gdas.t{hh}z.atmf{fcst_hr:03d}.nc
-          - gdas.t{hh}z.sfcf{fcst_hr:03d}.nc
+      anl:
+        nemsio: &gdas_tar_files
+          - com_gfs_prod_enkfgdas.{{yyyymmdd}}_{{hh}}.enkfgdas_grp{ens_group}.tar
+          - gpfs_dell1_nco_ops_com_gfs_prod_enkfgdas.{{yyyymmdd}}_{{hh}}.enkfgdas_grp{ens_group}.tar
+        netcdf:
+          <<: *gdas_tar_files
+      fcst:
+        nemsio:
+          <<: *gdas_tar_files
+        netcdf:
+          <<: *gdas_tar_files
   nomads:
-    protocol: download
-    url: https://nomads.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/enkfgdas.{yyyymmdd}/{hh}/atmos/mem{mem:03d}
+    locations:
+      - https://nomads.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/enkfgdas.{yyyymmdd}/{hh}/atmos/mem{mem:03d}
     file_names:
-      netcdf:
-        fcst:
-          - gdas.t{hh}z.sfcf{fcst_hr:03d}.nc
+      fcst:
+        netcdf:
+          - gdas.t{{hh}}z.sfcf{fcst_hr:03d}.nc
   aws:
-    protocol: download
-    url: https://noaa-gfs-bdp-pds.s3.amazonaws.com/enkfgdas.{yyyymmdd}/{hh}/atmos/mem{mem:03d}
+    locations:
+      - https://noaa-gfs-bdp-pds.s3.amazonaws.com/enkfgdas.{yyyymmdd}/{hh}/atmos/mem{mem:03d}
     file_names:
       netcdf:
         anl:
-          - gdas.t{hh}z.sfcf{fcst_hr:03d}.nc
+          - gdas.t{{hh}}z.sfcf{fcst_hr:03d}.nc
 
 GEFS:
+  file_names:
+    grib:
+      - ""
   aws:
     protocol: download
-    url:
-      - ['https://noaa-gefs-pds.s3.amazonaws.com/gefs.{yyyymmdd}/{hh}/atmos/pgrb2ap5', 'https://noaa-gefs-pds.s3.amazonaws.com/gefs.{yyyymmdd}/{hh}/atmos/pgrb2bp5']
-      - ['https://noaa-gefs-pds.s3.amazonaws.com/gefs.{yyyymmdd}/{hh}/pgrb2a', 'https://noaa-gefs-pds.s3.amazonaws.com/gefs.{yyyymmdd}/{hh}/pgrb2b']
-      - ['https://noaa-gefs-pds.s3.amazonaws.com/gefs.{yyyymmdd}/{hh}', 'https://noaa-gefs-pds.s3.amazonaws.com/gefs.{yyyymmdd}/{hh}']
-    file_names:
-      - ['gep{mem:02d}.t{hh}z.pgrb2a.0p50.f{fcst_hr:03d}', 'gep{mem:02d}.t{hh}z.pgrb2b.0p50.f{fcst_hr:03d}']
-      - ['gep{mem:02d}.t{hh}z.pgrb2af{fcst_hr:02d}', 'gep{mem:02d}.t{hh}z.pgrb2bf{fcst_hr:02d}']
-      - ['gep{mem:02d}.t{hh}z.pgrb2af{fcst_hr:03d}', 'gep{mem:02d}.t{hh}z.pgrb2bf{fcst_hr:03d}' ]
-
-GSMGFS:
-  hpss:
-    protocol: htar
-    archive_path:
-      - /NCEPPROD/hpssprod/runhistory/rh{yyyy}/{yyyymm}/{yyyymmdd}
-    archive_internal_dir:
-      anl:
-        - ./
-      fcst:
-        - /gpfs/hps/nco/ops/com/gfs/prod/gfs.{yyyymmdd}
-    archive_file_names:
-      anl:
-        - gpfs_hps_nco_ops_com_gfs_prod_gfs.{yyyymmddhh}.anl.tar
-      fcst:
-        - gpfs_hps_nco_ops_com_gfs_prod_gfs.{yyyymmddhh}.sigma.tar
-    file_names:
-      anl:
-        - gfs.t{hh}z.atmanl.nemsio
-        - gfs.t{hh}z.sfcanl.nemsio
-      fcst:
-        - gfs.t{hh}z.atmf{fcst_hr:03d}.nemsio
+    locations:
+      - both:
+        - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}/atmos/pgrb2ap5/gep{mem:02d}.t{{hh}}z.pgrb2a.0p50.f{fcst_hr:03d}
+        - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}/atmos/pgrb2bp5/gep{mem:02d}.t{{hh}}z.pgrb2b.0p50.f{fcst_hr:03d}
+      - both:
+        - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}/pgrb2a/gep{mem:02d}.t{{hh}}z.pgrb2af{fcst_hr:02d}
+        - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}/pgrb2b/gep{mem:02d}.t{{hh}}z.pgrb2bf{fcst_hr:02d}
+      - both:
+        - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}/gep{mem:02d}.t{{hh}}z.pgrb2af{fcst_hr:03d}
+        - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}/gep{mem:02d}.t{{hh}}z.pgrb2bf{fcst_hr:03d}
 
 RAP:
+  file_names: &rap_file_names
+    anl:
+      - rap.t{{hh}}z.wrfnatf{fcst_hr:02d}.grib2
+    fcst:
+      - rap.t{{hh}}z.wrfnatf{fcst_hr:02d}.grib2
   hpss:
-    protocol: htar
     archive_format: tar
-    archive_path:
-      - /NCEPPROD/hpssprod/runhistory/rh{yyyy}/{yyyymm}/{yyyymmdd}
-      - /NCEPPROD/hpssprod/runhistory/rh{yyyy}/{yyyymm}/{yyyymmdd}
-      - /NCEPPROD/hpssprod/runhistory/rh{yyyy}/{yyyymm}/{yyyymmdd}
-    archive_internal_dir:
-      - ./
-      - ./
+    archive_paths:
+      - /NCEPPROD/hpssprod/runhistory/rh{{yyyy}}/{{yyyymm}}/{{yyyymmdd}}
+    archive_internal_dirs:
       - ./
     archive_file_names:
       # RAP forecasts are binned into 6 hour tar files.
-      - gpfs_hps_nco_ops_com_rap_prod_rap.{yyyymmdd}{bin6}.wrf.tar
-      - com_rap_prod_rap.{yyyymmdd}{bin6}.wrf.tar
-      - com_rap_v5.1_rap.{yyyymmdd}{bin6}.wrf.tar
-    file_names: &rap_file_names
-      anl:
-        - rap.t{hh}z.wrfnatf{fcst_hr:02d}.grib2
-      fcst:
-        - rap.t{hh}z.wrfnatf{fcst_hr:02d}.grib2
+      - gpfs_hps_nco_ops_com_rap_prod_rap.{{yyyymmdd}}{{bin6}}.wrf.tar
+      - com_rap_prod_rap.{{yyyymmdd}}{{bin6}}.wrf.tar
+      - com_rap_v5.1_rap.{{yyyymmdd}}{{bin6}}.wrf.tar
   aws:
-    protocol: download
-    url: https://noaa-rap-pds.s3.amazonaws.com/rap.{yyyymmdd}
-    file_names:
-      grib2:
-        <<: *rap_file_names
+    locations:
+      - https://noaa-rap-pds.s3.amazonaws.com/rap.{{yyyymmdd}}
 
 HRRR:
+  file_names: &hrrr_file_names
+    anl:
+      - hrrr.t{hh}z.wrfprsf{fcst_hr:02d}.grib2
+    fcst:
+      - hrrr.t{hh}z.wrfprsf{fcst_hr:02d}.grib2
   hpss:
-    protocol: htar
     archive_format: tar
-    archive_path:
-      - /NCEPPROD/hpssprod/runhistory/rh{yyyy}/{yyyymm}/{yyyymmdd}
-      - /NCEPPROD/hpssprod/runhistory/rh{yyyy}/{yyyymm}/{yyyymmdd}
-    archive_internal_dir:
-      - ./
+    archive_paths:
+      - /NCEPPROD/hpssprod/runhistory/rh{{yyyy}}/{{yyyymm}}/{{yyyymmdd}}
+    archive_internal_dirs:
       - ./
     archive_file_names:
       # HRRR forecasts are binned into 6 hour tar files.
-      - gpfs_hps_nco_ops_com_hrrr_prod_hrrr.{yyyymmdd}_conus{bin6}.wrf.tar
-      - com_hrrr_prod_hrrr.{yyyymmdd}_conus{bin6}.wrf.tar
-    file_names: &hrrr_file_names
-      anl:
-        - hrrr.t{hh}z.wrfprsf{fcst_hr:02d}.grib2
-      fcst:
-        - hrrr.t{hh}z.wrfprsf{fcst_hr:02d}.grib2
+      - gpfs_hps_nco_ops_com_hrrr_prod_hrrr.{{yyyymmdd}}_conus{{bin6}}.wrf.tar
+      - com_hrrr_prod_hrrr.{{yyyymmdd}}_conus{{bin6}}.wrf.tar
   aws:
-    protocol: download
-    url: https://noaa-hrrr-bdp-pds.s3.amazonaws.com/hrrr.{yyyymmdd}/conus/
-    file_names:
-      <<: *hrrr_file_names
+    locations:
+      - https://noaa-hrrr-bdp-pds.s3.amazonaws.com/hrrr.{{yyyymmdd}}/conus
 
 NAM:
   hpss:
-    protocol: htar
     archive_format: tar
-    archive_path:
-      - /NCEPPROD/hpssprod/runhistory/rh{yyyy}/{yyyymm}/{yyyymmdd}
-    archive_internal_dir:
+    archive_paths:
+      - /NCEPPROD/hpssprod/runhistory/rh{{yyyy}}/{{yyyymm}}/{{yyyymmdd}}
+    archive_internal_dirs:
       - ./
     archive_file_names:
-      - com_nam_prod_nam.{yyyymmddhh}.awphys.tar
-      - com_nam_prod_nam.{yyyymmddhh}.awphys{fcst_hr:02d}.tar
+      - com_nam_prod_nam.{{yyyymmddhh}}.awphys.tar
+      - com_nam_prod_nam.{{yyyymmddhh}}.awphys{fcst_hr:02d}.tar
     file_names:
       anl:
-        - nam.t{hh}z.awphys{fcst_hr:02d}.tm00.grib2
+        - nam.t{{hh}}z.awphys{fcst_hr:02d}.tm00.grib2
       fcst:
-        - nam.t{hh}z.awphys{fcst_hr:02d}.tm00.grib2
-
-UFS-CASE-STUDY:
-  aws:
-    protocol: download
-    url: "https://ufs-case-studies.s3.amazonaws.com/"
-    file_names: &ufs_file_names
-      nemsio:
-        anl:
-          - "{yyyymmddhh}.gfs.nemsio.tar.gz"
-        fcst:
-          - "{yyyymmddhh}_bc.atmf{fcst_hr:03d}.nemsio.tar.gz"
+        - nam.t{{hh}}z.awphys{fcst_hr:02d}.tm00.grib2
 
 ##########################
 ##########################
@@ -298,37 +202,33 @@ UFS-CASE-STUDY:
 
 CCPA_obs:
   hpss:
-    protocol: htar
     archive_format: tar
-    archive_path:
-      - /NCEPPROD/hpssprod/runhistory/rh{yyyy}/{yyyy}{mm}/{yyyy}{mm}{dd}
-      - /NCEPPROD/hpssprod/runhistory/rh{yyyy}/{yyyy}{mm}/{yyyy}{mm}{dd}
-      - /NCEPPROD/hpssprod/runhistory/rh{yyyy}/{yyyy}{mm}/{yyyy}{mm}{dd}
-      - /NCEPPROD/hpssprod/runhistory/rh{yyyy}/{yyyy}{mm}/{yyyy}{mm}{dd}
-    archive_internal_dir:
+    archive_paths:
+      - /NCEPPROD/hpssprod/runhistory/rh{{yyyy}}/{{yyyymm}}/{{yyyymmdd}}
+    archive_internal_dirs:
       - "./00"
       - "./06"
       - "./12"
       - "./18"
     archive_file_names:
-      - "com2_ccpa_prod_ccpa.{yyyy}{mm}{dd}.tar"
-      - "gpfs_dell1_nco_ops_com_ccpa_prod_ccpa.{yyyy}{mm}{dd}.tar"
-      - "com_ccpa_prod_ccpa.{yyyy}{mm}{dd}.tar"
-      - "com_ccpa_v4.2_ccpa.{yyyy}{mm}{dd}.tar"
+      - com2_ccpa_prod_ccpa.{{yyyymmdd}}.tar
+      - gpfs_dell1_nco_ops_com_ccpa_prod_ccpa.{{yyyymmdd}}.tar
+      - com_ccpa_prod_ccpa.{{yyyymmdd}}.tar
+      - com_ccpa_v4.2_ccpa.{{yyyymmdd}}.tar
     file_names:
       obs:
-        - "ccpa.t{hh}z.01h.hrap.conus.gb2"
+        - "ccpa.t{{hh}}z.01h.hrap.conus.gb2"
 
 MRMS_obs:
+  file_names:
+    obs:
+      - "MergedReflectivityQCComposite_00.50_{{yyyymmdd}}-*.grib2.gz"
+      - "EchoTop_18_00.50_{{yyyymmdd}}-*.grib2.gz"
   hpss:
-    protocol: htar
     archive_format: tar
-    archive_path:
-      - /NCEPPROD/hpssprod/runhistory/rh{yyyy}/{yyyymm}/{yyyymmdd}
-      - /NCEPPROD/hpssprod/runhistory/rh{yyyy}/{yyyymm}/{yyyymmdd}
-      - /NCEPPROD/hpssprod/runhistory/rh{yyyy}/{yyyymm}/{yyyymmdd}
-      - /NCEPPROD/hpssprod/runhistory/rh{yyyy}/{yyyymm}/{yyyymmdd}
-    archive_internal_dir:
+    archive_paths:
+      - /NCEPPROD/hpssprod/runhistory/rh{{yyyy}}/{{yyyymm}}/{{yyyymmdd}}
+    archive_internal_dirs:
       - /dcom/us007003/ldmdata/obs/upperair/mrms/conus/MergedReflectivityQCComposite
       - /dcom/us007003/ldmdata/obs/upperair/mrms/conus/EchoTop
       - ./upperair/mrms/conus/MergedReflectivityQCComposite
@@ -336,43 +236,36 @@ MRMS_obs:
     archive_file_names:
       - dcom_ldmdata_obs.tar
       - dcom_prod_ldmdata_obs.tar
-      - ldmdata.tide.{yyyymmdd}.tar
-      - ldmdata.gyre.{yyyymmdd}.tar
-    file_names:
-      obs:
-        - "MergedReflectivityQCComposite_00.50_{yyyymmdd}-*.grib2.gz"
-        - "EchoTop_18_00.50_{yyyymmdd}-*.grib2.gz"
+      - ldmdata.tide.{{yyyymmdd}}.tar
+      - ldmdata.gyre.{{yyyymmdd}}.tar
 
 NDAS_obs:
   hpss:
-    protocol: htar
     archive_format: tar
-    archive_path:
-      - /NCEPPROD/hpssprod/runhistory/rh{yyyy}/{yyyy}{mm}/{yyyy}{mm}{dd}
-      - /NCEPPROD/hpssprod/runhistory/rh{yyyy}/{yyyy}{mm}/{yyyy}{mm}{dd}
-      - /NCEPPROD/hpssprod/runhistory/rh{yyyy}/{yyyy}{mm}/{yyyy}{mm}{dd}
-      - /NCEPPROD/hpssprod/runhistory/rh{yyyy}/{yyyy}{mm}/{yyyy}{mm}{dd}
+    archive_paths:
+      - /NCEPPROD/hpssprod/runhistory/rh{{yyyy}}/{{yyyymm}}/{{yyyymmdd}}
+    archive_internal_dirs:
+      - ./
     archive_file_names:
-      - "com2_nam_prod_nam.{yyyy}{mm}{dd}{hh}.bufr.tar"
-      - "gpfs_dell1_nco_ops_com_nam_prod_nam.{yyyy}{mm}{dd}{hh}.bufr.tar"
-      - "com_nam_prod_nam.{yyyy}{mm}{dd}{hh}.bufr.tar"
-      - "com_obsproc_v1.1_nam.{yyyy}{mm}{dd}{hh}.bufr.tar"
+      - com2_nam_prod_nam.{{{yyyymmddhh}}}.bufr.tar
+      - gpfs_dell1_nco_ops_com_nam_prod_nam.{{{yyyymmddhh}}}.bufr.tar
+      - com_nam_prod_nam.{{{yyyymmddhh}}}.bufr.tar
+      - com_obsproc_v1.1_nam.{{{yyyymmddhh}}}.bufr.tar
     file_names:
       obs:
-        - "./nam.t{hh}z.prepbufr.tm*.nr"
+        - nam.t{{hh}}z.prepbufr.tm*.nr
 
 NOHRSC_obs:
   hpss:
-    protocol: htar
     archive_format: tar
-    archive_path:
-      - /NCEPPROD/hpssprod/runhistory/rh{yyyy}/{yyyy}{mm}/{yyyy}{mm}{dd}
-      - /NCEPPROD/hpssprod/runhistory/rh{yyyy}/{yyyy}{mm}/{yyyy}{mm}{dd}
+    archive_paths:
+      - /NCEPPROD/hpssprod/runhistory/rh{{yyyy}}/{{yyyy}}{{mm}}/{{yyyy}}{{mm}}{{dd}}
+    archive_internal_dirs:
+      - ./wgrbbul/nohrsc_snowfall/
     archive_file_names:
-      - "dcom_prod_{yyyy}{mm}{dd}.tar"
-      - "dcom_{yyyy}{mm}{dd}.tar"
+      - dcom_prod_{{yyyymmdd}}.tar
+      - dcom_{{yyyymmdd}}.tar
     file_names:
       obs:
-        - "sfav2_CONUS_*h_{yyyy}{mm}{dd}{hh}_grid184.grb2"
-    archive_internal_dir:
-      - ./wgrbbul/nohrsc_snowfall/
+        - !glob "sfav2_CONUS_*h_{{yyyymmddhh}}_grid184.grb2"
+
