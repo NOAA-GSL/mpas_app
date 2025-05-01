@@ -22,6 +22,18 @@ MSG = ns(
 # Tests
 
 
+def test_validate__first_and_last_cycle(config):
+    keys = ["last_cycle"]
+    # Fine:
+    last_cycle_fine = config["user"]["first_cycle"]
+    validation.validate(with_set(config, last_cycle_fine, "user", *keys)["user"])
+    # Wrong:
+    last_cycle_wrong = datetime(1970, 1, 1, 0, tzinfo=timezone.utc)
+    with raises(ValidationError) as e:
+        validation.validate(with_set(config, last_cycle_wrong, "user", *keys)["user"])
+    assert "last_cycle cannot precede first_cycle" in str(e)
+
+
 @mark.parametrize(
     ("keys", "msg", "val"),
     [
@@ -45,7 +57,7 @@ MSG = ns(
         (["workflow_blocks"], MSG.str, [None]),
     ],
 )
-def test_validate__fail_bad(config, keys, msg, val):
+def test_validate__fail_values_bad(config, keys, msg, val):
     with raises(ValidationError) as e:
         validation.validate(with_set(config, val, "user", *keys)["user"])
     check(e, keys, f"Input should be {msg}")
@@ -69,13 +81,13 @@ def test_validate__fail_bad(config, keys, msg, val):
         ["workflow_blocks"],
     ],
 )
-def test_validate__fail_missing(config, keys):
+def test_validate__fail_values_missing(config, keys):
     with raises(ValidationError) as e:
         validation.validate(with_del(config, "user", *keys)["user"])
     check(e, keys, "Field required")
 
 
-def test_validate__ok(config):
+def test_validate__pass(config):
     validation.validate(config["user"])
 
 

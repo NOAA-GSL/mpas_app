@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, NonNegativeInt, PositiveInt
+from pydantic import BaseModel, NonNegativeInt, PositiveInt, model_validator
 
 Model = Literal["GFS", "RAP"]
 
@@ -28,6 +28,13 @@ class User(BaseModel):
     mpas_app: str
     platform: str
     workflow_blocks: list[str]
+
+    @model_validator(mode="after")
+    def check_first_and_last_cycle(self):
+        if self.last_cycle < self.first_cycle:
+            msg = "last_cycle cannot precede first_cycle"
+            raise ValueError(msg)
+        return self
 
 
 def validate(config: dict) -> None:

@@ -21,28 +21,11 @@ line-length = 100
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
-  "ANN001",  # missing-type-function-argument
-  "ANN002",  # missing-type-args
-  "ANN003",  # missing-type-kwargs
-  "ANN201",  # missing-return-type-class-method
-  "ANN401",  # any-type
+  "ANN",     # all flake8-annotations
   "C408",    # unnecessary-collection-call
   "C901",    # complex-structure
   "COM812",  # missing-trailing-comma
-  "D100",    # undocumented-public-module
-  "D101",    # undocumented-public-class
-  "D103",    # undocumented-public-function
-  "D104",    # undocumented-public-package
-  "D200",    # unnecessary-multiline-docstring
-  "D202",    # blank-line-after-function
-  "D203",    # incorrect-blank-line-before-class
-  "D205",    # missing-blank-line-after-summary
-  "D209",    # new-line-after-last-paragraph
-  "D212",    # multi-line-summary-first-line
-  "D213",    # multi-line-summary-second-line
-  "D401",    # non-imperative-mood
-  "D404",    # docstring-starts-with-this
-  "D417",    # undocumented-param
+  "D",       # all pydocstyle
   "FBT002",  # boolean-default-value-positional-argument
   "LOG015",  # root-logger-call
   "N813",    # camelcase-imported-as-lowercase
