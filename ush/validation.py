@@ -1,21 +1,24 @@
 from datetime import datetime
+from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, NonNegativeInt, PositiveInt
+
+Model = Literal["GFS", "RAP"]
 
 
 class ICs(BaseModel):
-    external_model: str
-    offset_hours: int
+    external_model: Model
+    offset_hours: NonNegativeInt
 
 
 class LBCs(BaseModel):
-    external_model: str
-    interval_hours: int
-    offset_hours: int
+    external_model: Model
+    interval_hours: PositiveInt
+    offset_hours: NonNegativeInt
 
 
 class User(BaseModel):
-    cycle_frequency: int
+    cycle_frequency: PositiveInt
     experiment_dir: str
     first_cycle: datetime
     ics: ICs

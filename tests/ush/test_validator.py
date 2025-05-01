@@ -1,6 +1,10 @@
+import re
+from copy import deepcopy
 from datetime import datetime, timezone
+from typing import Any
 
-from pytest import fixture
+from pydantic import ValidationError
+from pytest import fixture, mark, raises
 
 from ush import validation
 
@@ -23,5 +27,66 @@ def config():
     }
 
 
-def test_validate(config):
+# Tests
+
+
+@mark.parametrize(
+    "keys",
+    [
+        ["cycle_frequency"],
+        ["experiment_dir"],
+        ["first_cycle"],
+        ["ics", "external_model"],
+        ["ics", "offset_hours"],
+        ["last_cycle"],
+        ["lbcs", "external_model"],
+        ["lbcs", "interval_hours"],
+        ["lbcs", "offset_hours"],
+        ["mesh_label"],
+        ["mpas_app"],
+        ["platform"],
+        ["workflow_blocks"],
+    ],
+)
+def test_validate__required_items(config, keys):
+    with raises(ValidationError) as e:
+        validation.validate(with_del(config, "user", *keys)["user"])
+    assert re.search(r"1 validation error.*%s" % ".".join(keys), str(e), re.DOTALL)
+
+
+def test_validate__ok(config):
     validation.validate(config["user"])
+
+
+# Support
+
+
+def with_del(d: dict, *args: Any) -> dict:
+    """
+    Delete a value at a given chain of keys in a dict.
+
+    :param d: The dict to update.
+    :param args: One or more keys navigating to the value to delete.
+    """
+    new = deepcopy(d)
+    p = new
+    for key in args[:-1]:
+        p = p[key]
+    del p[args[-1]]
+    return new
+
+
+def with_set(d: dict, val: Any, *args: Any) -> dict:
+    """
+    Set a value at a given chain of keys in a dict.
+
+    :param d: The dict to update.
+    :param val: The value to set.
+    :param args: One or more keys navigating to the value to set.
+    """
+    new = deepcopy(d)
+    p = new
+    for key in args[:-1]:
+        p = p[key]
+    p[args[-1]] = val
+    return new
