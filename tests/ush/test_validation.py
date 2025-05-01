@@ -22,15 +22,15 @@ MSG = ns(
 # Tests
 
 
-def test_validate__first_and_last_cycle(config):
-    keys = ["last_cycle"]
+def test_validate__user_first_and_last_cycle(config):
+    keys = ["user", "last_cycle"]
     # Fine: last_cycle coincides with first_cycle
     last_cycle_fine = config["user"]["first_cycle"]
-    validation.validate(with_set(config, last_cycle_fine, "user", *keys)["user"])
+    validation.validate(with_set(config, last_cycle_fine, *keys))
     # Wrong: last_cycle precedes first_cycle
     last_cycle_wrong = datetime(1970, 1, 1, 0, tzinfo=timezone.utc)
     with raises(ValidationError) as e:
-        validation.validate(with_set(config, last_cycle_wrong, "user", *keys)["user"])
+        validation.validate(with_set(config, last_cycle_wrong, *keys))
     assert "last_cycle cannot precede first_cycle" in str(e)
 
 
@@ -55,16 +55,17 @@ def test_validate__first_and_last_cycle(config):
         (["workflow_blocks"], MSG.str, [None]),
     ],
 )
-def test_validate__fail_values_bad(config, keys, msg, val):
+def test_validate__user_fail_values_bad(config, keys, msg, val):
+    keys = ["user", *keys]
     with raises(ValidationError) as e:
-        validation.validate(with_set(config, val, "user", *keys)["user"])
+        validation.validate(with_set(config, val, *keys))
     check(e, keys, f"Input should be {msg}")
 
 
-def test_validate__fail_values_bad_experiment_dir(config):
-    keys = ["experiment_dir"]
+def test_validate__user_fail_values_bad_experiment_dir(config):
+    keys = ["user", "experiment_dir"]
     with raises(ValidationError) as e:
-        validation.validate(with_set(config, None, "user", *keys)["user"])
+        validation.validate(with_set(config, None, *keys))
     check(e, keys, "Input is not a valid path")
 
 
@@ -85,14 +86,15 @@ def test_validate__fail_values_bad_experiment_dir(config):
         ["workflow_blocks"],
     ],
 )
-def test_validate__fail_values_missing(config, keys):
+def test_validate__user_fail_values_missing(config, keys):
+    keys = ["user", *keys]
     with raises(ValidationError) as e:
-        validation.validate(with_del(config, "user", *keys)["user"])
+        validation.validate(with_del(config, *keys))
     check(e, keys, "Field required")
 
 
 def test_validate__pass(config):
-    validation.validate(config["user"])
+    validation.validate(config)
 
 
 # Support

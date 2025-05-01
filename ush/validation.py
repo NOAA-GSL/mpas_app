@@ -37,5 +37,9 @@ class User(BaseModel):
         return self
 
 
-def validate(config: dict) -> User:
-    return User(**config)
+class Config(BaseModel):
+    user: User
+
+
+def validate(config: dict) -> Config:
+    return Config(**config)

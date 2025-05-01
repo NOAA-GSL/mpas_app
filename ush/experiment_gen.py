@@ -14,6 +14,8 @@ from uwtools.api import rocoto
 from uwtools.api.config import get_yaml_config, realize
 from uwtools.api.logging import use_uwtools_logger
 
+sys.path.append(str(Path(__file__).parent.parent))
+
 from ush.validation import validate
 
 
@@ -66,7 +68,7 @@ def main(user_config_files):
         experiment_config.update_from(supp_config)
 
     experiment_config.dereference()
-    user_block = validate(experiment_config.as_dict())
+    user_block = validate(experiment_config.as_dict()).user
 
     # Build the experiment directory
     experiment_dir = user_block.experiment_dir
