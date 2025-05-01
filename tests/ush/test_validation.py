@@ -24,10 +24,10 @@ MSG = ns(
 
 def test_validate__first_and_last_cycle(config):
     keys = ["last_cycle"]
-    # Fine:
+    # Fine: last_cycle == first_cycle
     last_cycle_fine = config["user"]["first_cycle"]
     validation.validate(with_set(config, last_cycle_fine, "user", *keys)["user"])
-    # Wrong:
+    # Wrong: last_cycle < first_cycle
     last_cycle_wrong = datetime(1970, 1, 1, 0, tzinfo=timezone.utc)
     with raises(ValidationError) as e:
         validation.validate(with_set(config, last_cycle_wrong, "user", *keys)["user"])
