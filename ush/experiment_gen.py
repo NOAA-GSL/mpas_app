@@ -71,11 +71,11 @@ def main(user_config_files):
     validated_config = validate(experiment_config.as_dict())
 
     # Build the experiment directory
-    experiment_path = Path(experiment_config["user"]["experiment_dir"])
-    print(f"Experiment will be set up here: {experiment_path}")
-    Path(experiment_path).mkdir(parents=True, exist_ok=True)
+    experiment_dir = validated_config.experiment_dir
+    print(f"Experiment will be set up here: {experiment_dir}")
+    Path(experiment_dir).mkdir(parents=True, exist_ok=True)
 
-    experiment_file = experiment_path / "experiment.yaml"
+    experiment_file = experiment_dir / "experiment.yaml"
 
     # Load the workflow definition
     workflow_blocks = experiment_config["user"]["workflow_blocks"]
@@ -93,7 +93,7 @@ def main(user_config_files):
     )
 
     # Create the workflow files
-    rocoto_xml = experiment_path / "rocoto.xml"
+    rocoto_xml = experiment_dir / "rocoto.xml"
     rocoto_valid = rocoto.realize(config=experiment_file, output_file=rocoto_xml)
     if not rocoto_valid:
         sys.exit(1)
@@ -115,9 +115,9 @@ def main(user_config_files):
                 cores = resources["nodes"] * resources["tasks_per_node"]
             all_nprocs.append(cores)
     for nprocs in all_nprocs:
-        if not (experiment_path / f"{mesh_file_path.name}.part.{nprocs}").is_file():
+        if not (experiment_dir / f"{mesh_file_path.name}.part.{nprocs}").is_file():
             print(f"Creating grid file for {nprocs} procs")
-            create_grid_files(experiment_path, mesh_file_path, nprocs)
+            create_grid_files(experiment_dir, mesh_file_path, nprocs)
 
 
 if __name__ == "__main__":
