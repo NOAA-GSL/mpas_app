@@ -14,6 +14,8 @@ from uwtools.api import rocoto
 from uwtools.api.config import get_yaml_config, realize
 from uwtools.api.logging import use_uwtools_logger
 
+from ush.validation import validate
+
 
 def create_grid_files(expt_dir: Path, mesh_file_path: Path, nprocs: int) -> None:
     """
@@ -48,6 +50,7 @@ def main(user_config_files):
         cfg = get_yaml_config(cfg_file)
         user_config.update_from(cfg)
         experiment_config.update_from(cfg)
+    validate(experiment_config.as_dict())
 
     machine = experiment_config["user"]["platform"]
     platform_config = get_yaml_config(mpas_app / "parm" / "machines" / f"{machine}.yaml")
