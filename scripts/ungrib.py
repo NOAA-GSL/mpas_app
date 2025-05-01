@@ -11,7 +11,7 @@ import sys
 from argparse import ArgumentParser
 from pathlib import Path
 
-from iota import asset, task, tasks
+from iotaa import asset, external, task, tasks
 
 from uwtools.api.config import get_yaml_config
 from uwtools.api.ungrib import Ungrib
@@ -49,18 +49,23 @@ def parse_args(argv):
     )
     return parser.parse_args(argv)
 
+@external
+def file(path: Path):
+    yield f"{path}"
+    yield asset(path, path.is_file)
+
 @task
-def regrid_input(infile: Path, wgrib_config: dict):
+def regrid_input(infile: Path, rundir, wgrib_config: dict):
     """
     Use wgrib2 to regrid the input file winds.
 
     :param infile: Input file path.
     :param wgrib_config: User-provided configuration settings.
     """
-    outfile = infile.resolve().stem + ".tmp.grib2"
+    outfile = Path(infile.resolve().stem + ".tmp.grib2")
     yield f"wgrib2 regrid {outfile}"
     yield asset(outfile, outfile.is_file)
-    yield file(path=infile)
+    yield file(infile)
     budget_fields = Path(wgrib_config["budget_fields"]).read_text().strip()
     neighbor_fields = Path(wgrib_config["neighbor_fields"]).read_text().strip()
     options = [
@@ -74,61 +79,59 @@ def regrid_input(infile: Path, wgrib_config: dict):
         f"-if \"{neighbor_fields}\" -new_grid_interpolation neighbor -fi",
         f"-new_grid {wgrib_config['grid_specs']}",
         ]
-    cmd = f"module load wgrib2 && rm -f {first_tmp} && wgrib2 {str(ingrib)} {' '.join(options)} {first_tmp}"
+    cmd = f"module load wgrib2 && wgrib2 {infile} {' '.join(options)} {outfile}"
     run_shell_cmd(
         cmd=cmd,
-        cwd=driver_config["rundir"],
+        cwd=rundir,
         log_output=True,
         taskname=inspect.stack()[0][3],
         )
 
 @task
-def merge_vector_fields(infile: Path, wgrib_config: dict):
+def merge_vector_fields(infile: Path, outfile: Path, rundir: Path, wgrib_config: dict):
     """
     Use wgrib2 to merge vector fields.
     """
     yield f"wgrib2 merge vector fields {outfile}"
     yield asset(outfile, outfile.is_file)
-    regrid_task = regrid_input(infile, wgrib_config)
+    regrid_task = regrid_input(infile, rundir, wgrib_config)
     yield regrid_task
     # or refs(regrid_task)
     # iotaa.logcfg -- for iotaa output logging.
 
-    cmd = (f"module load wgrib2 && rm -f {second_tmp} && wgrib2
-            {regrid_task.refs}",
+    cmd = (f"module load wgrib2 && wgrib2 {regrid_task.refs}",
         f"-new_grid_vectors {wgrib_config['grid_vectors']}",
-        f"-submsg_uv {second_tmp}",
+        f"-submsg_uv {outfile}",
         "-ncpu 8",
         )
     run_shell_cmd(
         cmd=cmd,
-        cwd=driver_config["rundir"],
+        cwd=rundir,
         log_output=True,
         taskname=inspect.stack()[0][3],
         )
 
 @task
-def link_to_regridded_grib(infile:Path , outfile: Path, wgrib_config: dict):
+def link_to_regridded_grib(infile:Path, rundir: Path, wgrib_config: dict):
     """
     Update original link to point to regridded grib file.
     """
     outfile = infile.resolve().stem + ".tmp2.grib2"
-    yield "ungrib: update link {infile} to {outfile}"
-    # make it an asset
-    yield infile.resolve() == outfile
-    yield merge_vector_fields(infile, wgrib_config)
+    yield f"ungrib: update link {infile} to {outfile}"
+    yield asset(infile, lambda: infile.resolve() == outfile)
+    yield merge_vector_fields(infile, Path(outfile), rundir, wgrib_config)
     infile.unlink()
     infile.symlink_to(outfile)
 
 @tasks
-def regrid_winds(driver_config, task_config):
+def regrid_winds(rundir:Path, task_config: dict):
     """
     Use wgrib2 to regrid the winds.
     """
     wgrib_config = task_config["wgrib2"]
-    # yield name
-    yield [link_to_regridded(ingrib, wgrib_config)
-        for ingrib in glob.glob(str(Path(driver_config["rundir"], "GRIBFILE.*")))]
+    yield "Regridding winds with wgrib2"
+    yield [link_to_regridded_grib(Path(ingrib), rundir, wgrib_config)
+        for ingrib in glob.glob(str(Path(rundir, "GRIBFILE.*")))]
 
 
 def run_ungrib(config_file, cycle, key_path):
@@ -148,10 +151,10 @@ def run_ungrib(config_file, cycle, key_path):
         ungrib_driver.gribfiles()
         # iotaa.logcfg()
         regrid_winds(
-            ungrib_driver.config,
+            ungrib_driver.config["rundir"],
             walk_key_path(config=expt_config, key_path=key_path)
         )
-    ungrib_driver.run()
+    #ungrib_driver.run()
 
     if not (ungrib_dir / "runscript.ungrib.done").is_file():
         print("Error occurred running ungrib. Please see component error logs.")
