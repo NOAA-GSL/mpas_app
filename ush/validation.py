@@ -37,5 +37,5 @@ class User(BaseModel):
         return self
 
 
-def validate(config: dict) -> None:
-    assert User(**config)
+def validate(config: dict) -> User:
+    return User(**config)
