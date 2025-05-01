@@ -50,7 +50,6 @@ def main(user_config_files):
         cfg = get_yaml_config(cfg_file)
         user_config.update_from(cfg)
         experiment_config.update_from(cfg)
-    validate(experiment_config.as_dict())
 
     machine = experiment_config["user"]["platform"]
     platform_config = get_yaml_config(mpas_app / "parm" / "machines" / f"{machine}.yaml")
@@ -69,6 +68,7 @@ def main(user_config_files):
     experiment_config["user"]["mpas_app"] = mpas_app.as_posix()
 
     experiment_config.dereference()
+    validated_config = validate(experiment_config.as_dict())
 
     # Build the experiment directory
     experiment_path = Path(experiment_config["user"]["experiment_dir"])
