@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 from typing import Literal
 
 from pydantic import BaseModel, NonNegativeInt, PositiveInt, model_validator
@@ -19,7 +20,7 @@ class LBCs(BaseModel):
 
 class User(BaseModel):
     cycle_frequency: PositiveInt
-    experiment_dir: str
+    experiment_dir: Path
     first_cycle: datetime
     ics: ICs
     last_cycle: datetime

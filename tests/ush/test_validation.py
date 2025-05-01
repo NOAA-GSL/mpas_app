@@ -39,7 +39,6 @@ def test_validate__first_and_last_cycle(config):
     [
         (["cycle_frequency"], MSG.gt0, 0),
         (["cycle_frequency"], MSG.int, None),
-        (["experiment_dir"], MSG.str, None),
         (["first_cycle"], MSG.dt, None),
         (["ics", "external_model"], MSG.model, "FOO"),
         (["ics", "offset_hours"], MSG.ge0, -1),
@@ -61,6 +60,13 @@ def test_validate__fail_values_bad(config, keys, msg, val):
     with raises(ValidationError) as e:
         validation.validate(with_set(config, val, "user", *keys)["user"])
     check(e, keys, f"Input should be {msg}")
+
+
+def test_validate__fail_values_bad_experiment_dir(config):
+    keys = ["experiment_dir"]
+    with raises(ValidationError) as e:
+        validation.validate(with_set(config, None, "user", *keys)["user"])
+    check(e, keys, "Input is not a valid path")
 
 
 @mark.parametrize(
@@ -95,11 +101,11 @@ def test_validate__pass(config):
 
 
 @fixture
-def config():
+def config(tmp_path):
     return {
         "user": {
             "cycle_frequency": 12,
-            "experiment_dir": "/path/to/dir",
+            "experiment_dir": tmp_path,
             "first_cycle": datetime(2025, 4, 30, 12, tzinfo=timezone.utc),
             "ics": {"external_model": "GFS", "offset_hours": 0},
             "last_cycle": datetime(2025, 4, 30, 18, tzinfo=timezone.utc),
@@ -116,7 +122,7 @@ def check(e: ExceptionInfo[ValidationError], keys: list[str], msg: str):
     assert e.value.error_count() == 1
     info = json.loads(e.value.json())[0]
     assert info["loc"][: len(keys)] == keys
-    assert info["msg"] == msg
+    assert info["msg"].startswith(msg)
 
 
 def with_del(d: dict, *args: Any) -> dict:
