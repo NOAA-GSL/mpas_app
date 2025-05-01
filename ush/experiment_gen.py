@@ -82,7 +82,7 @@ def main(user_config_files):
     workflow_config = get_yaml_config({})
     for workflow_block in workflow_blocks:
         workflow_config.update_from(get_yaml_config(workflow_block))
-    workflow_config.update_from({"user": validated.user.model_dump(mode="json")})
+    workflow_config.update_from(experiment_config)
     realize(input_config=workflow_config, output_file=experiment_file, update_config={})
 
     # Create the workflow files
