@@ -43,7 +43,6 @@ def main(user_config_files):
     """
 
     # Set up the experiment
-    mpas_app = Path(__file__).parent.parent.resolve()
     experiment_config = get_yaml_config(Path("./default_config.yaml"))
     user_config = get_yaml_config({})
     for cfg_file in user_config_files:
@@ -51,6 +50,7 @@ def main(user_config_files):
         user_config.update_from(cfg)
         experiment_config.update_from(cfg)
 
+    mpas_app = Path(__file__).parent.parent.resolve()
     machine = experiment_config["user"]["platform"]
     platform_config = get_yaml_config(mpas_app / "parm" / "machines" / f"{machine}.yaml")
 
@@ -65,32 +65,25 @@ def main(user_config_files):
     for supp_config in (platform_config, user_config):
         experiment_config.update_from(supp_config)
 
-    experiment_config["user"]["mpas_app"] = mpas_app.as_posix()
-
     experiment_config.dereference()
-    validated_config = validate(experiment_config.as_dict())
+    user_block = validate(experiment_config.as_dict())
 
     # Build the experiment directory
-    experiment_dir = validated_config.experiment_dir
+    experiment_dir = user_block.experiment_dir
     print(f"Experiment will be set up here: {experiment_dir}")
     Path(experiment_dir).mkdir(parents=True, exist_ok=True)
 
     experiment_file = experiment_dir / "experiment.yaml"
 
     # Load the workflow definition
-    workflow_blocks = experiment_config["user"]["workflow_blocks"]
-    workflow_blocks = [mpas_app / "parm" / "wflow" / b for b in workflow_blocks]
+    workflow_blocks = [mpas_app / "parm" / "wflow" / b for b in user_block.workflow_blocks]
 
     workflow_config = get_yaml_config({})
     for workflow_block in workflow_blocks:
         workflow_config.update_from(get_yaml_config(workflow_block))
-    workflow_config.update_from(experiment_config)
+    workflow_config.update_from(dict(user_block))
 
-    realize(
-        input_config=workflow_config,
-        output_file=experiment_file,
-        update_config={},
-    )
+    realize(input_config=workflow_config, output_file=experiment_file, update_config={})
 
     # Create the workflow files
     rocoto_xml = experiment_dir / "rocoto.xml"
@@ -99,7 +92,7 @@ def main(user_config_files):
         sys.exit(1)
 
     # Create grid files
-    mesh_file_name = f"{experiment_config['user']['mesh_label']}.graph.info"
+    mesh_file_name = f"{user_block.mesh_label}.graph.info"
     mesh_file_path = Path(experiment_config["data"]["mesh_files"]) / mesh_file_name
 
     all_nprocs = []

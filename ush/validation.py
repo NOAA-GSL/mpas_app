@@ -26,7 +26,6 @@ class User(BaseModel):
     last_cycle: datetime
     lbcs: LBCs
     mesh_label: str
-    mpas_app: str
     platform: str
     workflow_blocks: list[str]
 

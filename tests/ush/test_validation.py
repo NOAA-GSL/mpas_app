@@ -50,7 +50,6 @@ def test_validate__first_and_last_cycle(config):
         (["lbcs", "offset_hours"], MSG.ge0, -1),
         (["lbcs", "offset_hours"], MSG.int, None),
         (["mesh_label"], MSG.str, None),
-        (["mpas_app"], MSG.str, None),
         (["platform"], MSG.str, None),
         (["workflow_blocks"], MSG.list, None),
         (["workflow_blocks"], MSG.str, [None]),
@@ -82,7 +81,6 @@ def test_validate__fail_values_bad_experiment_dir(config):
         ["lbcs", "interval_hours"],
         ["lbcs", "offset_hours"],
         ["mesh_label"],
-        ["mpas_app"],
         ["platform"],
         ["workflow_blocks"],
     ],
@@ -111,7 +109,6 @@ def config(tmp_path):
             "last_cycle": datetime(2025, 4, 30, 18, tzinfo=timezone.utc),
             "lbcs": {"external_model": "GFS", "interval_hours": 6, "offset_hours": 0},
             "mesh_label": "hrrrv5",
-            "mpas_app": "",
             "platform": "big_computer",
             "workflow_blocks": ["cold_start.yaml", "post.yaml"],
         }
