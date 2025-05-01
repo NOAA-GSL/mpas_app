@@ -10,13 +10,13 @@ from pytest import ExceptionInfo, fixture, mark, raises
 from ush import validation
 
 MSG = ns(
-    adatetime="a valid datetime",
-    alist="a valid list",
-    amodel="'GFS' or 'RAP'",
-    anint="a valid integer",
-    astr="a valid string",
+    dt="a valid datetime",
     ge0="greater than or equal to 0",
     gt0="greater than 0",
+    int="a valid integer",
+    list="a valid list",
+    model="'GFS' or 'RAP'",
+    str="a valid string",
 )
 
 # Tests
@@ -25,24 +25,24 @@ MSG = ns(
 @mark.parametrize(
     ("keys", "msg", "val"),
     [
-        (["cycle_frequency"], MSG.anint, None),
         (["cycle_frequency"], MSG.gt0, 0),
-        (["experiment_dir"], MSG.astr, None),
-        (["first_cycle"], MSG.adatetime, None),
-        (["ics", "external_model"], MSG.amodel, "FOO"),
-        (["ics", "offset_hours"], MSG.anint, None),
+        (["cycle_frequency"], MSG.int, None),
+        (["experiment_dir"], MSG.str, None),
+        (["first_cycle"], MSG.dt, None),
+        (["ics", "external_model"], MSG.model, "FOO"),
         (["ics", "offset_hours"], MSG.ge0, -1),
-        (["last_cycle"], MSG.adatetime, None),
-        (["lbcs", "external_model"], MSG.amodel, "FOO"),
-        (["lbcs", "interval_hours"], MSG.anint, None),
+        (["ics", "offset_hours"], MSG.int, None),
+        (["last_cycle"], MSG.dt, None),
+        (["lbcs", "external_model"], MSG.model, "FOO"),
         (["lbcs", "interval_hours"], MSG.gt0, 0),
-        (["lbcs", "offset_hours"], MSG.anint, None),
+        (["lbcs", "interval_hours"], MSG.int, None),
         (["lbcs", "offset_hours"], MSG.ge0, -1),
-        (["mesh_label"], MSG.astr, None),
-        (["mpas_app"], MSG.astr, None),
-        (["platform"], MSG.astr, None),
-        (["workflow_blocks"], MSG.alist, None),
-        (["workflow_blocks"], MSG.astr, [None]),
+        (["lbcs", "offset_hours"], MSG.int, None),
+        (["mesh_label"], MSG.str, None),
+        (["mpas_app"], MSG.str, None),
+        (["platform"], MSG.str, None),
+        (["workflow_blocks"], MSG.list, None),
+        (["workflow_blocks"], MSG.str, [None]),
     ],
 )
 def test_validate__fail_bad(config, keys, msg, val):
