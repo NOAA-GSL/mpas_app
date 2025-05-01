@@ -68,23 +68,21 @@ def main(user_config_files):
         experiment_config.update_from(supp_config)
 
     experiment_config.dereference()
-    user_block = validate(experiment_config.as_dict()).user
+
+    validated = validate(experiment_config.as_dict())
 
     # Build the experiment directory
-    experiment_dir = user_block.experiment_dir
+    experiment_dir = validated.user.experiment_dir
     print(f"Experiment will be set up here: {experiment_dir}")
-    Path(experiment_dir).mkdir(parents=True, exist_ok=True)
-
+    experiment_dir.mkdir(parents=True, exist_ok=True)
     experiment_file = experiment_dir / "experiment.yaml"
 
     # Load the workflow definition
-    workflow_blocks = [mpas_app / "parm" / "wflow" / b for b in user_block.workflow_blocks]
-
+    workflow_blocks = [mpas_app / "parm" / "wflow" / b for b in validated.user.workflow_blocks]
     workflow_config = get_yaml_config({})
     for workflow_block in workflow_blocks:
         workflow_config.update_from(get_yaml_config(workflow_block))
-    workflow_config.update_from(dict(user_block))
-
+    workflow_config.update_from({"user": validated.user.model_dump(mode="json")})
     realize(input_config=workflow_config, output_file=experiment_file, update_config={})
 
     # Create the workflow files
@@ -94,7 +92,7 @@ def main(user_config_files):
         sys.exit(1)
 
     # Create grid files
-    mesh_file_name = f"{user_block.mesh_label}.graph.info"
+    mesh_file_name = f"{validated.user.mesh_label}.graph.info"
     mesh_file_path = Path(experiment_config["data"]["mesh_files"]) / mesh_file_name
 
     all_nprocs = []
