@@ -1,33 +1,54 @@
-import re
+import json
 from copy import deepcopy
 from datetime import datetime, timezone
+from types import SimpleNamespace as ns
 from typing import Any
 
 from pydantic import ValidationError
-from pytest import fixture, mark, raises
+from pytest import ExceptionInfo, fixture, mark, raises
 
 from ush import validation
 
-
-@fixture
-def config():
-    return {
-        "user": {
-            "cycle_frequency": 12,
-            "experiment_dir": "/path/to/dir",
-            "first_cycle": datetime(2025, 4, 30, 12, tzinfo=timezone.utc),
-            "ics": {"external_model": "GFS", "offset_hours": 0},
-            "last_cycle": datetime(2025, 4, 30, 18, tzinfo=timezone.utc),
-            "lbcs": {"external_model": "GFS", "interval_hours": 6, "offset_hours": 0},
-            "mesh_label": "hrrrv5",
-            "mpas_app": "",
-            "platform": "big_computer",
-            "workflow_blocks": ["cold_start.yaml", "post.yaml"],
-        }
-    }
-
+MSG = ns(
+    adatetime="a valid datetime",
+    alist="a valid list",
+    amodel="'GFS' or 'RAP'",
+    anint="a valid integer",
+    astr="a valid string",
+    ge0="greater than or equal to 0",
+    gt0="greater than 0",
+)
 
 # Tests
+
+
+@mark.parametrize(
+    ("keys", "msg", "val"),
+    [
+        (["cycle_frequency"], MSG.anint, None),
+        (["cycle_frequency"], MSG.gt0, 0),
+        (["experiment_dir"], MSG.astr, None),
+        (["first_cycle"], MSG.adatetime, None),
+        (["ics", "external_model"], MSG.amodel, "FOO"),
+        (["ics", "offset_hours"], MSG.anint, None),
+        (["ics", "offset_hours"], MSG.ge0, -1),
+        (["last_cycle"], MSG.adatetime, None),
+        (["lbcs", "external_model"], MSG.amodel, "FOO"),
+        (["lbcs", "interval_hours"], MSG.anint, None),
+        (["lbcs", "interval_hours"], MSG.gt0, 0),
+        (["lbcs", "offset_hours"], MSG.anint, None),
+        (["lbcs", "offset_hours"], MSG.ge0, -1),
+        (["mesh_label"], MSG.astr, None),
+        (["mpas_app"], MSG.astr, None),
+        (["platform"], MSG.astr, None),
+        (["workflow_blocks"], MSG.alist, None),
+        (["workflow_blocks"], MSG.astr, [None]),
+    ],
+)
+def test_validate__fail_bad(config, keys, msg, val):
+    with raises(ValidationError) as e:
+        validation.validate(with_set(config, val, "user", *keys)["user"])
+    check(e, keys, f"Input should be {msg}")
 
 
 @mark.parametrize(
@@ -48,10 +69,10 @@ def config():
         ["workflow_blocks"],
     ],
 )
-def test_validate__required_items(config, keys):
+def test_validate__fail_missing(config, keys):
     with raises(ValidationError) as e:
         validation.validate(with_del(config, "user", *keys)["user"])
-    assert re.search(r"1 validation error.*%s" % ".".join(keys), str(e), re.DOTALL)
+    check(e, keys, "Field required")
 
 
 def test_validate__ok(config):
@@ -59,6 +80,31 @@ def test_validate__ok(config):
 
 
 # Support
+
+
+@fixture
+def config():
+    return {
+        "user": {
+            "cycle_frequency": 12,
+            "experiment_dir": "/path/to/dir",
+            "first_cycle": datetime(2025, 4, 30, 12, tzinfo=timezone.utc),
+            "ics": {"external_model": "GFS", "offset_hours": 0},
+            "last_cycle": datetime(2025, 4, 30, 18, tzinfo=timezone.utc),
+            "lbcs": {"external_model": "GFS", "interval_hours": 6, "offset_hours": 0},
+            "mesh_label": "hrrrv5",
+            "mpas_app": "",
+            "platform": "big_computer",
+            "workflow_blocks": ["cold_start.yaml", "post.yaml"],
+        }
+    }
+
+
+def check(e: ExceptionInfo[ValidationError], keys: list[str], msg: str):
+    assert e.value.error_count() == 1
+    info = json.loads(e.value.json())[0]
+    assert info["loc"][: len(keys)] == keys
+    assert info["msg"] == msg
 
 
 def with_del(d: dict, *args: Any) -> dict:
