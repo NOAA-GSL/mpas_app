@@ -61,9 +61,7 @@ def run_mpas_init(config_file, cycle, key_path):
 
 
 if __name__ == "__main__":
-
     use_uwtools_logger()
-
 
     args = parse_args(sys.argv[1:])
     run_mpas_init(

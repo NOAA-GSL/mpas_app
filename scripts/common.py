@@ -52,4 +52,3 @@ def check_success_file(rundir: Path, done_filename: str):
     if not done_file.is_file():
         print(f"Error occurred. Expected file '{done_filename}' not found in {rundir}.")
         sys.exit(1)
-
