@@ -24,10 +24,10 @@ MSG = SimpleNamespace(
 
 def test_validate__user_first_and_last_cycle(config):
     keys = ["user", "last_cycle"]
-    # Fine: last_cycle coincides with first_cycle
+    # Fine: last_cycle coincides with first_cycle.
     last_cycle_fine = config["user"]["first_cycle"]
     validation.validate(with_set(config, last_cycle_fine, *keys))
-    # Wrong: last_cycle precedes first_cycle
+    # Wrong: last_cycle precedes first_cycle.
     last_cycle_wrong = datetime(1970, 1, 1, 0, tzinfo=timezone.utc)
     with raises(ValidationError) as e:
         validation.validate(with_set(config, last_cycle_wrong, *keys))

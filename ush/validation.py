@@ -36,7 +36,7 @@ class User(BaseModel):
     workflow_blocks: list[str]
 
     @model_validator(mode="after")
-    def check_first_and_last_cycle(self):
+    def first_and_last_cycle(self):
         if self.last_cycle < self.first_cycle:
             msg = "last_cycle cannot precede first_cycle"
             raise ValueError(msg)
