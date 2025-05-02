@@ -94,7 +94,21 @@ def test_validate__user_fail_values_missing(config, keys):
 
 
 def test_validate__pass(config):
-    validation.validate(config)
+    validated = validation.validate(config)
+    # Config object supports dotted attribute lookup:
+    assert validated.user.cycle_frequency == 12
+    # Config object can be dumped to a dict:
+    d1 = validated.model_dump()
+    assert isinstance(d1, dict)
+    assert d1["user"]["ics"]["external_model"] == "GFS"
+    assert isinstance(d1["user"]["first_cycle"], datetime)
+    assert d1["user"]["first_cycle"] == config["user"]["first_cycle"]
+    # Config object can be dumped to a JSON-compatible dict:
+    d2 = validated.model_dump(mode="json")
+    assert isinstance(d2, dict)
+    assert d2["user"]["ics"]["external_model"] == "GFS"
+    assert isinstance(d2["user"]["first_cycle"], str)
+    assert d2["user"]["first_cycle"] == "2025-04-30T12:00:00Z"
 
 
 # Support
