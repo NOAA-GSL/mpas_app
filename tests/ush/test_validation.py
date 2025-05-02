@@ -1,7 +1,7 @@
 import json
 from copy import deepcopy
 from datetime import datetime, timezone
-from types import SimpleNamespace as ns
+from types import SimpleNamespace
 from typing import Any
 
 from pydantic import ValidationError
@@ -9,7 +9,7 @@ from pytest import ExceptionInfo, fixture, mark, raises
 
 from ush import validation
 
-MSG = ns(
+MSG = SimpleNamespace(
     dt="a valid datetime",
     ge0="greater than or equal to 0",
     gt0="greater than 0",

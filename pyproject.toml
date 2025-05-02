@@ -28,7 +28,6 @@ ignore = [
   "D",       # all pydocstyle
   "FBT002",  # boolean-default-value-positional-argument
   "LOG015",  # root-logger-call
-  "N813",    # camelcase-imported-as-lowercase
   "PLR0912", # too-many-branches
   "PLR2004", # magic-value-comparison
   "PTH207",  # glob

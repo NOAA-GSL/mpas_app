@@ -1,10 +1,16 @@
-from datetime import datetime
-from pathlib import Path
+from __future__ import annotations
+
+from datetime import datetime  # noqa: TC003
+from pathlib import Path  # noqa: TC003
 from typing import Literal
 
 from pydantic import BaseModel, NonNegativeInt, PositiveInt, model_validator
 
 Model = Literal["GFS", "RAP"]
+
+
+class Config(BaseModel):
+    user: User
 
 
 class ICs(BaseModel):
@@ -35,10 +41,6 @@ class User(BaseModel):
             msg = "last_cycle cannot precede first_cycle"
             raise ValueError(msg)
         return self
-
-
-class Config(BaseModel):
-    user: User
 
 
 def validate(config: dict) -> Config:
