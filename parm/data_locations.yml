@@ -1,15 +1,15 @@
-timevars:
-  bin6: "{% set low_end = (cycle.hour // 6 * 6) %}{{ '{:2d}-{:02d}'.format(low_end, (low_end+5)) }}"
-  dd: "{{ cycle.strftime('%d') }}"
-  hh: "{{ cycle.strftime('%H') }}"
-  jjj: "{{ cycle.strftime('%j') }}"
-  min: "{{ cycle.strftime('%M') }}"
-  mm: "{{ cycle.strftime('%m') }}"
-  yy: "{{ cycle.strftime('%y') }}"
-  yyyy: "{{ cycle.strftime('%Y') }}"
-  yyyymm: "{{ cycle.strftime('%Y%m') }}"
-  yyyymmdd: "{{ cycle.strftime('%Y%m%d') }}"
-  yyyymmddhh: "{{ cycle.strftime('%Y%m%d%H') }}"
+bin6: "{% set low_end = (cycle.hour // 6 * 6) %}{{ '{:02d}-{:02d}'.format(low_end, (low_end+5)) }}"
+dd: "{{ cycle.strftime('%d') }}"
+hh: "{{ cycle.strftime('%H') }}"
+jjj: "{{ cycle.strftime('%j') }}"
+min: "{{ cycle.strftime('%M') }}"
+mm: "{{ cycle.strftime('%m') }}"
+yy: "{{ cycle.strftime('%y') }}"
+yyyy: "{{ cycle.strftime('%Y') }}"
+yyyymm: "{{ cycle.strftime('%Y%m') }}"
+yyyymmdd: "{{ cycle.strftime('%Y%m%d') }}"
+yyyymmddhh: "{{ cycle.strftime('%Y%m%d%H') }}"
+fcst_hr: !int "{{ lead_time.seconds / 3600 }}"
 
 
 GFS:
@@ -25,13 +25,13 @@ GFS:
         - gfs.t{{hh}}z.sfcanl.nc
     fcst:
       grib2:
-        - gfs.t{{hh}}z.pgrb2.0p25.f{fcst_hr:03d}
+        - gfs.t{{hh}}z.pgrb2.0p25.f{{ "%03d" % fcst_hr }}
       nemsio:
-        - gfs.t{{hh}}z.atmf{fcst_hr:03d}.nemsio
-        - gfs.t{{hh}}z.sfcf{fcst_hr:03d}.nemsio
+        - gfs.t{{hh}}z.atmf{{fcst_hr:03d}}.nemsio
+        - gfs.t{{hh}}z.sfcf{{fcst_hr:03d}}.nemsio
       netcdf:
-        - gfs.t{{hh}}z.atmf{fcst_hr:03d}.nc
-        - gfs.t{{hh}}z.sfcf{fcst_hr:03d}.nc
+        - gfs.t{{hh}}z.atmf{{fcst_hr:03d}}.nc
+        - gfs.t{{hh}}z.sfcf{{fcst_hr:03d}}.nc
   nomads:
     locations:
       - https://nomads.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/gfs.{{ yyyymmdd }}/{{ hh }}/atmos
@@ -79,11 +79,11 @@ GDAS:
   file_names:
      anl: &gdas_file_names
        nemsio:
-         - gdas.t{{hh}}z.atmf{fcst_hr:03d}.nemsio
-         - gdas.t{{hh}}z.sfcf{fcst_hr:03d}.nemsio
+         - gdas.t{{hh}}z.atmf{{fcst_hr:03d}}.nemsio
+         - gdas.t{{hh}}z.sfcf{{fcst_hr:03d}}.nemsio
        netcdf:
-         - gdas.t{{hh}}z.atmf{fcst_hr:03d}.nc
-         - gdas.t{{hh}}z.sfcf{fcst_hr:03d}.nc
+         - gdas.t{{hh}}z.atmf{{fcst_hr:03d}}.nc
+         - gdas.t{{hh}}z.sfcf{{fcst_hr:03d}}.nc
      fcst:
        <<: *gdas_file_names
   hpss:
@@ -98,27 +98,24 @@ GDAS:
         nemsio: &gdas_tar_files
           - com_gfs_prod_enkfgdas.{{yyyymmdd}}_{{hh}}.enkfgdas_grp{ens_group}.tar
           - gpfs_dell1_nco_ops_com_gfs_prod_enkfgdas.{{yyyymmdd}}_{{hh}}.enkfgdas_grp{ens_group}.tar
-        netcdf:
-          <<: *gdas_tar_files
+        netcdf: *gdas_tar_files
       fcst:
-        nemsio:
-          <<: *gdas_tar_files
-        netcdf:
-          <<: *gdas_tar_files
+        nemsio: *gdas_tar_files
+        netcdf: *gdas_tar_files
   nomads:
     locations:
       - https://nomads.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/enkfgdas.{yyyymmdd}/{hh}/atmos/mem{mem:03d}
     file_names:
       fcst:
         netcdf:
-          - gdas.t{{hh}}z.sfcf{fcst_hr:03d}.nc
+          - gdas.t{{hh}}z.sfcf{{fcst_hr:03d}}.nc
   aws:
     locations:
       - https://noaa-gfs-bdp-pds.s3.amazonaws.com/enkfgdas.{yyyymmdd}/{hh}/atmos/mem{mem:03d}
     file_names:
       netcdf:
         anl:
-          - gdas.t{{hh}}z.sfcf{fcst_hr:03d}.nc
+          - gdas.t{{hh}}z.sfcf{{fcst_hr:03d}}.nc
 
 GEFS:
   file_names:
@@ -128,21 +125,21 @@ GEFS:
     protocol: download
     locations:
       - both:
-        - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}/atmos/pgrb2ap5/gep{mem:02d}.t{{hh}}z.pgrb2a.0p50.f{fcst_hr:03d}
-        - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}/atmos/pgrb2bp5/gep{mem:02d}.t{{hh}}z.pgrb2b.0p50.f{fcst_hr:03d}
+        - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}/atmos/pgrb2ap5/gep{mem:02d}.t{{hh}}z.pgrb2a.0p50.f{{fcst_hr:03d}}
+        - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}/atmos/pgrb2bp5/gep{mem:02d}.t{{hh}}z.pgrb2b.0p50.f{{fcst_hr:03d}}
       - both:
-        - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}/pgrb2a/gep{mem:02d}.t{{hh}}z.pgrb2af{fcst_hr:02d}
-        - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}/pgrb2b/gep{mem:02d}.t{{hh}}z.pgrb2bf{fcst_hr:02d}
+        - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}/pgrb2a/gep{mem:02d}.t{{hh}}z.pgrb2af{{fcst_hr:02d}}
+        - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}/pgrb2b/gep{mem:02d}.t{{hh}}z.pgrb2bf{{fcst_hr:02d}}
       - both:
-        - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}/gep{mem:02d}.t{{hh}}z.pgrb2af{fcst_hr:03d}
-        - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}/gep{mem:02d}.t{{hh}}z.pgrb2bf{fcst_hr:03d}
+        - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}/gep{mem:02d}.t{{hh}}z.pgrb2af{{fcst_hr:03d}}
+        - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}/gep{mem:02d}.t{{hh}}z.pgrb2bf{{fcst_hr:03d}}
 
 RAP:
   file_names: &rap_file_names
     anl:
-      - rap.t{{hh}}z.wrfnatf{fcst_hr:02d}.grib2
+      - rap.t{{hh}}z.wrfnatf{{fcst_hr:02d}}.grib2
     fcst:
-      - rap.t{{hh}}z.wrfnatf{fcst_hr:02d}.grib2
+      - rap.t{{hh}}z.wrfnatf{{fcst_hr:02d}}.grib2
   hpss:
     archive_format: tar
     archive_paths:
@@ -161,9 +158,9 @@ RAP:
 HRRR:
   file_names: &hrrr_file_names
     anl:
-      - hrrr.t{hh}z.wrfprsf{fcst_hr:02d}.grib2
+      - hrrr.t{hh}z.wrfprsf{{fcst_hr:02d}}.grib2
     fcst:
-      - hrrr.t{hh}z.wrfprsf{fcst_hr:02d}.grib2
+      - hrrr.t{hh}z.wrfprsf{{fcst_hr:02d}}.grib2
   hpss:
     archive_format: tar
     archive_paths:
@@ -187,12 +184,12 @@ NAM:
       - ./
     archive_file_names:
       - com_nam_prod_nam.{{yyyymmddhh}}.awphys.tar
-      - com_nam_prod_nam.{{yyyymmddhh}}.awphys{fcst_hr:02d}.tar
+      - com_nam_prod_nam.{{yyyymmddhh}}.awphys{{fcst_hr:02d}}.tar
     file_names:
       anl:
-        - nam.t{{hh}}z.awphys{fcst_hr:02d}.tm00.grib2
+        - nam.t{{hh}}z.awphys{{fcst_hr:02d}}.tm00.grib2
       fcst:
-        - nam.t{{hh}}z.awphys{fcst_hr:02d}.tm00.grib2
+        - nam.t{{hh}}z.awphys{{fcst_hr:02d}}.tm00.grib2
 
 ##########################
 ##########################
@@ -247,10 +244,10 @@ NDAS_obs:
     archive_internal_dirs:
       - ./
     archive_file_names:
-      - com2_nam_prod_nam.{{{yyyymmddhh}}}.bufr.tar
-      - gpfs_dell1_nco_ops_com_nam_prod_nam.{{{yyyymmddhh}}}.bufr.tar
-      - com_nam_prod_nam.{{{yyyymmddhh}}}.bufr.tar
-      - com_obsproc_v1.1_nam.{{{yyyymmddhh}}}.bufr.tar
+      - com2_nam_prod_nam.{{yyyymmddhh}}.bufr.tar
+      - gpfs_dell1_nco_ops_com_nam_prod_nam.{{yyyymmddhh}}.bufr.tar
+      - com_nam_prod_nam.{{yyyymmddhh}}.bufr.tar
+      - com_obsproc_v1.1_nam.{{yyyymmddhh}}.bufr.tar
     file_names:
       obs:
         - nam.t{{hh}}z.prepbufr.tm*.nr
