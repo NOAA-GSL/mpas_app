@@ -6,6 +6,7 @@ from unittest.mock import Mock, patch
 
 from pytest import fixture
 from uwtools.api.config import get_yaml_config
+from uwtools.api.logging import use_uwtools_logger
 from uwtools.api.template import render
 
 from ush import retrieve_data
@@ -20,11 +21,11 @@ def test_import():
     assert retrieve_data
 
 
-def test_try_data_store_disk_success(tmp_path):
+def test_try_data_store_disk_success(data_locations, tmp_path):
     file_path = tmp_path / "{{ cycle.strftime('%Y%m%d%H') }}"
     output_path = tmp_path / "output"
     output_path.mkdir()
-    tmp_file = "tmp.f{{ lead_time.seconds / 3600 }}"
+    tmp_file = "tmp.f{{ fcst_hr }}"
     existing_file_template = file_path / tmp_file
     cycle = dt.datetime.now(tz=dt.timezone.utc)
     lead_times = [dt.timedelta(hours=6), dt.timedelta(hours=12)]
@@ -35,7 +36,7 @@ def test_try_data_store_disk_success(tmp_path):
         sys.stdin = input_stream
         values = {
             "cycle": cycle,
-            "lead_time": lead_time,
+            "fcst_hr": lead_time.seconds // 3600,
         }
         new_file = Path(render(values_src=values, stdin_ok=True))
         new_file.parent.mkdir(parents=True, exist_ok=True)
@@ -43,7 +44,7 @@ def test_try_data_store_disk_success(tmp_path):
         new_files.append(new_file)
 
     success, _ = retrieve_data.try_data_store(
-        config=get_yaml_config({}),
+        config=data_locations,
         cycle=cycle,
         file_templates=[tmp_file],
         lead_times=lead_times,
@@ -59,7 +60,7 @@ def test_try_data_store_disk_fail(tmp_path):
     file_path = tmp_path / "{{ cycle.strftime('%Y%m%d%H') }}"
     output_path = tmp_path / "output"
     output_path.mkdir()
-    tmp_file = "tmp.f{{ lead_time.seconds / 3600 }}"
+    tmp_file = "tmp.f{{ fcst_hr }}"
     existing_file_template = file_path / tmp_file
     cycle = dt.datetime.now(tz=dt.timezone.utc)
     lead_times = [dt.timedelta(hours=6), dt.timedelta(hours=12)]
@@ -80,8 +81,14 @@ def test_prepare_fs_copy_config_gfs_grib2_aws(data_locations, tmp_path):
     output_path = tmp_path / "output"
     output_path.mkdir()
 
-    cycle = dt.datetime.now(tz=dt.timezone.utc)
-    lead_times = [dt.timedelta(hours=6), dt.timedelta(hours=12)]
+    leads = (6, 12)
+    cycle = dt.datetime.fromisoformat("2025-05-04T00").replace(tzinfo=dt.timezone.utc)
+    lead_times = [dt.timedelta(hours=l) for l in leads]
+    expected = {
+        f"gfs.t{cycle.hour:02d}z.{level}f{lead:03d}.nc": f"https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.{cycle.strftime('%Y%m%d')}/{cycle.hour:02d}/atmos/gfs.t{cycle.hour:02d}z.{level}f{lead:03d}.nc"
+        for lead in leads
+        for level in ("atm", "sfc")
+    }
     config = retrieve_data.prepare_fs_copy_config(
         config=data_locations,
         cycle=cycle,
@@ -90,5 +97,6 @@ def test_prepare_fs_copy_config_gfs_grib2_aws(data_locations, tmp_path):
         location=data_locations["GFS"]["aws"]["locations"][0],
         members=[0],
     )
-    print(config)
-    assert not config
+    print("CONFIG: ", config)
+    print(expected)
+    assert config == expected

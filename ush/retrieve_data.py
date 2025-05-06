@@ -36,10 +36,12 @@ import os
 import re
 import subprocess
 import sys
+from copy import deepcopy
 from typing import TYPE_CHECKING, NoReturn
 
 from uwtools.api import fs
-from uwtools.api.config import YAMLConfig, get_yaml_config
+from uwtools.api.config import Config, YAMLConfig, get_yaml_config
+from uwtools.api.logging import use_uwtools_logger
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -113,19 +115,6 @@ def expand_template(template, config, cycles, lead_times, members):
                 )
                 files.append(cfg["file"])
     return files
-
-
-def setup_logging(debug=False):
-    """Calls initialization functions for logging package, and sets the
-    user-defined level for logging in the script."""
-
-    level = logging.INFO
-    if debug:
-        level = logging.DEBUG
-
-    logging.basicConfig(format="%(levelname)s: %(message)s \n ", level=level)
-    if debug:
-        logging.info("Logging level set to DEBUG")
 
 
 def write_summary_file(cla, data_store, file_templates):
@@ -348,7 +337,7 @@ def retrieve_data(
 
 
 def prepare_fs_copy_config(
-    config: YAMLConfig,
+    config: Config,
     cycle: dt.datetime,
     file_templates: list[str | None],
     lead_times: list[dt.timedelta],
@@ -359,15 +348,20 @@ def prepare_fs_copy_config(
     for member in members:
         for lead_time in lead_times:
             for file_template in file_templates:
-                file_item = get_yaml_config({file_template: f"{location}/{file_template}"})
+                file_item = get_yaml_config({file_template: "{}/{}".format(location, file_template)})
+                print(file_item)
                 file_item.dereference(
                     context={
                         "cycle": cycle,
-                        "fcst_hr": lead_time.seconds / 3600,
                         "lead_time": lead_time,
-                        "member": member,
-                        **config,
-                    }
+                        **deepcopy(config).dereference(
+                            context={
+                                "cycle": cycle,
+                                "lead_time": lead_time,
+                                "member": member,
+                            }
+                        ),
+                      }
                 )
                 print(file_item)
                 fs_copy_config.update(file_item)
@@ -375,7 +369,7 @@ def prepare_fs_copy_config(
 
 
 def try_data_store(
-    config: YAMLConfig,
+    config: Config,
     cycle: dt.datetime,
     file_templates: list[str | None],
     lead_times: list[dt.timedelta],
@@ -389,6 +383,7 @@ def try_data_store(
     """
 
     # form a UW YAML to try a copy
+    config = config.dereference(context={"cycle": cycle})
     for location in locations:
         fs_copy_config = prepare_fs_copy_config(
             config=config,
@@ -401,8 +396,6 @@ def try_data_store(
         files_copied = fs.copy(config=fs_copy_config, target_dir=outpath, cycle=cycle)
         if files_copied["ready"] and not files_copied["not-ready"]:
             logging.info(files_copied)
-            print(files_copied)
-            print(fs_copy_config)
             return True, fs_copy_config
 
     return False, fs_copy_config
@@ -411,7 +404,7 @@ def try_data_store(
 def main(args):
     clargs = parse_args(args)
 
-    setup_logging(clargs.debug)
+    use_uwtools_logger(verbose=True)
     print("Running script retrieve_data.py with args:", f"\n{('-' * 80)}\n{('-' * 80)}")
     for name, val in clargs.__dict__.items():
         if name not in ["config"]:
