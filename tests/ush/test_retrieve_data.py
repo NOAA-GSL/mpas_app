@@ -1,5 +1,5 @@
-from ush import experiment_gen
+from ush import retrieve_data
 
 
 def test_import():
-    assert experiment_gen
+    assert retrieve_data
