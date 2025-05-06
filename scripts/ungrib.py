@@ -60,7 +60,6 @@ def run_ungrib(config_file, cycle, key_path):
 
 
 if __name__ == "__main__":
-
     use_uwtools_logger()
 
     args = parse_args(sys.argv[1:])
@@ -68,4 +67,4 @@ if __name__ == "__main__":
         config_file=args.config_file,
         cycle=args.cycle,
         key_path=args.key_path,
-        )
+    )
