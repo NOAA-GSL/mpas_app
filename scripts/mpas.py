@@ -17,7 +17,6 @@ from scripts.common import check_success, parse_args, run_component
 
 def main():
     use_uwtools_logger()
-
     args = parse_args()
     rundir = run_component(
         driver_class=MPAS,

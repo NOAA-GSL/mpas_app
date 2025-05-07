@@ -6,13 +6,14 @@ from argparse import ArgumentParser
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from uwtools.api.logging import use_uwtools_logger
-
-use_uwtools_logger()
+# Public functions
 
 
-def utc(date_string):
-    return datetime.fromisoformat(date_string).replace(tzinfo=timezone.utc)
+def check_success(rundir: Path, done_file: str):
+    done_path = rundir / done_file
+    if not done_path.is_file():
+        print(f"Error occurred. Expected file '{done_file}' not found in {rundir}.")
+        sys.exit(1)
 
 
 def parse_args(argv=None):
@@ -20,7 +21,7 @@ def parse_args(argv=None):
     parser.add_argument(
         "-c", "--config-file", required=True, type=Path, help="Path to config file."
     )
-    parser.add_argument("--cycle", required=True, type=utc, help="Cycle in ISO8601 format.")
+    parser.add_argument("--cycle", required=True, type=_utc, help="Cycle in ISO8601 format.")
     parser.add_argument("--lead", type=int, help="Lead time in hours.")
     parser.add_argument(
         "--key-path",
@@ -48,8 +49,8 @@ def run_component(
     return rundir
 
 
-def check_success(rundir: Path, done_file: str):
-    done_path = rundir / done_file
-    if not done_path.is_file():
-        print(f"Error occurred. Expected file '{done_file}' not found in {rundir}.")
-        sys.exit(1)
+# Private functions
+
+
+def _utc(date_string):
+    return datetime.fromisoformat(date_string).replace(tzinfo=timezone.utc)

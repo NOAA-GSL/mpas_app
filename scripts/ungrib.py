@@ -15,9 +15,6 @@ from scripts.common import check_success, parse_args, run_component
 
 
 def main():
-    """
-    Setup and run the ungrib driver.
-    """
     use_uwtools_logger()
     args = parse_args()
     rundir = run_component(
