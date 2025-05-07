@@ -5,14 +5,15 @@ import sys
 from argparse import ArgumentParser
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from uwtools.api.logging import use_uwtools_logger
 
 # Public functions
 
 
 def check_success(rundir: Path, done_file: str):
+    use_uwtools_logger()
     done_path = rundir / done_file
     if not done_path.is_file():
-        print(f"Error occurred. Expected file '{done_file}' not found in {rundir}.")
         sys.exit(1)
 
 
