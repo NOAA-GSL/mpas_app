@@ -1,6 +1,6 @@
 [tool.coverage.report]
 exclude_also = ["if TYPE_CHECKING:"]
-fail_under = 18
+fail_under = 33
 show_missing = true
 skip_covered = true
 
