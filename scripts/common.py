@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import sys
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -16,7 +16,7 @@ def check_success(rundir: Path, driver_name: str):
         sys.exit(1)
 
 
-def parse_args(argv=None):
+def parse_args(argv=None) -> Namespace:
     parser = ArgumentParser(description="Common driver script parser.")
     parser.add_argument(
         "-c", "--config-file", required=True, type=Path, help="Path to config file."
@@ -52,5 +52,5 @@ def run_component(
 # Private functions
 
 
-def _utc(date_string):
+def _utc(date_string) -> datetime:
     return datetime.fromisoformat(date_string).replace(tzinfo=timezone.utc)
