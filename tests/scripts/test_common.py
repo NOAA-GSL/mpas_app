@@ -7,7 +7,7 @@ from pytest import mark
 from scripts import common
 
 
-def test_parse_args_valid():
+def test_parse_args():
     argv = [
         "-c",
         "config.yaml",

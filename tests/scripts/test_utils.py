@@ -3,7 +3,7 @@ import pytest
 from scripts import utils
 
 
-def test_run_shell_cmd(tmp_path, caplog):
+def test_run_shell_cmd(caplog, tmp_path):
     caplog.set_level("INFO")
     cmd = "echo hello $FOO"
     success, output = utils.run_shell_cmd(
