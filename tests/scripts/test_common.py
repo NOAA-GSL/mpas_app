@@ -28,12 +28,11 @@ def test_parse_args_valid():
 @mark.parametrize("success", [True, False])
 def test_check_success(success):
     rundir = Path("/some/directory")
-    done_file = "runscript.done"
     with (
         patch("scripts.common.Path.is_file", return_value=success),
         patch("scripts.common.sys.exit") as mock_exit,
     ):
-        common.check_success(rundir, done_file)
+        common.check_success(rundir, "driver_name")
     if success:
         mock_exit.assert_not_called()
     else:
