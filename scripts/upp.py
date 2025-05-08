@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
-
 """
 The runscript for UPP.
 """
+
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).parent.parent))
 
 from uwtools.api.logging import use_uwtools_logger
 from uwtools.api.upp import UPP

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
 The run script for the MPAS forecast.
 """
