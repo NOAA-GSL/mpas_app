@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import patch
 
-from pytest import mark
+import pytest
 
 from scripts import common
 
@@ -25,7 +25,20 @@ def test_parse_args():
     assert args.key_path == ["forecast", "model"]
 
 
-@mark.parametrize("success", [True, False])
+def test_parse_args_invalid_cycle():
+    argv = [
+        "-c",
+        "config.yaml",
+        "--cycle",
+        "01-01-2025 00:00",
+        "--key-path",
+        "forecast.model",
+    ]
+    with pytest.raises(SystemExit):
+        common.parse_args(argv)
+
+
+@pytest.mark.parametrize("success", [True, False])
 def test_check_success(success):
     rundir = Path("/some/directory")
     with (
