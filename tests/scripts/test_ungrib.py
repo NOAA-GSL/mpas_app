@@ -25,4 +25,4 @@ def test_main():
             cycle=mock_args.cycle,
             key_path=mock_args.key_path,
         )
-        mock_check_success.assert_called_once_with(Path("/some/rundir"), "runscript.ungrib.done")
+        mock_check_success.assert_called_once_with(Path("/some/rundir"), "ungrib")

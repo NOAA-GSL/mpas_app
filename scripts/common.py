@@ -5,15 +5,14 @@ import sys
 from argparse import ArgumentParser
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from uwtools.api.logging import use_uwtools_logger
 
 # Public functions
 
 
-def check_success(rundir: Path, done_file: str):
-    use_uwtools_logger()
-    done_path = rundir / done_file
+def check_success(rundir: Path, driver_name: str):
+    done_path = rundir / f"runscript.{driver_name}.done"
     if not done_path.is_file():
+        print(f"Error occurred. Expected file '{driver_name}' not found in {rundir}.")
         sys.exit(1)
 
 

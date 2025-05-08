@@ -27,4 +27,4 @@ def test_main():
             lead=mock_args.lead,
             key_path=mock_args.key_path,
         )
-        mock_check_success.assert_called_once_with(Path("/some/rundir"), "runscript.mpas_init.done")
+        mock_check_success.assert_called_once_with(Path("/some/rundir"), "mpas_init")

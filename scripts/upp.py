@@ -13,14 +13,15 @@ from scripts.common import check_success, parse_args, run_component
 def main():
     use_uwtools_logger()
     args = parse_args()
+    driver = UPP
     rundir = run_component(
-        driver_class=UPP,
+        driver_class=driver,
         config_file=args.config_file,
         cycle=args.cycle,
         lead=args.lead,
         key_path=args.key_path,
     )
-    check_success(rundir, "runscript.upp.done")
+    check_success(rundir, driver.driver_name())
 
 
 if __name__ == "__main__":
