@@ -9,7 +9,6 @@ def test_main():
     mock_args = Mock()
     mock_args.config_file = Path("/some/config.yaml")
     mock_args.cycle = datetime(2025, 1, 1, 12, tzinfo=timezone.utc)
-    mock_args.lead = 6
     mock_args.key_path = ["forecast"]
     with (
         patch.object(mpas_init, "parse_args", return_value=mock_args) as mock_parse_args,
@@ -24,7 +23,6 @@ def test_main():
             driver_class=mpas_init.MPASInit,
             config_file=mock_args.config_file,
             cycle=mock_args.cycle,
-            lead=mock_args.lead,
             key_path=mock_args.key_path,
         )
         mock_check_success.assert_called_once_with(Path("/some/rundir"), "mpas_init")
