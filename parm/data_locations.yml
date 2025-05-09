@@ -37,7 +37,7 @@ GFS:
     locations:
       - https://nomads.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/gfs.{{ yyyymmdd }}/{{ hh }}/atmos
   hpss:
-    archive_paths:
+    locations:
       - /NCEPPROD/hpssprod/runhistory/rh{{yyyy}}/{{yyyymm}}/{{yyyymmdd}}
     archive_internal_dirs:
       - ./gfs.{{yyyymmdd}}/{{hh}}
@@ -89,7 +89,7 @@ GDAS:
        <<: *gdas_file_names
   hpss:
     protocol: htar
-    archive_paths:
+    locations:
       - /NCEPPROD/5year/hpssprod/runhistory/rh{{yyyy}}/{{yyyymm}}/{{yyyymmdd}}
     archive_internal_dir:
       - ./enkfgdas.{{yyyymmdd}}/{{hh}}/atmos/mem{{ "%03d" % mem }}
@@ -143,7 +143,7 @@ RAP:
       - rap.t{{hh}}z.wrfnatf{{ "%02d" % fcst_hr }}.grib2
   hpss:
     archive_format: tar
-    archive_paths:
+    locations:
       - /NCEPPROD/hpssprod/runhistory/rh{{yyyy}}/{{yyyymm}}/{{yyyymmdd}}
     archive_internal_dirs:
       - ./
@@ -164,7 +164,7 @@ HRRR:
       - hrrr.ti{{hh}}z.wrfprsf{{ "%02d" % fcst_hr }}.grib2
   hpss:
     archive_format: tar
-    archive_paths:
+    locations:
       - /NCEPPROD/hpssprod/runhistory/rh{{yyyy}}/{{yyyymm}}/{{yyyymmdd}}
     archive_internal_dirs:
       - ./
@@ -179,7 +179,7 @@ HRRR:
 NAM:
   hpss:
     archive_format: tar
-    archive_paths:
+    locations:
       - /NCEPPROD/hpssprod/runhistory/rh{{yyyy}}/{{yyyymm}}/{{yyyymmdd}}
     archive_internal_dirs:
       - ./
@@ -201,7 +201,7 @@ NAM:
 CCPA_obs:
   hpss:
     archive_format: tar
-    archive_paths:
+    locations:
       - /NCEPPROD/hpssprod/runhistory/rh{{yyyy}}/{{yyyymm}}/{{yyyymmdd}}
     archive_internal_dirs:
       - "./00"
@@ -224,7 +224,7 @@ MRMS_obs:
       - "EchoTop_18_00.50_{{yyyymmdd}}-*.grib2.gz"
   hpss:
     archive_format: tar
-    archive_paths:
+    locations:
       - /NCEPPROD/hpssprod/runhistory/rh{{yyyy}}/{{yyyymm}}/{{yyyymmdd}}
     archive_internal_dirs:
       - /dcom/us007003/ldmdata/obs/upperair/mrms/conus/MergedReflectivityQCComposite
@@ -240,7 +240,7 @@ MRMS_obs:
 NDAS_obs:
   hpss:
     archive_format: tar
-    archive_paths:
+    locations:
       - /NCEPPROD/hpssprod/runhistory/rh{{yyyy}}/{{yyyymm}}/{{yyyymmdd}}
     archive_internal_dirs:
       - ./
@@ -256,7 +256,7 @@ NDAS_obs:
 NOHRSC_obs:
   hpss:
     archive_format: tar
-    archive_paths:
+    locations:
       - /NCEPPROD/hpssprod/runhistory/rh{{yyyy}}/{{yyyymm}}/{{yyyymmdd}}
     archive_internal_dirs:
       - ./wgrbbul/nohrsc_snowfall/

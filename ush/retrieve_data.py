@@ -44,6 +44,7 @@ from uwtools.api.config import Config, YAMLConfig, get_yaml_config
 from uwtools.api.logging import use_uwtools_logger
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
     from pathlib import Path
 
 FILE_SETS = ("anl", "fcst", "obs", "fix")
@@ -97,48 +98,10 @@ def _timedelta_from_str(tds: str) -> dt.timedelta:
     _abort("Specify leadtime as hours[:minutes[:seconds]]")
 
 
-def expand_template(template, config, cycles, lead_times, members):
-    """
-    Return a list of files expanded for all provided parameters.
-    """
-    files = []
-    for cycle in cycles:
-        for lead_time in lead_times:
-            for member in members:
-                cfg = get_yaml_config({"file": template})
-                cfg.dereference(
-                    context={
-                        "cycle": cycle,
-                        "leadtime": lead_time,
-                        "member": member,
-                    }
-                )
-                files.append(cfg["file"])
-    return files
-
-
 def write_summary_file(cla, data_store, file_templates):
     """Given the command line arguments and the data store from which
     the data was retrieved, write a bash summary file that is needed by
     the workflow elements downstream."""
-
-
-def get_ens_groups(members):
-    """Given a list of ensemble members, return a dict with keys for
-    the ensemble group, and values are lists of ensemble members
-    requested in that group."""
-
-    if members is None:
-        return {-1: [-1]}
-
-    ens_groups: dict = {}
-    for mem in members:
-        ens_group = (mem - 1) // 10 + 1
-        if ens_groups.get(ens_group) is None:
-            ens_groups[ens_group] = [mem]
-        else:
-            ens_groups[ens_group].append(mem)
-    return ens_groups
 
 
 def parse_args(argv):
@@ -291,6 +254,15 @@ def parse_args(argv):
     return args
 
 
+def get_file_names(
+    file_name_config: dict[str, list[str]],
+    file_fmt: str | None,
+    file_set: str,
+) -> list[str]:
+    files = file_name_config[file_set]
+    return files.get(file_fmt) if isinstance(files, dict) else files
+
+
 def retrieve_data(
     config: YAMLConfig,
     cycle: dt.datetime,
@@ -298,7 +270,7 @@ def retrieve_data(
     data_type: str,
     file_set: str,
     outpath: Path,
-    file_templates: list[str | None],
+    file_templates: list[str],
     lead_times: list[dt.timedelta],
     members: list[int | None],
     file_fmt: str | None = None,
@@ -310,12 +282,7 @@ def retrieve_data(
     Checks for and gathers the requested data.
     """
 
-    standard_file_names = config[data_type]["file_names"][file_set]
-    standard_file_names = (
-        standard_file_names.get(file_fmt)
-        if isinstance(standard_file_names, dict)
-        else standard_file_names
-    )
+    standard_file_names = get_file_names(config[data_type]["file_names"], file_fmt, file_set)
     for store in data_stores:
         # checks for given data_store
         if store == "disk":
@@ -325,57 +292,101 @@ def retrieve_data(
             assert file_set in FILE_SETS
 
         success, files_copied = try_data_store(
+            data_store=store,
             config=config,
             cycle=cycle,
-            file_templates=file_templates or standard_file_names,
+            file_templates=file_templates if all(file_templates) and data_store == "disk" else standard_file_names,
             lead_times=lead_times,
             locations=[inpath] if inpath else config[data_type][store]["locations"],
             members=members,
             outpath=outpath,
+            archive_config=config[data_type][store] if store == "hpss" else None,
+            archive_names=get_file_names(config[data_type][store], file_fmt, file_set),
         )
     return success
+
+
+def possible_hpss_configs(
+    archive_locations: dict[str, str],
+    archive_names: list[str],
+    config: Config,
+    cycle: dt.datetime,
+    file_templates: list[str],
+    lead_times: list[dt.timedelta],
+    members: list[int | None],
+):
+    for archive_loc in archive_locations["locations"]:
+        for internal_dir in archive_locations["archive_internal_dirs"]:
+            for archive_name in archive_names:
+                location = f"htar://{archive_loc}/{archive_name}?{internal_dir}"
+                fs_copy_config: dict[str, str] = {}
+                for member in members:
+                    for lead_time in lead_times:
+                        for file_template in file_templates:
+                            # Don't path join the next line because location won't be a path on disk
+                            file_item = get_yaml_config(
+                                {file_template: f"{location}/{file_template}"}
+                            )
+                            context = {
+                                "cycle": cycle,
+                                "lead_time": lead_time,
+                                "member": member,
+                            }
+                            file_item.dereference(
+                                context={
+                                    **context,
+                                    **deepcopy(config).dereference(
+                                        context=context,
+                                    ),
+                                }
+                            )
+                            fs_copy_config.update(file_item)
+                yield fs_copy_config
 
 
 def prepare_fs_copy_config(
     config: Config,
     cycle: dt.datetime,
-    file_templates: list[str | None],
+    file_templates: list[str],
     lead_times: list[dt.timedelta],
-    location: Path,
+    locations: list[Path | str],
     members: list[int | None],
-) -> dict[str, str]:
+) -> Generator[dict[str, str]]:
     fs_copy_config: dict[str, str] = {}
-    for member in members:
-        for lead_time in lead_times:
-            for file_template in file_templates:
-                file_item = get_yaml_config({file_template: "{}/{}".format(location, file_template)})
-                print(file_item)
-                file_item.dereference(
-                    context={
+    for location in locations:
+        for member in members:
+            for lead_time in lead_times:
+                for file_template in file_templates:
+                    # Don't path join the next line because location can be a url
+                    file_item = get_yaml_config({file_template: f"{location}/{file_template}"})
+                    context = {
                         "cycle": cycle,
                         "lead_time": lead_time,
-                        **deepcopy(config).dereference(
-                            context={
-                                "cycle": cycle,
-                                "lead_time": lead_time,
-                                "member": member,
-                            }
-                        ),
-                      }
-                )
-                print(file_item)
-                fs_copy_config.update(file_item)
-    return fs_copy_config
+                        "member": member,
+                    }
+                    file_item.dereference(
+                        context={
+                            **context,
+                            **deepcopy(config).dereference(
+                                context=context,
+                            ),
+                        }
+                    )
+                    fs_copy_config.update(file_item)
+        yield fs_copy_config
 
 
 def try_data_store(
     config: Config,
     cycle: dt.datetime,
-    file_templates: list[str | None],
+    data_store: str,
+    file_templates: list[str],
     lead_times: list[dt.timedelta],
-    locations: list[Path],
+    locations: list[Path | str],
     members: list[int | None],
     outpath: Path,
+    archive_config: dict[str, str] | None = None,
+    archive_names: list[str] | None = None,
 ) -> tuple[bool, dict[str, str]]:
     """
     Given a data store, prepare a UW YAML file block to retrieve all requested
@@ -384,15 +395,29 @@ def try_data_store(
 
     # form a UW YAML to try a copy
     config = config.dereference(context={"cycle": cycle})
-    for location in locations:
-        fs_copy_config = prepare_fs_copy_config(
+    fs_copy_configs: Generator[dict[str, str], None, None]
+    if data_store == "hpss":
+        assert archive_config is not None
+        assert archive_names is not None
+        fs_copy_configs = possible_hpss_configs(
+            archive_locations=archive_config,
+            archive_names=archive_names,
             config=config,
             cycle=cycle,
             file_templates=file_templates,
             lead_times=lead_times,
-            location=location,
             members=members,
         )
+    else:
+        fs_copy_configs = prepare_fs_copy_config(
+            config=config,
+            cycle=cycle,
+            file_templates=file_templates,
+            lead_times=lead_times,
+            locations=locations,
+            members=members,
+        )
+    for fs_copy_config in fs_copy_configs:
         files_copied = fs.copy(config=fs_copy_config, target_dir=outpath, cycle=cycle)
         if files_copied["ready"] and not files_copied["not-ready"]:
             logging.info(files_copied)

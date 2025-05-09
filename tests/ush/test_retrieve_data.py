@@ -4,7 +4,7 @@ from io import StringIO
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-from pytest import fixture
+from pytest import fixture, mark, raises
 from uwtools.api.config import get_yaml_config
 from uwtools.api.logging import use_uwtools_logger
 from uwtools.api.template import render
@@ -19,6 +19,46 @@ def data_locations():
 
 def test_import():
     assert retrieve_data
+
+
+def test__abort(capsys):
+    msg = "exit from _abort"
+    with raises(SystemExit) as e:
+        retrieve_data._abort(msg)
+    assert e.type == SystemExit
+    assert e.value.code == 1
+    assert msg in capsys.readouterr().err
+
+
+@mark.parametrize("inargs,expected", [([0], [0]), ([2, 5], [2, 3, 4, 5]), ([0, 12, 6], [0, 6, 12])])
+def test__arg_list_to_range_list(expected, inargs):
+    result = retrieve_data._arg_list_to_range(inargs)
+    assert result == expected
+
+
+def test__timedelta_from_str(capsys):
+    assert (
+        retrieve_data._timedelta_from_str("111:222:333").total_seconds()
+        == 111 * 3600 + 222 * 60 + 333
+    )
+    assert retrieve_data._timedelta_from_str("111:222").total_seconds() == 111 * 3600 + 222 * 60
+    assert retrieve_data._timedelta_from_str("111").total_seconds() == 111 * 3600
+    assert retrieve_data._timedelta_from_str("01:15:07").total_seconds() == 1 * 3600 + 15 * 60 + 7
+    with raises(SystemExit):
+        retrieve_data._timedelta_from_str("foo")
+    assert f"Specify leadtime as hours[:minutes[:seconds]]" in capsys.readouterr().err
+
+
+def test_get_file_names_no_file_fmt():
+    files = {"anl": ["file1.txt", "file2.txt"]}
+    result = retrieve_data.get_file_names(file_name_config=files, file_fmt="foo", file_set="anl")
+    assert result == files["anl"]
+
+
+def test_get_file_names_file_fmt():
+    files = {"anl": {"grib2": ["file1.txt", "file2.txt"]}}
+    result = retrieve_data.get_file_names(file_name_config=files, file_fmt="grib2", file_set="anl")
+    assert result == files["anl"]["grib2"]
 
 
 def test_try_data_store_disk_success(data_locations, tmp_path):
@@ -46,6 +86,7 @@ def test_try_data_store_disk_success(data_locations, tmp_path):
     success, _ = retrieve_data.try_data_store(
         config=data_locations,
         cycle=cycle,
+        data_store="disk",
         file_templates=[tmp_file],
         lead_times=lead_times,
         locations=[file_path],
@@ -68,6 +109,7 @@ def test_try_data_store_disk_fail(tmp_path):
     success, _ = retrieve_data.try_data_store(
         config=get_yaml_config({}),
         cycle=cycle,
+        data_store="disk",
         file_templates=[tmp_file],
         lead_times=lead_times,
         locations=[file_path],
@@ -77,10 +119,43 @@ def test_try_data_store_disk_fail(tmp_path):
     assert not success
 
 
-def test_prepare_fs_copy_config_gfs_grib2_aws(data_locations, tmp_path):
-    output_path = tmp_path / "output"
-    output_path.mkdir()
+def count_iterator(iterator):
+    count = 0
+    for _ in iterator:
+        count += 1
+    return count
 
+
+def test_possible_hpss_configs(data_locations):
+    leads = (6, 12)
+    cycle = dt.datetime.fromisoformat("2025-05-04T00").replace(tzinfo=dt.timezone.utc)
+    lead_times = [dt.timedelta(hours=l) for l in leads]
+
+    expected1 = {
+        "gfs.t00z.pgrb2.0p25.f000": "htar:///NCEPPROD/hpssprod/runhistory/rh2025/202505/20250504/gpfs_dell1_nco_ops_com_gfs_prod_gfs.20250504_00.gfs_pgrb2.tar?./gfs.20250504/00/gfs.t00z.pgrb2.0p25.f000"
+    }
+
+    expected2 = {
+        "gfs.t00z.pgrb2.0p25.f000": "htar:///NCEPPROD/hpssprod/runhistory/rh2025/202505/20250504/com_gfs_prod_gfs.20250504_00.gfs_pgrb2.tar?./gfs.20250504/00/gfs.t00z.pgrb2.0p25.f000"
+    }
+
+    gfs_hpss = data_locations["GFS"]["hpss"]
+    config = retrieve_data.possible_hpss_configs(
+        archive_locations=gfs_hpss,
+        archive_names=gfs_hpss["archive_file_names"]["anl"]["grib2"],
+        config=data_locations,
+        cycle=cycle,
+        file_templates=data_locations["GFS"]["file_names"]["anl"]["grib2"],
+        lead_times=lead_times,
+        members=[0],
+    )
+
+    assert config.__next__() == expected1
+    assert config.__next__() == expected2
+    assert count_iterator(config) == 6  # already used first 2 of 8
+
+
+def test_prepare_fs_copy_config_gfs_grib2_aws(data_locations):
     leads = (6, 12)
     cycle = dt.datetime.fromisoformat("2025-05-04T00").replace(tzinfo=dt.timezone.utc)
     lead_times = [dt.timedelta(hours=l) for l in leads]
@@ -89,14 +164,12 @@ def test_prepare_fs_copy_config_gfs_grib2_aws(data_locations, tmp_path):
         for lead in leads
         for level in ("atm", "sfc")
     }
-    config = retrieve_data.prepare_fs_copy_config(
+    configs = retrieve_data.prepare_fs_copy_config(
         config=data_locations,
         cycle=cycle,
         file_templates=data_locations["GFS"]["file_names"]["fcst"]["netcdf"],
         lead_times=lead_times,
-        location=data_locations["GFS"]["aws"]["locations"][0],
+        locations=data_locations["GFS"]["aws"]["locations"],
         members=[0],
     )
-    print("CONFIG: ", config)
-    print(expected)
-    assert config == expected
+    assert configs.__next__() == expected
