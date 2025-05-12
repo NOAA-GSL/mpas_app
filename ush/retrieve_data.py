@@ -291,17 +291,27 @@ def retrieve_data(
             assert config
             assert file_set in FILE_SETS
 
+        archive_names = None
+        if store == "hpss":
+            archive_names = config[data_type][store]["archive_file_names"]
+            if isinstance(archive_names, dict):
+                archive_names = get_file_names(archive_names, file_fmt, file_set)
+
         success, files_copied = try_data_store(
             data_store=store,
             config=config,
             cycle=cycle,
-            file_templates=file_templates if all(file_templates) and data_store == "disk" else standard_file_names,
+            file_templates=file_templates
+            if all(file_templates) and store == "disk"
+            else standard_file_names,
             lead_times=lead_times,
-            locations=[inpath] if inpath else config[data_type][store]["locations"],
+            locations=[inpath]
+            if inpath and store == "disk"
+            else config[data_type][store]["locations"],
             members=members,
             outpath=outpath,
             archive_config=config[data_type][store] if store == "hpss" else None,
-            archive_names=get_file_names(config[data_type][store], file_fmt, file_set),
+            archive_names=archive_names,
         )
     return success
 
@@ -423,7 +433,7 @@ def try_data_store(
             logging.info(files_copied)
             return True, fs_copy_config
 
-    return False, fs_copy_config
+    return False, {}
 
 
 def main(args):

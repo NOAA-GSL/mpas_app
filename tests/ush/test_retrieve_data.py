@@ -2,7 +2,7 @@ import datetime as dt
 import sys
 from io import StringIO
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, call, patch
 
 from pytest import fixture, mark, raises
 from uwtools.api.config import get_yaml_config
@@ -119,6 +119,37 @@ def test_try_data_store_disk_fail(tmp_path):
     assert not success
 
 
+def test_try_data_store_hpss(data_locations, tmp_path):
+    gfs_config = data_locations["GFS"]
+    cycle = dt.datetime.now(tz=dt.timezone.utc)
+    with patch.object(
+        retrieve_data, "possible_hpss_configs", return_value=iter({})
+    ) as possible_hpss_configs:
+        success, _ = retrieve_data.try_data_store(
+            config=get_yaml_config({"GFS": gfs_config}),
+            cycle=cycle,
+            data_store="hpss",
+            file_templates=retrieve_data.get_file_names(gfs_config["file_names"], "grib2", "anl"),
+            lead_times=[0],
+            locations=gfs_config["hpss"]["locations"],
+            members=[None],
+            outpath=tmp_path / "output",
+            archive_config=gfs_config["hpss"],
+            archive_names=retrieve_data.get_file_names(
+                gfs_config["hpss"]["archive_file_names"], "grib2", "anl"
+            ),
+        )
+    possible_hpss_configs.assert_called_once_with(
+        archive_locations=gfs_config["hpss"],
+        archive_names=gfs_config["hpss"]["archive_file_names"]["anl"]["grib2"],
+        config={"GFS": gfs_config},
+        cycle=cycle,
+        file_templates=["gfs.t{{hh}}z.pgrb2.0p25.f000"],
+        lead_times=[0],
+        members=[None],
+    )
+
+
 def count_iterator(iterator):
     count = 0
     for _ in iterator:
@@ -173,3 +204,80 @@ def test_prepare_fs_copy_config_gfs_grib2_aws(data_locations):
         members=[0],
     )
     assert configs.__next__() == expected
+
+
+@mark.parametrize("data_set", ["RAP", "GFS"])
+def test_retrieve_data(data_locations, data_set, tmp_path):
+    data_stores = ["disk", "aws", "hpss"]
+    remove_args = ("data_stores", "data_type", "file_fmt", "file_set", "ics_or_lbcs", "inpath")
+
+    cycle = dt.datetime.fromisoformat("2025-05-04T00").replace(tzinfo=dt.timezone.utc)
+    args = {
+        "config": {data_set: data_locations[data_set]},
+        "cycle": cycle,
+        "data_stores": data_stores,
+        "data_type": data_set,
+        "file_set": "fcst",
+        "outpath": tmp_path / "output",
+        "file_fmt": "netcdf",
+        "file_templates": ["a.f{{ '%3d' % fcst_hr }}.grib"],
+        "lead_times": [6],
+        "members": [None],
+        "ics_or_lbcs": "lbcs",
+        "inpath": tmp_path / "input",
+    }
+    with patch.object(retrieve_data, "try_data_store", return_value=(False, {})) as try_data_store:
+        retrieved = retrieve_data.retrieve_data(**args)
+        disk_calls = args.copy()
+        data_store_args = {
+            "data_store": "disk",
+            "locations": [tmp_path / "input"],
+            "archive_config": None,
+            "archive_names": None,
+        }
+        disk_calls.update(data_store_args)
+        for key in remove_args:
+            disk_calls.pop(key)
+
+        aws_calls = args.copy()
+        data_store_args = {
+            "data_store": "aws",
+            "file_templates": retrieve_data.get_file_names(
+                data_locations[data_set]["file_names"], args["file_fmt"], "fcst"
+            ),
+            "locations": data_locations[data_set]["aws"]["locations"],
+            "archive_config": None,
+            "archive_names": None,
+        }
+        aws_calls.update(data_store_args)
+        for key in remove_args:
+            aws_calls.pop(key)
+
+        hpss_calls = args.copy()
+        archive_names = data_locations[data_set]["hpss"]["archive_file_names"]
+        if isinstance(archive_names, dict):
+            archive_names = data_locations[data_set]["hpss"]["archive_file_names"]["fcst"]["netcdf"]
+        data_store_args = {
+            "data_store": "hpss",
+            "file_templates": retrieve_data.get_file_names(
+                data_locations[data_set]["file_names"], args["file_fmt"], "fcst"
+            ),
+            "locations": data_locations[data_set]["hpss"]["locations"],
+            "archive_config": data_locations[data_set]["hpss"],
+            "archive_names": archive_names,
+        }
+        hpss_calls.update(data_store_args)
+        for key in remove_args:
+            hpss_calls.pop(key)
+
+        from pprint import pprint
+
+        print("CALLS")
+        pprint(try_data_store.mock_calls[2].kwargs)
+        print("expected")
+        pprint(hpss_calls)
+        (
+            try_data_store.assert_has_calls(
+                [call(**disk_calls), call(**aws_calls), call(**hpss_calls)]
+            ),
+        )
