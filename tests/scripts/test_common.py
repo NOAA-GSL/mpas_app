@@ -65,32 +65,8 @@ def test_check_success(success):
         mock_exit.assert_called_once_with(1)
 
 
-def test_run_component(caplog):
-    class FakeDriver:
-        def __init__(self, config, cycle, key_path):
-            config = {"rundir": "/mock/rundir"}
-            self.config = config
-            self.cycle = cycle
-            self.key_path = key_path
-
-        def run(self):
-            pass
-
-    config_file = Path("/some/config.yaml")
-    cycle = datetime(2025, 1, 1, 12, tzinfo=timezone.utc)
-    key_path = ["forecast"]
-    caplog.set_level("INFO")
-    rundir = common.run_component(
-        driver_class=FakeDriver,
-        config_file=config_file,
-        cycle=cycle,
-        key_path=key_path,
-    )
-    assert rundir == Path("/mock/rundir")
-    assert "Running FakeDriver in /mock/rundir" in caplog.text
-
-
-def test_run_component_with_leadtime(caplog):
+@pytest.mark.parametrize("leadtime", [None, timedelta(hours=6)])
+def test_run_component(caplog, leadtime):
     class FakeDriver:
         def __init__(self, config, cycle, key_path, leadtime=None):
             config = {"rundir": "/mock/rundir"}
@@ -105,7 +81,6 @@ def test_run_component_with_leadtime(caplog):
     config_file = Path("/some/config.yaml")
     cycle = datetime(2025, 1, 1, 12, tzinfo=timezone.utc)
     key_path = ["forecast"]
-    leadtime = timedelta(hours=6)
     caplog.set_level("INFO")
     rundir = common.run_component(
         driver_class=FakeDriver,
