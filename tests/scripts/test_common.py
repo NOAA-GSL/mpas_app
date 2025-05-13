@@ -21,7 +21,7 @@ def test_parse_args():
     args = common.parse_args(argv)
     assert args.config_file == Path("config.yaml")
     assert args.cycle == datetime(2025, 1, 1, 0, 0, tzinfo=timezone.utc)
-    assert args.lead == 6
+    assert args.leadtime == timedelta(seconds=21600)
     assert args.key_path == ["forecast", "model"]
 
 
@@ -36,6 +36,19 @@ def test_parse_args_invalid_cycle():
     ]
     with pytest.raises(SystemExit):
         common.parse_args(argv)
+
+
+def test_parse_args_missing_leadtime():
+    argv = [
+        "-c",
+        "config.yaml",
+        "--cycle",
+        "2025-01-01T00:00:00",
+        "--key-path",
+        "forecast.model",
+    ]
+    with pytest.raises(SystemExit):
+        common.parse_args(argv, lead_required=True)
 
 
 @pytest.mark.parametrize("success", [True, False])
@@ -54,7 +67,32 @@ def test_check_success(success):
 
 def test_run_component(caplog):
     class FakeDriver:
-        def __init__(self, config, cycle, key_path, leadtime):
+        def __init__(self, config, cycle, key_path):
+            config = {"rundir": "/mock/rundir"}
+            self.config = config
+            self.cycle = cycle
+            self.key_path = key_path
+
+        def run(self):
+            pass
+
+    config_file = Path("/some/config.yaml")
+    cycle = datetime(2025, 1, 1, 12, tzinfo=timezone.utc)
+    key_path = ["forecast"]
+    caplog.set_level("INFO")
+    rundir = common.run_component(
+        driver_class=FakeDriver,
+        config_file=config_file,
+        cycle=cycle,
+        key_path=key_path,
+    )
+    assert rundir == Path("/mock/rundir")
+    assert "Running FakeDriver in /mock/rundir" in caplog.text
+
+
+def test_run_component_with_leadtime(caplog):
+    class FakeDriver:
+        def __init__(self, config, cycle, key_path, leadtime=None):
             config = {"rundir": "/mock/rundir"}
             self.config = config
             self.cycle = cycle
@@ -67,14 +105,14 @@ def test_run_component(caplog):
     config_file = Path("/some/config.yaml")
     cycle = datetime(2025, 1, 1, 12, tzinfo=timezone.utc)
     key_path = ["forecast"]
-    lead = timedelta(hours=6)
+    leadtime = timedelta(hours=6)
     caplog.set_level("INFO")
     rundir = common.run_component(
         driver_class=FakeDriver,
         config_file=config_file,
         cycle=cycle,
         key_path=key_path,
-        lead=lead,
+        leadtime=leadtime,
     )
     assert rundir == Path("/mock/rundir")
     assert "Running FakeDriver in /mock/rundir" in caplog.text
