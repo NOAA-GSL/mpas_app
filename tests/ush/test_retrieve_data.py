@@ -209,11 +209,11 @@ def test_prepare_fs_copy_config_gfs_grib2_aws(data_locations):
 @mark.parametrize("data_set", ["RAP", "GFS"])
 def test_retrieve_data(data_locations, data_set, tmp_path):
     data_stores = ["disk", "aws", "hpss"]
-    remove_args = ("data_stores", "data_type", "file_fmt", "file_set", "ics_or_lbcs", "inpath")
+    remove_args = ("data_stores", "data_type", "file_fmt", "file_set", "inpath")
 
     cycle = dt.datetime.fromisoformat("2025-05-04T00").replace(tzinfo=dt.timezone.utc)
     args = {
-        "config": {data_set: data_locations[data_set]},
+        "config": get_yaml_config({data_set: data_locations[data_set]}),
         "cycle": cycle,
         "data_stores": data_stores,
         "data_type": data_set,
@@ -223,7 +223,6 @@ def test_retrieve_data(data_locations, data_set, tmp_path):
         "file_templates": ["a.f{{ '%3d' % fcst_hr }}.grib"],
         "lead_times": [6],
         "members": [None],
-        "ics_or_lbcs": "lbcs",
         "inpath": tmp_path / "input",
     }
     with patch.object(retrieve_data, "try_data_store", return_value=(False, {})) as try_data_store:
@@ -281,3 +280,37 @@ def test_retrieve_data(data_locations, data_set, tmp_path):
                 [call(**disk_calls), call(**aws_calls), call(**hpss_calls)]
             ),
         )
+
+
+# Tests that pull data
+
+
+def test_retrieve_data_hpss_pull_data_systest(tmp_path):
+    cycle = dt.datetime.fromisoformat("2025-05-04T00").replace(tzinfo=dt.timezone.utc)
+    cycle = "2025-05-04T00"
+    args = [
+        "--file_set",
+        "fcst",
+        "--config",
+        str(Path(f"{__file__}/../../../parm/data_locations.yml").resolve()),
+        "--cycle",
+        cycle,
+        "--data_stores",
+        "hpss",
+        "--data_type",
+        "GFS",
+        "--fcst_hrs",
+        "6",
+        "12",
+        "3",
+        "--output_path",
+        str(tmp_path),
+        "--debug",
+        "--file_fmt",
+        "grib2",
+    ]
+    retrieve_data.main(args)
+    fcst_hrs = (6, 9, 12)
+    for fcst_hr in fcst_hrs:
+        path = tmp_path / f"gfs.t00z.pgrb2.0p25.f{fcst_hr:03d}"
+        assert path.is_file()

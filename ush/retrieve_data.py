@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# ruff: noqa: ARG001, PLR0913, F841
+# ruff: noqa: PLR0913
 
 """
 This script helps users pull data from known data streams, including
@@ -37,6 +37,7 @@ import re
 import subprocess
 import sys
 from copy import deepcopy
+from pathlib import Path
 from typing import TYPE_CHECKING, NoReturn
 
 from uwtools.api import fs
@@ -45,7 +46,6 @@ from uwtools.api.logging import use_uwtools_logger
 
 if TYPE_CHECKING:
     from collections.abc import Generator
-    from pathlib import Path
 
 FILE_SETS = ("anl", "fcst", "obs", "fix")
 
@@ -158,19 +158,13 @@ def parse_args(argv):
         nargs="+",
         required=False,
         default=[0],
-        type=lambda x: [_timedelta_from_str(t) for t in _arg_list_to_range(x)],
+        type=int,
     )
     parser.add_argument(
         "--output_path",
         help="Path to a location on disk. Path is expected to exist.",
         required=True,
         type=os.path.abspath,
-    )
-    parser.add_argument(
-        "--ics_or_lbcs",
-        choices=("ICS", "LBCS"),
-        help="Flag for whether ICS or LBCS.",
-        required=False,
     )
 
     # Optional
@@ -194,6 +188,7 @@ def parse_args(argv):
         convention to be used for the files retrieved from disk. If \
         not provided, the default names from hpss are used.",
         nargs="*",
+        default=[],
     )
     parser.add_argument(
         "--file_fmt",
@@ -216,6 +211,7 @@ def parse_args(argv):
         as-is.",
         nargs="*",
         type=_arg_list_to_range,
+        default=[-999],
     )
     parser.add_argument(
         "--summary_file",
@@ -226,13 +222,11 @@ def parse_args(argv):
     # Make modifications/checks for given values
     args = parser.parse_args(argv)
 
+    args.fcst_hrs = [_timedelta_from_str(str(t)) for t in _arg_list_to_range(args.fcst_hrs)]
     # Check required arguments for various conditions
-    if not args.ics_or_lbcs and args.file_set in ["anl", "fcst"]:
-        msg = f"--ics_or_lbcs is a required argument when --file_set = {args.file_set}"
-        raise argparse.ArgumentTypeError(msg)
 
     # If disk was in data_stores, make sure a path was provided
-    if "disk" in args.data_storesi and not args.input_file_path:
+    if "disk" in args.data_stores and not args.input_file_path:
         msg = "You must provide an input_file_path when choosing  disk as a data store!"
         raise argparse.ArgumentTypeError(msg)
 
@@ -274,7 +268,6 @@ def retrieve_data(
     lead_times: list[dt.timedelta],
     members: list[int | None],
     file_fmt: str | None = None,
-    ics_or_lbcs: str | None = None,
     inpath: Path | None = None,
     summary_file: str | Path | None = None,
 ) -> bool:
@@ -283,6 +276,7 @@ def retrieve_data(
     """
 
     standard_file_names = get_file_names(config[data_type]["file_names"], file_fmt, file_set)
+    config.dereference(context={"cycle": cycle})
     for store in data_stores:
         # checks for given data_store
         if store == "disk":
@@ -313,6 +307,11 @@ def retrieve_data(
             archive_config=config[data_type][store] if store == "hpss" else None,
             archive_names=archive_names,
         )
+        if success:
+            if summary_file is not None:
+                summary = get_yaml_config(files_copied)
+                summary.dump(Path(summary_file))
+            return success
     return success
 
 
@@ -404,7 +403,6 @@ def try_data_store(
     """
 
     # form a UW YAML to try a copy
-    config = config.dereference(context={"cycle": cycle})
     fs_copy_configs: Generator[dict[str, str], None, None]
     if data_store == "hpss":
         assert archive_config is not None
@@ -439,7 +437,7 @@ def try_data_store(
 def main(args):
     clargs = parse_args(args)
 
-    use_uwtools_logger(verbose=True)
+    use_uwtools_logger(verbose=clargs.debug)
     print("Running script retrieve_data.py with args:", f"\n{('-' * 80)}\n{('-' * 80)}")
     for name, val in clargs.__dict__.items():
         if name not in ["config"]:
@@ -453,9 +451,8 @@ def main(args):
         data_type=clargs.data_type,
         file_set=clargs.file_set,
         file_fmt=clargs.file_fmt,
-        lead_times=clargs.lead_times,
+        lead_times=clargs.fcst_hrs,
         file_templates=clargs.file_templates,
-        ics_or_lbcs=clargs.ics_or_lbcs,
         inpath=clargs.input_file_path,
         members=clargs.members,
         outpath=clargs.output_path,
@@ -464,4 +461,4 @@ def main(args):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main(sys.argv[1:])  # pragma: no cover
