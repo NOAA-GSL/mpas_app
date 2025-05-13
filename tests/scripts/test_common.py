@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
+from pytest import mark, raises
 
 from scripts import common
 
@@ -34,7 +34,7 @@ def test_parse_args_invalid_cycle():
         "--key-path",
         "forecast.model",
     ]
-    with pytest.raises(SystemExit):
+    with raises(SystemExit):
         common.parse_args(argv)
 
 
@@ -47,11 +47,11 @@ def test_parse_args_missing_leadtime():
         "--key-path",
         "forecast.model",
     ]
-    with pytest.raises(SystemExit):
+    with raises(SystemExit):
         common.parse_args(argv, lead_required=True)
 
 
-@pytest.mark.parametrize("success", [True, False])
+@mark.parametrize("success", [True, False])
 def test_check_success(success):
     rundir = Path("/some/directory")
     with (
@@ -65,7 +65,7 @@ def test_check_success(success):
         mock_exit.assert_called_once_with(1)
 
 
-@pytest.mark.parametrize("leadtime", [None, timedelta(hours=6)])
+@mark.parametrize("leadtime", [None, timedelta(hours=6)])
 def test_run_component(caplog, leadtime):
     class FakeDriver:
         def __init__(self, config, cycle, key_path, leadtime=None):
