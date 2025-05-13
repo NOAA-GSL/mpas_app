@@ -32,7 +32,6 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import logging
-import os
 import re
 import subprocess
 import sys
@@ -115,7 +114,7 @@ def parse_args(argv):
 
     # Required
     parser.add_argument(
-        "--file_set",
+        "--file-set",
         choices=FILE_SETS,
         help="Flag for whether analysis, forecast, \
         fix, or observation files should be gathered",
@@ -137,19 +136,19 @@ def parse_args(argv):
         type=dt.datetime.fromisoformat,
     )
     parser.add_argument(
-        "--data_stores",
+        "--data-stores",
         choices=["hpss", "nomads", "aws", "disk"],
         help="List of priority data_stores. Tries first list item first.",
         nargs="*",
         required=True,
     )
     parser.add_argument(
-        "--data_type",
+        "--data-type",
         help="External model label. This input is case-sensitive",
         required=True,
     )
     parser.add_argument(
-        "--fcst_hrs",
+        "--fcst-hrs",
         help="A list describing forecast hours.  If one argument, \
         one fhr will be processed.  If 2 or 3 arguments, a sequence \
         of forecast hours [start, stop, [increment]] will be \
@@ -161,17 +160,13 @@ def parse_args(argv):
         type=int,
     )
     parser.add_argument(
-        "--output_path",
+        "--output-path",
         help="Path to a location on disk. Path is expected to exist.",
         required=True,
-        type=os.path.abspath,
+        type=lambda x: Path(x).resolve(),
     )
 
     # Optional
-    parser.add_argument(
-        "--version",
-        help="Version number of package to download, e.g. x.yy.zz",
-    )
     parser.add_argument(
         "--symlink",
         action="store_true",
@@ -183,7 +178,7 @@ def parse_args(argv):
         help="Print debug messages",
     )
     parser.add_argument(
-        "--file_templates",
+        "--file-templates",
         help="One or more file template strings defining the naming \
         convention to be used for the files retrieved from disk. If \
         not provided, the default names from hpss are used.",
@@ -191,16 +186,17 @@ def parse_args(argv):
         default=[],
     )
     parser.add_argument(
-        "--file_fmt",
+        "--file-fmt",
         choices=("grib2", "nemsio", "netcdf", "prepbufr", "tcvitals"),
         help="External model file format",
     )
     parser.add_argument(
-        "--input_file_path",
+        "--input-file-path",
         help="A path to data stored on disk. The path may contain \
         Python templates. File names may be supplied using the \
         --file_templates flag, or the default naming convention will be \
         taken from the --config file.",
+        type=Path,
     )
     parser.add_argument(
         "--members",
@@ -214,9 +210,10 @@ def parse_args(argv):
         default=[-999],
     )
     parser.add_argument(
-        "--summary_file",
+        "--summary-file",
         help="Name of the summary file to be written to the output \
         directory",
+        type=Path,
     )
 
     # Make modifications/checks for given values
@@ -270,6 +267,8 @@ def retrieve_data(
     file_fmt: str | None = None,
     inpath: Path | None = None,
     summary_file: str | Path | None = None,
+    *,
+    symlink: bool = False,
 ) -> bool:
     """
     Checks for and gathers the requested data.
@@ -306,6 +305,7 @@ def retrieve_data(
             outpath=outpath,
             archive_config=config[data_type][store] if store == "hpss" else None,
             archive_names=archive_names,
+            symlink=symlink,
         )
         if success:
             if summary_file is not None:
@@ -396,6 +396,8 @@ def try_data_store(
     outpath: Path,
     archive_config: dict[str, str] | None = None,
     archive_names: list[str] | None = None,
+    *,
+    symlink: bool = False,
 ) -> tuple[bool, dict[str, str]]:
     """
     Given a data store, prepare a UW YAML file block to retrieve all requested
@@ -426,7 +428,8 @@ def try_data_store(
             members=members,
         )
     for fs_copy_config in fs_copy_configs:
-        files_copied = fs.copy(config=fs_copy_config, target_dir=outpath, cycle=cycle)
+        getter = fs.link if symlink else fs.copy
+        files_copied = getter(config=fs_copy_config, target_dir=outpath, cycle=cycle)
         if files_copied["ready"] and not files_copied["not-ready"]:
             logging.info(files_copied)
             return True, fs_copy_config
@@ -457,6 +460,7 @@ def main(args):
         members=clargs.members,
         outpath=clargs.output_path,
         summary_file=clargs.summary_file,
+        symlink=clargs.symlink,
     )
 
 
