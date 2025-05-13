@@ -16,13 +16,18 @@ def check_success(rundir: Path, driver_name: str):
         sys.exit(1)
 
 
-def parse_args(argv=None) -> Namespace:
+def parse_args(argv=None, *, lead_required: bool = False) -> Namespace:
     parser = ArgumentParser(description="Common driver script parser.")
     parser.add_argument(
         "-c", "--config-file", required=True, type=Path, help="Path to config file."
     )
     parser.add_argument("--cycle", required=True, type=_utc, help="Cycle in ISO8601 format.")
-    parser.add_argument("--lead", type=int, help="Lead time in hours.")
+    parser.add_argument(
+        "--leadtime",
+        required=lead_required,
+        type=lambda x: timedelta(hours=int(x)),
+        help="Lead time in hours.",
+    )
     parser.add_argument(
         "--key-path",
         required=True,
@@ -37,11 +42,11 @@ def run_component(
     config_file: Path,
     cycle: datetime,
     key_path: list[str],
-    lead: timedelta | None = None,
+    leadtime: timedelta | None = None,
 ) -> Path:
-    kwargs = {"config": str(config_file), "cycle": cycle, "key_path": key_path}
-    if lead:
-        kwargs["leadtime"] = lead
+    kwargs = {"config": config_file, "cycle": cycle, "key_path": key_path}
+    if leadtime is not None:
+        kwargs["leadtime"] = leadtime
     driver = driver_class(**kwargs)
     rundir = Path(driver.config["rundir"])
     logging.info("Running %s in %s", driver_class.__name__, rundir)
