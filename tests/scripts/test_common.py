@@ -13,7 +13,7 @@ def test_parse_args():
         "config.yaml",
         "--cycle",
         "2025-01-01T00:00:00",
-        "--lead",
+        "--leadtime",
         "6",
         "--key-path",
         "forecast.model",
