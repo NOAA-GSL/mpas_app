@@ -22,7 +22,7 @@ def main():
         driver_class=driver,
         config_file=args.config_file,
         cycle=args.cycle,
-        lead=args.lead,
+        leadtime=args.leadtime,
         key_path=args.key_path,
     )
     check_success(rundir, driver.driver_name())
