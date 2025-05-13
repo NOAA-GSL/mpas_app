@@ -143,11 +143,6 @@ workflow:
       walltime: "{{ forecast.mpas.execution.batchargs.walltime }}"
       cores: !int "{{ forecast.mpas.execution.batchargs.cores }}"
       partition: "{{ forecast.mpas.execution.batchargs.get('partition') }}"
-      envars:
-        CONFIG_PATH: '&EXPERIMENT_CONFIG;'
-        CYCLE:
-          cyclestr:
-            value: "@Y-@m-@dT@H:@M:@S"
       dependency:
         taskdep:
           attrs:
