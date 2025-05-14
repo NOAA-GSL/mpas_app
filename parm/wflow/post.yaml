@@ -44,7 +44,13 @@ workflow:
                   value: 'fh=$((10##fhr# + 6 )) ; timestamp=$(date -d "@H:@M:@S @Y-@m-@d +$fh hour" "+%F_%T" ) ; find {{ user.experiment_dir }}/@Y@m@d@H/forecast/[dh]*.${timestamp}.nc 2>/dev/null |  test $(wc -l) == 2'
 
       task_upp_#fhr#:
-        command: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; ; python &MPAS_APP;/scripts/upp.py'
+        command:
+          cyclestr:
+            value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; && &MPAS_APP;/scripts/upp.py
+              -c &EXPERIMENT_CONFIG;
+              --cycle @Y-@m-@dT@H:@M:@S
+              --leadtime #fhr#
+              --key-path post'
         account: "{{ platform.account }}"
         join:
           cyclestr:
@@ -53,12 +59,6 @@ workflow:
         nodes: "{{ post.upp.execution.batchargs.nodes }}:ppn={{ post.upp.execution.batchargs.tasks_per_node }}"
         exclusive: "True"
         partition: "{{ post.upp.execution.batchargs.partition }}"
-        envars:
-          CONFIG_PATH: '&EXPERIMENT_CONFIG;'
-          CYCLE:
-            cyclestr:
-              value: "@Y-@m-@dT@H:@M:@S"
-          LEAD: '#fhr#'
         dependency:
           taskdep:
             attrs:

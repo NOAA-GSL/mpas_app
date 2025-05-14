@@ -1,5 +1,31 @@
+from pathlib import Path
+from unittest.mock import patch
+
+import pytest
+
 from scripts import upp
 
 
-def test_import():
-    assert upp
+def test_main(mock_args):
+    with (
+        patch.object(upp, "parse_args", return_value=mock_args) as mock_parse_args,
+        patch.object(upp, "run_component", return_value=Path("/some/rundir")) as mock_run_component,
+    ):
+        upp.main()
+        mock_parse_args.assert_called_once()
+        mock_run_component.assert_called_once_with(
+            driver_class=upp.UPP,
+            config_file=mock_args.config_file,
+            cycle=mock_args.cycle,
+            leadtime=mock_args.leadtime,
+            key_path=mock_args.key_path,
+        )
+
+
+def test_main_missing_leadtime(mock_args):
+    mock_args.leadtime = None
+    with (
+        patch.object(upp, "parse_args", return_value=mock_args),
+        pytest.raises(TypeError),
+    ):
+        upp.main()

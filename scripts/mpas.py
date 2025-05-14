@@ -1,36 +1,27 @@
 #!/usr/bin/env python3
-
 """
 The run script for the MPAS forecast.
 """
 
-import os
 import sys
-from datetime import datetime
 from pathlib import Path
 
-from uwtools.api.logging import use_uwtools_logger
+sys.path.append(str(Path(__file__).parent.parent))
+
 from uwtools.api.mpas import MPAS
+
+from scripts.common import parse_args, run_component
 
 
 def main():
-    use_uwtools_logger()
-
-    # Load the YAML config.
-    config_path = os.environ["CONFIG_PATH"]
-    cycle = datetime.fromisoformat(os.environ["CYCLE"])
-
-    # Run MPAS.
-    mpas_driver = MPAS(config=config_path, cycle=cycle, key_path=["forecast"])
-    mpas_driver.run()
-
-    # Obtain run directory path.
-    mpas_dir = Path(mpas_driver.config["rundir"])
-
-    if not (mpas_dir / "runscript.mpas.done").is_file():
-        print("Error occurred running mpas. Please see component error logs.")
-        sys.exit(1)
+    args = parse_args()
+    run_component(
+        driver_class=MPAS,
+        config_file=args.config_file,
+        cycle=args.cycle,
+        key_path=args.key_path,
+    )
 
 
 if __name__ == "__main__":
-    main()
+    main()  # pragma: no cover
