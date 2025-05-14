@@ -68,10 +68,7 @@ def test_parse_args_missing_leadtime():
 
 
 @mark.parametrize("leadtime", [None, timedelta(hours=6)])
-def test_run_component(caplog, fake_driver, leadtime):
-    config_file = Path("/some/config.yaml")
-    cycle = datetime(2025, 1, 1, 12, tzinfo=timezone.utc)
-    key_path = ["forecast"]
+def test_run_component(caplog, fake_driver, leadtime, mock_args):
     caplog.set_level("INFO")
     driver = fake_driver
     with (
@@ -80,19 +77,15 @@ def test_run_component(caplog, fake_driver, leadtime):
     ):
         common.run_component(
             driver_class=driver,
-            config_file=config_file,
-            cycle=cycle,
-            key_path=key_path,
+            config_file=mock_args.config_file,
+            cycle=mock_args.cycle,
+            key_path=mock_args.key_path,
             leadtime=leadtime,
         )
     assert "Running FakeDriver in /mock/rundir" in caplog.text
 
 
-def test_run_component_failure(caplog, fake_driver):
-    config_file = Path("/some/config.yaml")
-    cycle = datetime(2025, 1, 1, 12, tzinfo=timezone.utc)
-    key_path = ["forecast"]
-    leadtime = None
+def test_run_component_failure(caplog, fake_driver, mock_args):
     caplog.set_level("ERROR")
     driver = fake_driver
     with (
@@ -102,10 +95,10 @@ def test_run_component_failure(caplog, fake_driver):
     ):
         common.run_component(
             driver_class=driver,
-            config_file=config_file,
-            cycle=cycle,
-            key_path=key_path,
-            leadtime=leadtime,
+            config_file=mock_args.config_file,
+            cycle=mock_args.cycle,
+            key_path=mock_args.key_path,
+            leadtime=None,
         )
     assert "Error occurred. Expected file /mock/rundir/file not found." in caplog.text
     mock_exit.assert_called_once_with(1)

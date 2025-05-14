@@ -1,18 +1,12 @@
-from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 
 from scripts import upp
 
 
-def test_main():
-    mock_args = Mock()
-    mock_args.config_file = Path("/some/config.yaml")
-    mock_args.cycle = datetime(2025, 1, 1, 12, tzinfo=timezone.utc)
-    mock_args.leadtime = timedelta(hours=6)
-    mock_args.key_path = ["forecast"]
+def test_main(mock_args):
     with (
         patch.object(upp, "parse_args", return_value=mock_args) as mock_parse_args,
         patch.object(upp, "run_component", return_value=Path("/some/rundir")) as mock_run_component,
@@ -28,12 +22,8 @@ def test_main():
         )
 
 
-def test_main_missing_leadtime():
-    mock_args = Mock()
-    mock_args.config_file = Path("/some/config.yaml")
-    mock_args.cycle = datetime(2025, 1, 1, 12, tzinfo=timezone.utc)
+def test_main_missing_leadtime(mock_args):
     mock_args.leadtime = None
-    mock_args.key_path = ["forecast"]
     with (
         patch.object(upp, "parse_args", return_value=mock_args),
         pytest.raises(TypeError),

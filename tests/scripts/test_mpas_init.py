@@ -1,15 +1,10 @@
-from datetime import datetime, timezone
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 from scripts import mpas_init
 
 
-def test_main():
-    mock_args = Mock()
-    mock_args.config_file = Path("/some/config.yaml")
-    mock_args.cycle = datetime(2025, 1, 1, 12, tzinfo=timezone.utc)
-    mock_args.key_path = ["forecast"]
+def test_main(mock_args):
     with (
         patch.object(mpas_init, "parse_args", return_value=mock_args) as mock_parse_args,
         patch.object(
