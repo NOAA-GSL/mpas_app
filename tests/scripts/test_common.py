@@ -1,10 +1,26 @@
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
-from pytest import mark, raises
+from pytest import fixture, mark, raises
 
 from scripts import common
+
+
+@fixture
+def fake_driver():
+    class FakeDriver:
+        def __init__(self, config, cycle, key_path, leadtime=None):
+            config = {"rundir": "/mock/rundir"}
+            self.config = config
+            self.cycle = cycle
+            self.key_path = key_path
+            self.leadtime = leadtime
+
+        def run(self):
+            pass
+
+    return FakeDriver
 
 
 def test_parse_args():
@@ -51,43 +67,45 @@ def test_parse_args_missing_leadtime():
         common.parse_args(argv, lead_required=True)
 
 
-@mark.parametrize("success", [True, False])
-def test_check_success(success):
-    rundir = Path("/some/directory")
-    with (
-        patch("scripts.common.Path.is_file", return_value=success),
-        patch("scripts.common.sys.exit") as mock_exit,
-    ):
-        common.check_success(rundir, "driver_name")
-    if success:
-        mock_exit.assert_not_called()
-    else:
-        mock_exit.assert_called_once_with(1)
-
-
 @mark.parametrize("leadtime", [None, timedelta(hours=6)])
-def test_run_component(caplog, leadtime):
-    class FakeDriver:
-        def __init__(self, config, cycle, key_path, leadtime=None):
-            config = {"rundir": "/mock/rundir"}
-            self.config = config
-            self.cycle = cycle
-            self.key_path = key_path
-            self.leadtime = leadtime
-
-        def run(self):
-            pass
-
+def test_run_component(caplog, fake_driver, leadtime):
     config_file = Path("/some/config.yaml")
     cycle = datetime(2025, 1, 1, 12, tzinfo=timezone.utc)
     key_path = ["forecast"]
     caplog.set_level("INFO")
-    rundir = common.run_component(
-        driver_class=FakeDriver,
-        config_file=config_file,
-        cycle=cycle,
-        key_path=key_path,
-        leadtime=leadtime,
-    )
-    assert rundir == Path("/mock/rundir")
+    driver = fake_driver
+    with (
+        patch.object(driver, "run", return_value=Mock(ready=True)),
+        patch("scripts.common.use_uwtools_logger"),
+    ):
+        common.run_component(
+            driver_class=driver,
+            config_file=config_file,
+            cycle=cycle,
+            key_path=key_path,
+            leadtime=leadtime,
+        )
     assert "Running FakeDriver in /mock/rundir" in caplog.text
+
+
+def test_run_component_failure(caplog, fake_driver):
+    config_file = Path("/some/config.yaml")
+    cycle = datetime(2025, 1, 1, 12, tzinfo=timezone.utc)
+    key_path = ["forecast"]
+    leadtime = None
+    caplog.set_level("ERROR")
+    driver = fake_driver
+    with (
+        patch.object(driver, "run", return_value=Mock(ready=False, refs=["/mock/rundir/file"])),
+        patch("scripts.common.use_uwtools_logger"),
+        patch("sys.exit") as mock_exit,
+    ):
+        common.run_component(
+            driver_class=driver,
+            config_file=config_file,
+            cycle=cycle,
+            key_path=key_path,
+            leadtime=leadtime,
+        )
+    assert "Error occurred. Expected file /mock/rundir/file not found." in caplog.text
+    mock_exit.assert_called_once_with(1)

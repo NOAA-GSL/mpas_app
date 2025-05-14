@@ -6,14 +6,9 @@ from argparse import ArgumentParser, Namespace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from uwtools.api.logging import use_uwtools_logger
+
 # Public functions
-
-
-def check_success(rundir: Path, driver_name: str):
-    done_path = rundir / f"runscript.{driver_name}.done"
-    if not done_path.is_file():
-        print(f"Error occurred. Expected file '{driver_name}' not found in {rundir}.")
-        sys.exit(1)
 
 
 def parse_args(argv=None, *, lead_required: bool = False) -> Namespace:
@@ -43,15 +38,18 @@ def run_component(
     cycle: datetime,
     key_path: list[str],
     leadtime: timedelta | None = None,
-) -> Path:
+) -> None:
+    use_uwtools_logger()
     kwargs = {"config": config_file, "cycle": cycle, "key_path": key_path}
     if leadtime is not None:
         kwargs["leadtime"] = leadtime
     driver = driver_class(**kwargs)
     rundir = Path(driver.config["rundir"])
     logging.info("Running %s in %s", driver_class.__name__, rundir)
-    driver.run()
-    return rundir
+    task = driver.run()
+    if not task.ready:
+        logging.error("Error occurred. Expected file %s not found.", task.refs[0])
+        sys.exit(1)
 
 
 # Private functions

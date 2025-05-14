@@ -15,7 +15,6 @@ def test_main():
         patch.object(
             mpas, "run_component", return_value=Path("/some/rundir")
         ) as mock_run_component,
-        patch.object(mpas, "check_success") as mock_check_success,
     ):
         mpas.main()
         mock_parse_args.assert_called_once()
@@ -25,4 +24,3 @@ def test_main():
             cycle=mock_args.cycle,
             key_path=mock_args.key_path,
         )
-        mock_check_success.assert_called_once_with(Path("/some/rundir"), "mpas")
