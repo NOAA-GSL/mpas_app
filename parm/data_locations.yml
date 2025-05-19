@@ -75,6 +75,9 @@ GFS:
   aws:
     locations:
       - https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.{{yyyymmdd}}/{{hh}}/atmos
+  aws_cli:
+    locations:
+      - s3://noaa-gfs-bdp-pds...
 
 GDAS:
   file_names:

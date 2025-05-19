@@ -178,7 +178,11 @@ def test_parse_args(capsys, tmp_path):
         "--file-fmt",
         "grib2",
     ]
-    args = retrieve_data.parse_args(sysargs)
+    with patch(
+        "ush.retrieve_data.subprocess.run",
+        side_effect=[subprocess.CompletedProcess(args="/usr/bin/which hsi", returncode=0)],
+    ):
+        args = retrieve_data.parse_args(sysargs)
     assert args.file_set in retrieve_data.FILE_SETS
     assert isinstance(args.config, YAMLConfig)
     assert isinstance(args.cycle, datetime)
