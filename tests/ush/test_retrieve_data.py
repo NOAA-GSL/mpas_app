@@ -346,6 +346,40 @@ def test_retrieve_data(data_locations, data_set, tmp_path):
         )
 
 
+def test_retrieve_data_summary_file(data_locations, tmp_path):
+    data_stores = ["disk"]
+    data_set = "GFS"
+    cycle = datetime.fromisoformat("2025-05-04T00").replace(tzinfo=timezone.utc)
+    summary_file = tmp_path / "summary.yaml"
+    args = {
+        "config": get_yaml_config({data_set: data_locations[data_set]}),
+        "cycle": cycle,
+        "data_stores": data_stores,
+        "data_type": data_set,
+        "file_set": "anl",
+        "outpath": tmp_path / "output",
+        "file_fmt": "wgrib2",
+        "file_templates": ["a.f{{ '%3d' % fcst_hr }}.grib"],
+        "lead_times": [0],
+        "members": [None],
+        "inpath": tmp_path / "input",
+        "symlink": False,
+        "summary_file": summary_file,
+    }
+    summary = {
+        "a.f000.grib": str(tmp_path / "input" / "a.f000.grib"),
+    }
+
+    with patch.object(
+        retrieve_data, "try_data_store", return_value=(True, summary)
+    ) as try_data_store:
+        retrieved = retrieve_data.retrieve_data(**args)
+
+    assert retrieved is True
+    assert summary_file.is_file()
+    assert summary_file.read_text().strip() == get_yaml_config(summary).__repr__()
+
+
 # Tests that pull data
 
 
