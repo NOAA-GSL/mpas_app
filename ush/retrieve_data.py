@@ -30,12 +30,12 @@ Also see the parse_args function below.
 from __future__ import annotations
 
 import argparse
-import datetime as dt
 import logging
 import re
 import subprocess
 import sys
 from copy import deepcopy
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, NoReturn
 
@@ -85,7 +85,7 @@ def _arg_list_to_range(args: list[int | str] | str) -> list:
     return arg_vals
 
 
-def _timedelta_from_str(tds: str) -> dt.timedelta:
+def _timedelta_from_str(tds: str) -> timedelta:
     """
     Return a timedelta parsed from a leadtime string.
 
@@ -93,7 +93,7 @@ def _timedelta_from_str(tds: str) -> dt.timedelta:
     """
     if matches := re.match(r"(\d+)(:(\d+))?(:(\d+))?", tds):
         h, m, s = [int(matches.groups()[n] or 0) for n in (0, 2, 4)]
-        return dt.timedelta(hours=h, minutes=m, seconds=s)
+        return timedelta(hours=h, minutes=m, seconds=s)
     _abort("Specify leadtime as hours[:minutes[:seconds]]")
 
 
@@ -132,8 +132,8 @@ def parse_args(argv):
         "--cycle",
         help="The cycle in ISO8601 format (e.g. yyyy-mm-ddThh)",
         required=False,
-        default=dt.datetime.now(tz=dt.timezone.utc),
-        type=dt.datetime.fromisoformat,
+        default=datetime.now(tz=timezone.utc),
+        type=lambda x: datetime.fromisoformat(x).replace(tzinfo=timezone.utc),
     )
     parser.add_argument(
         "--data-stores",
@@ -256,13 +256,13 @@ def get_file_names(
 
 def retrieve_data(
     config: YAMLConfig,
-    cycle: dt.datetime,
+    cycle: datetime,
     data_stores: list[str],
     data_type: str,
     file_set: str,
     outpath: Path,
     file_templates: list[str],
-    lead_times: list[dt.timedelta],
+    lead_times: list[timedelta],
     members: list[int | None],
     file_fmt: str | None = None,
     inpath: Path | None = None,
@@ -319,9 +319,9 @@ def possible_hpss_configs(
     archive_locations: dict[str, str],
     archive_names: list[str],
     config: Config,
-    cycle: dt.datetime,
+    cycle: datetime,
     file_templates: list[str],
-    lead_times: list[dt.timedelta],
+    lead_times: list[timedelta],
     members: list[int | None],
 ):
     for archive_loc in archive_locations["locations"]:
@@ -355,9 +355,9 @@ def possible_hpss_configs(
 
 def prepare_fs_copy_config(
     config: Config,
-    cycle: dt.datetime,
+    cycle: datetime,
     file_templates: list[str],
-    lead_times: list[dt.timedelta],
+    lead_times: list[timedelta],
     locations: list[Path | str],
     members: list[int | None],
 ) -> Generator[dict[str, str]]:
@@ -387,10 +387,10 @@ def prepare_fs_copy_config(
 
 def try_data_store(
     config: Config,
-    cycle: dt.datetime,
+    cycle: datetime,
     data_store: str,
     file_templates: list[str],
-    lead_times: list[dt.timedelta],
+    lead_times: list[timedelta],
     locations: list[Path | str],
     members: list[int | None],
     outpath: Path,

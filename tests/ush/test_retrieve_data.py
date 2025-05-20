@@ -63,6 +63,59 @@ def test_get_file_names_no_file_fmt():
     assert result == files["anl"]
 
 
+def test_main(tmp_path):
+    config = tmp_path / "data_locations.yml"
+    config.write_text("foo: bar")
+    config = Path(f"{__file__}/../../../parm/data_locations.yml").resolve()
+    cycle = "2025-05-04T00"
+    cycle_dt = datetime.fromisoformat(cycle).replace(tzinfo=timezone.utc)
+    args = [
+        "--file-set",
+        "fcst",
+        "--config",
+        str(config),
+        "--cycle",
+        cycle,
+        "--data-stores",
+        "aws",
+        "--data-type",
+        "GFS",
+        "--fcst-hrs",
+        "6",
+        "12",
+        "3",
+        "--output-path",
+        str(tmp_path),
+        "--file-fmt",
+        "grib2",
+    ]
+    with patch.object(retrieve_data, "retrieve_data") as retrieve:
+        retrieve_data.main(args)
+    actual = retrieve.call_args.kwargs
+    expected_args = dict(
+        config=get_yaml_config(config),
+        cycle=cycle_dt,
+        data_stores=["aws"],
+        data_type="GFS",
+        file_set="fcst",
+        file_fmt="grib2",
+        lead_times=[timedelta(hours=i) for i in (6, 9, 12)],
+        file_templates=[],
+        inpath=None,
+        members=[-999],
+        outpath=tmp_path,
+        summary_file=None,
+        symlink=False,
+    )
+    from pprint import pprint
+    print("ACTUAL")
+    #pprint(actual)
+    print("EXPECTED")
+    #pprint(expected_args)
+    expected_args["config"].compare_config(actual["config"])
+    retrieve.assert_called_once_with(**expected_args)
+
+
 def test_try_data_store_disk_fail(tmp_path):
     file_path = tmp_path / "{{ cycle.strftime('%Y%m%d%H') }}"
     output_path = tmp_path / "output"
