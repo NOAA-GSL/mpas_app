@@ -108,15 +108,15 @@ def test_main(tmp_path):
         symlink=False,
     )
     from pprint import pprint
+
     print("ACTUAL")
-    #pprint(actual)
+    # pprint(actual)
     print("EXPECTED")
-    #pprint(expected_args)
-    breakpoint()
+    # pprint(expected_args)
     print(expected_args["config"].compare_config(actual["config"].data))
-    #expected_args["config"].dump(Path("./expected_args.yaml"))
-    #actual["config"].dump(Path("actual_args.yaml"))
-    #actual["config"].compare_config(expected_args["config"].__dict__)
+    # expected_args["config"].dump(Path("./expected_args.yaml"))
+    # actual["config"].dump(Path("actual_args.yaml"))
+    # actual["config"].compare_config(expected_args["config"].__dict__)
     retrieve.assert_called_with(**expected_args)
 
 
@@ -157,7 +157,7 @@ def test_try_data_store_disk_success(data_locations, tmp_path):
         sys.stdin = input_stream
         values = {
             "cycle": cycle,
-            "fcst_hr": lead_time.seconds // 3600,
+            "fcst_hr": int(lead_time.total_seconds() // 3600),
         }
         new_file = Path(render(values_src=values, stdin_ok=True))
         new_file.parent.mkdir(parents=True, exist_ok=True)
