@@ -468,3 +468,38 @@ def test_retrieve_data_hpss_pull_data_systest(tmp_path):
     for fcst_hr in fcst_hrs:
         path = tmp_path / f"gfs.t00z.pgrb2.0p25.f{fcst_hr:03d}"
         assert path.is_file()
+
+
+@mark.parametrize(
+    "data_set,file_fmt,filenames",
+    [
+        ("GDAS", "netcdf", ["gdas.t12z.sfcf003.nc", "gdas.t12z.atmf003.nc"]),
+        ("GEFS", "grib2", ["gep001.t12z.pgrb2a.0p50.f003", "gep001.t12z.pgrb2b.0p50.f003"]),
+    ],
+)
+def test_retrieve_data_aws_pull_data_systest(data_set, file_fmt, filenames, tmp_path):
+    cycle = "2025-05-05T12"
+    args = [
+        "--file-set",
+        "anl",
+        "--config",
+        str(Path(f"{__file__}/../../../parm/data_locations.yml").resolve()),
+        "--cycle",
+        cycle,
+        "--data-stores",
+        "aws",
+        "--data-type",
+        data_set,
+        "--fcst-hrs",
+        "3",
+        "--output-path",
+        str(tmp_path / "mem{{mem}}"),
+        "--debug",
+        "--file-fmt",
+        file_fmt,
+        "--members",
+        "1",
+    ]
+    retrieve_data.main(args)
+    for filename in filenames:
+        assert (tmp_path / "mem1" / filename).is_file()
