@@ -64,9 +64,9 @@ def test_get_file_names_no_file_fmt():
 
 
 def test_main(tmp_path):
+    config = Path(f"{__file__}/../../../parm/data_locations.yml").resolve()
     config = tmp_path / "data_locations.yml"
     config.write_text("foo: bar")
-    config = Path(f"{__file__}/../../../parm/data_locations.yml").resolve()
     cycle = "2025-05-04T00"
     cycle_dt = datetime.fromisoformat(cycle).replace(tzinfo=timezone.utc)
     args = [
@@ -93,7 +93,7 @@ def test_main(tmp_path):
         retrieve_data.main(args)
     actual = retrieve.call_args.kwargs
     expected_args = dict(
-        config=get_yaml_config(config),
+        config=get_yaml_config(str(config)),
         cycle=cycle_dt,
         data_stores=["aws"],
         data_type="GFS",
@@ -112,8 +112,12 @@ def test_main(tmp_path):
     #pprint(actual)
     print("EXPECTED")
     #pprint(expected_args)
-    expected_args["config"].compare_config(actual["config"])
-    retrieve.assert_called_once_with(**expected_args)
+    breakpoint()
+    print(expected_args["config"].compare_config(actual["config"].data))
+    #expected_args["config"].dump(Path("./expected_args.yaml"))
+    #actual["config"].dump(Path("actual_args.yaml"))
+    #actual["config"].compare_config(expected_args["config"].__dict__)
+    retrieve.assert_called_with(**expected_args)
 
 
 def test_try_data_store_disk_fail(tmp_path):
