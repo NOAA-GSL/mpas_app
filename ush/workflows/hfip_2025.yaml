@@ -1,0 +1,51 @@
+
+
+create_ics:
+  mpas_init: &mpas_init
+    files_to_copy:
+      QNWFA_QNIFA_SIGMA_MONTHLY.dat: "{{ platform.hrrr_fix }}/QNWFA_QNIFA_SIGMA_MONTHLY.dat"
+    namelist:
+      update_values:
+        dimensions:
+          config_nvertlevels: 79
+        data_sources:
+          config_met_prefix: "{{ user.ics.external_model }}"
+        vertical_grid:
+          config_ztop: 38000.
+          config_specified_zeta_levels: "{{ user.mpas_app }}/parm/mpas//L80_hfip.txt"
+        preproc_stages:
+          config_aerosol_climo: true
+
+create_lbcs:
+  mpas_init: *mpas_init
+
+forecast:
+  mpas:
+    domain: global
+    length: 120
+    namelist:
+      update_values:
+        nhyd_model:
+          config_dt: 24.
+          config_number_of_sub_steps: 6
+          config_apvm_upwinding: 0
+        damping:
+          config_zd: 33000.0
+          config_mpas_cam_coef: 2.
+          config_number_cam_damping_levels: 7
+          config_rayleigh_damp_u: true
+          config_rayleigh_damp_u_timescale_days: 2.5
+        io:
+          config_pio_num_iotasks: 64
+          config_pio_stride: 192
+        physics:
+          config_frac_seaice: true
+          config_radtlw_interval: 00:15:00
+          config_radtsw_interval: 00:15:00
+          config_gvf_update: true
+          config_convection_scheme: cu_grell_freitas
+          config_tempo_ml_nc_pbl: true
+          config_lsm_scheme: sf_noahmp
+          num_soil_layers: 4
+          config_gf_sub3d: 1
+
