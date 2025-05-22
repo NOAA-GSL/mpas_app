@@ -164,7 +164,7 @@ HRRR:
     anl:
       - hrrr.t{{hh}}z.wrfprsf{{ "%02d" % fcst_hr }}.grib2
     fcst:
-      - hrrr.ti{{hh}}z.wrfprsf{{ "%02d" % fcst_hr }}.grib2
+      - hrrr.t{{hh}}z.wrfprsf{{ "%02d" % fcst_hr }}.grib2
   hpss:
     archive_format: tar
     locations:

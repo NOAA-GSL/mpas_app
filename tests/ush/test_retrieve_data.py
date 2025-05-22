@@ -440,7 +440,15 @@ def test_retrieve_data_summary_file(data_locations, tmp_path):
 # Tests that pull data
 
 
-def test_retrieve_data_hpss_pull_data_systest(tmp_path):
+@mark.parametrize(
+    "data_set,filenames",
+    [
+        ("GFS", "gfs.t12z.pgrb2.0p25.f{h:03d}"),
+        ("HRRR", "hrrr.t12z.wrfprsf{h:02d}.grib2"),
+        ("RAP", "rap.t12z.wrfnatf{h:02d}.grib2"),
+    ],
+    )
+def test_retrieve_data_hpss_pull_data_systest(data_set, filename, tmp_path):
     cycle = "2025-05-04T00"
     args = [
         "--file-set",
@@ -452,7 +460,7 @@ def test_retrieve_data_hpss_pull_data_systest(tmp_path):
         "--data-stores",
         "hpss",
         "--data-type",
-        "GFS",
+        data_set,
         "--fcst-hrs",
         "6",
         "12",
@@ -466,7 +474,7 @@ def test_retrieve_data_hpss_pull_data_systest(tmp_path):
     retrieve_data.main(args)
     fcst_hrs = (6, 9, 12)
     for fcst_hr in fcst_hrs:
-        path = tmp_path / f"gfs.t00z.pgrb2.0p25.f{fcst_hr:03d}"
+        path = tmp_path / filename.format(h=fcst_hr)
         assert path.is_file()
 
 
