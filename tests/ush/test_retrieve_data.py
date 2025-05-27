@@ -305,6 +305,26 @@ def test_possible_hpss_configs(data_locations):
     assert count_iterator(config) == 6  # already used first 2 of 8
 
 
+def test_prepare_fs_copy_config_gefs_grib2_aws(data_locations):
+    members = [2, 3]
+    cycle = datetime.fromisoformat("2025-05-04T00").replace(tzinfo=timezone.utc)
+    lead_times = [timedelta(hours=0)]
+    expected = {
+        f"mem{mem:03d}/gep{mem:02d}.t00z.{filelabel}.0p50.f000": f"https://noaa-gefs-pds.s3.amazonaws.com/gefs.{cycle.strftime('%Y%m%d')}/{cycle.hour:02d}/atmos/{filelabel}p5/gep{mem:02d}.t00z.{filelabel}.0p50.f000"
+        for mem in members
+        for filelabel in ("pgrb2a", "pgrb2b")
+    }
+    configs = retrieve_data.prepare_fs_copy_config(
+        config=data_locations,
+        cycle=cycle,
+        file_templates=data_locations["GEFS"]["file_names"]["anl"]["grib2"],
+        lead_times=lead_times,
+        locations=data_locations["GEFS"]["aws"]["locations"],
+        members=members,
+    )
+    assert configs.__next__() == expected
+
+
 def test_prepare_fs_copy_config_gfs_grib2_aws(data_locations):
     leads = (6, 12)
     cycle = datetime.fromisoformat("2025-05-04T00").replace(tzinfo=timezone.utc)
@@ -325,7 +345,7 @@ def test_prepare_fs_copy_config_gfs_grib2_aws(data_locations):
     assert configs.__next__() == expected
 
 
-@mark.parametrize("data_set", ["RAP", "GFS"])
+@mark.parametrize("data_set", ["RAP", "GFS", "GDAS"])
 def test_retrieve_data(data_locations, data_set, tmp_path):
     data_stores = ["disk", "aws", "hpss"]
     remove_args = ("data_stores", "data_type", "file_fmt", "file_set", "inpath", "summary_file")
@@ -363,7 +383,10 @@ def test_retrieve_data(data_locations, data_set, tmp_path):
         data_store_args = {
             "data_store": "aws",
             "file_templates": retrieve_data.get_file_names(
-                data_locations[data_set]["file_names"], args["file_fmt"], "fcst"
+                data_locations[data_set].get("aws", {}).get("file_names")
+                or data_locations[data_set]["file_names"],
+                args["file_fmt"],
+                "fcst",
             ),
             "locations": data_locations[data_set]["aws"]["locations"],
             "archive_config": None,

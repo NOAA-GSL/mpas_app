@@ -114,8 +114,8 @@ GDAS:
     locations:
       - https://noaa-gfs-bdp-pds.s3.amazonaws.com/enkfgdas.{{ yyyymmdd }}/{{hh}}/atmos/mem{{ "%03d" % mem }}
     file_names:
-      netcdf:
-        anl:
+      fcst:
+        netcdf:
           - gdas.t{{hh}}z.sfcf{{ "%03d" % fcst_hr }}.nc
 
 GEFS:
