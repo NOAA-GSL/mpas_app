@@ -97,12 +97,6 @@ def _timedelta_from_str(tds: str) -> timedelta:
     _abort("Specify leadtime as hours[:minutes[:seconds]]")
 
 
-def write_summary_file(cla, data_store, file_templates):
-    """Given the command line arguments and the data store from which
-    the data was retrieved, write a bash summary file that is needed by
-    the workflow elements downstream."""
-
-
 def parse_args(argv):
     """
     Function maintains the arguments accepted by this script. Please see

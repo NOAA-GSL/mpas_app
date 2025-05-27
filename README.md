@@ -3,7 +3,7 @@ App for building and running the [MPAS-Model](https://github.com/NOAA-GSL/MPAS-M
 
 ## Issues
 
-For bugs, questions, and requests related to the app, please use GitHub Issues in the `NOAA-GSL`/`mpas_app` repository.  These will be monitored closely, and we will get back to you as quickly as possible. 
+For bugs, questions, and requests related to the app, please use GitHub Issues in the `NOAA-GSL`/`mpas_app` repository.  These will be monitored closely, and we will get back to you as quickly as possible.
 
 ## CONUS 3km Quickstart Guide - Jet or Hera
 
@@ -27,7 +27,7 @@ platform:
 ```
 source load_wflow_modules.sh <platform>
 ```
-5. Generate the experiment: 
+5. Generate the experiment:
 ```
 cd ush
 ./experiment_gen.py workflows/3km_conus.yaml workflows/conus.<platform>.yaml <your_user_yaml.yaml>
@@ -101,7 +101,7 @@ forecast:
         physics:
           config_microp_scheme = 'mp_thompson'
 ```
-For a deeper understanding of our configuration files, you can visit the [`uwtools`](https://uwtools.readthedocs.io/en/main/sections/user_guide/yaml/index.html) documentation on UW YAML. 
+For a deeper understanding of our configuration files, you can visit the [`uwtools`](https://uwtools.readthedocs.io/en/main/sections/user_guide/yaml/index.html) documentation on UW YAML.
 
 To remove tasks from the workflow section, use the `uwtools` `!remove` tag on the entry to be removed. The same approach works on any setting in the default configs.
 
@@ -132,10 +132,10 @@ cd ush
 
 Any number of config YAMLs are accepted on the command line where the later the configuration setting is in the list, the higher priority it will have. In other words, the same setting altered in `optional.yaml` will be overwritten by the value in `user_config.yaml`.
 
-This will create an experiment directory with an `experiment.yaml` file, which contains the user modifications to `default_config.yaml`.  The experiment directory also contains a Rocoto XML file, which is ready to use with the command `rocotorun -w rocoto.xml -d rocoto.db`. You will have to iteratively run this command until all steps have been completed. You can check the status of these steps by running `rocotostat -w rocoto.xml -d rocoto.db`. 
+This will create an experiment directory with an `experiment.yaml` file, which contains the user modifications to `default_config.yaml`.  The experiment directory also contains a Rocoto XML file, which is ready to use with the command `rocotorun -w rocoto.xml -d rocoto.db`. You will have to iteratively run this command until all steps have been completed. You can check the status of these steps by running `rocotostat -w rocoto.xml -d rocoto.db`.
 
 Logs are generated for each of the different tasks in the workflow, and `workflow.log` contains the submission and completion statuses in text format.
 
-## Post-Processing 
+## Post-Processing
 
 `MPASSIT` and `UPP` are used for post-processing and are included as submodules in the application, just like the `MPAS-Model`. Settings for post-processing components can be adjusted in your user configuration YAML, following the same nested structure described above.
