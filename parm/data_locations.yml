@@ -75,19 +75,16 @@ GFS:
   aws:
     locations:
       - https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.{{yyyymmdd}}/{{hh}}/atmos
-  aws_cli:
-    locations:
-      - s3://noaa-gfs-bdp-pds...
 
 GDAS:
   file_names:
      anl: &gdas_file_names
        nemsio:
-         - gdas.t{{hh}}z.atmf{{ "%03d" % fcst_hr }}.nemsio
-         - gdas.t{{hh}}z.sfcf{{ "%03d" % fcst_hr }}.nemsio
+         - gdas.t{{ hh }}z.atmf{{ "%03d" % fcst_hr }}.nemsio
+         - gdas.t{{ hh }}z.sfcf{{ "%03d" % fcst_hr }}.nemsio
        netcdf:
-         - gdas.t{{hh}}z.atmf{{ "%03d" % fcst_hr }}.nc
-         - gdas.t{{hh}}z.sfcf{{ "%03d" % fcst_hr }}.nc
+         - gdas.t{{ hh }}z.atmf{{ "%03d" % fcst_hr }}.nc
+         - gdas.t{{ hh }}z.sfcf{{ "%03d" % fcst_hr }}.nc
      fcst:
        <<: *gdas_file_names
   hpss:
@@ -95,8 +92,8 @@ GDAS:
     locations:
       - /NCEPPROD/5year/hpssprod/runhistory/rh{{yyyy}}/{{yyyymm}}/{{yyyymmdd}}
     archive_internal_dir:
-      - ./enkfgdas.{{yyyymmdd}}/{{hh}}/atmos/mem{{ "%03d" % mem }}
-      - ./enkfgdas.{{yyyymmdd}}/{{hh}}/mem{{ "%03d" % mem }}
+      - ./enkfgdas.{{ yyyymmdd }}/{{ hh }}/atmos/mem{{ "%03d" % mem }}
+      - ./enkfgdas.{{ yyyymmdd }}/{{ hh }}/mem{{ "%03d" % mem }}
     archive_file_names:
       anl:
         nemsio: &gdas_tar_files
@@ -123,20 +120,18 @@ GDAS:
 
 GEFS:
   file_names:
-    grib:
-      - ""
+    anl:
+      grib2:
+        - gep{{ "%02d" % mem }}.t{{hh}}z.pgrb2a.0p50.f{{ "%03d" % fcst_hr }}
+        - gep{{ "%02d" % mem }}.t{{hh}}z.pgrb2b.0p50.f{{ "%03d" % fcst_hr }}
   aws:
-    protocol: download
     locations:
-      - both:
-        - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}/atmos/pgrb2ap5/gep{{ "%02d" % mem }}.t{{hh}}z.pgrb2a.0p50.f{{ "%03d" % fcst_hr }}
-        - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}/atmos/pgrb2bp5/gep{{ "%02d" % mem }}.t{{hh}}z.pgrb2b.0p50.f{{ "%03d" % fcst_hr }}
-      - both:
-        - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}/pgrb2a/gep{{ "%02d" % mem }}.t{{hh}}z.pgrb2af{{ "%02d" % fcst_hr }}
-        - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}/pgrb2b/gep{{ "%02d" % mem }}.t{{hh}}z.pgrb2bf{{ "%02d" % fcst_hr }}
-      - both:
-        - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}/gep{{ "%02d" % mem }}.t{{hh}}z.pgrb2af{{ "%03d" % fcst_hr }}
-        - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}/gep{{ "%02d" % mem }}.t{{hh}}z.pgrb2bf{{ "%03d" % fcst_hr }}
+      - - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}/atmos/pgrb2ap5
+        - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}/atmos/pgrb2bp5
+      - - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}/pgrb2a
+        - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}/pgrb2b
+      - - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}
+        - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}
 
 RAP:
   file_names: &rap_file_names
@@ -175,6 +170,7 @@ HRRR:
       # HRRR forecasts are binned into 6 hour tar files.
       - gpfs_hps_nco_ops_com_hrrr_prod_hrrr.{{yyyymmdd}}_conus{{bin6}}.wrf.tar
       - com_hrrr_prod_hrrr.{{yyyymmdd}}_conus{{bin6}}.wrf.tar
+      - com_hrrr_v4.1_hrrr.{{yyyymmdd}}_conus{{bin6}}.wrf.tar
   aws:
     locations:
       - https://noaa-hrrr-bdp-pds.s3.amazonaws.com/hrrr.{{yyyymmdd}}/conus

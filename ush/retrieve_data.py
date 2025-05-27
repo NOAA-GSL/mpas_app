@@ -206,7 +206,7 @@ def parse_args(argv):
         processed.  If more than 3 arguments, the list is processed \
         as-is.",
         nargs="*",
-        type=_arg_list_to_range,
+        type=int,
         default=[-999],
     )
     parser.add_argument(
@@ -218,8 +218,8 @@ def parse_args(argv):
 
     # Make modifications/checks for given values
     args = parser.parse_args(argv)
-
     args.fcst_hrs = [_timedelta_from_str(str(t)) for t in _arg_list_to_range(args.fcst_hrs)]
+    args.members = _arg_list_to_range(args.members)
     # Check required arguments for various conditions
 
     # If disk was in data_stores, make sure a path was provided
@@ -250,8 +250,8 @@ def get_file_names(
     file_fmt: str | None,
     file_set: str,
 ) -> list[str]:
-    files = file_name_config[file_set]
-    return files.get(file_fmt) if isinstance(files, dict) else files
+    files = file_name_config.get(file_set, [])
+    return files.get(file_fmt, []) if isinstance(files, dict) else files
 
 
 def retrieve_data(
@@ -290,13 +290,17 @@ def retrieve_data(
             if isinstance(archive_names, dict):
                 archive_names = get_file_names(archive_names, file_fmt, file_set)
 
+        store_file_names = []
+        if store != "disk" and (fns := config[data_type][store].get("file_names")):
+            store_file_names = get_file_names(fns, file_fmt, file_set)
+
         success, files_copied = try_data_store(
             data_store=store,
             config=config,
             cycle=cycle,
             file_templates=file_templates
             if all(file_templates) and store == "disk"
-            else standard_file_names,
+            else store_file_names or standard_file_names,
             lead_times=lead_times,
             locations=[inpath]
             if inpath and store == "disk"
@@ -333,13 +337,16 @@ def possible_hpss_configs(
                     for lead_time in lead_times:
                         for file_template in file_templates:
                             # Don't path join the next line because location won't be a path on disk
-                            file_item = get_yaml_config(
-                                {file_template: f"{location}/{file_template}"}
+                            local_name = (
+                                f"mem{member:03d}/{file_template}"
+                                if member != -999
+                                else file_template
                             )
+                            file_item = get_yaml_config({local_name: f"{location}/{file_template}"})
                             context = {
                                 "cycle": cycle,
                                 "lead_time": lead_time,
-                                "member": member,
+                                "mem": member,
                             }
                             file_item.dereference(
                                 context={
@@ -358,30 +365,41 @@ def prepare_fs_copy_config(
     cycle: datetime,
     file_templates: list[str],
     lead_times: list[timedelta],
-    locations: list[Path | str],
+    locations: list[list | Path | str],
     members: list[int | None],
 ) -> Generator[dict[str, str]]:
     fs_copy_config: dict[str, str] = {}
     for location in locations:
         for member in members:
             for lead_time in lead_times:
-                for file_template in file_templates:
-                    # Don't path join the next line because location can be a url
-                    file_item = get_yaml_config({file_template: f"{location}/{file_template}"})
-                    context = {
-                        "cycle": cycle,
-                        "lead_time": lead_time,
-                        "member": member,
-                    }
-                    file_item.dereference(
-                        context={
-                            **context,
-                            **deepcopy(config).dereference(
-                                context=context,
-                            ),
-                        }
+                # Don't path join because location can be a url
+                mem_prefix = f"mem{member:03d}/" if member != -999 else ""
+                if isinstance(location, list):
+                    if isinstance(file_templates, list) and len(file_templates) == len(location):
+                        file_item = get_yaml_config(
+                            {
+                                f"{mem_prefix}{fn}": f"{loc}/{fn}"
+                                for loc, fn in zip(location, file_templates)
+                            }
+                        )
+                else:
+                    file_item = get_yaml_config(
+                        {f"{mem_prefix}{fn}": f"{location}/{fn}" for fn in file_templates}
                     )
-                    fs_copy_config.update(file_item)
+                context = {
+                    "cycle": cycle,
+                    "lead_time": lead_time,
+                    "mem": member,
+                }
+                file_item.dereference(
+                    context={
+                        **context,
+                        **deepcopy(config).dereference(
+                            context=context,
+                        ),
+                    }
+                )
+                fs_copy_config.update(file_item)
         yield fs_copy_config
 
 
@@ -391,7 +409,7 @@ def try_data_store(
     data_store: str,
     file_templates: list[str],
     lead_times: list[timedelta],
-    locations: list[Path | str],
+    locations: list[list | Path | str],
     members: list[int | None],
     outpath: Path,
     archive_config: dict[str, str] | None = None,

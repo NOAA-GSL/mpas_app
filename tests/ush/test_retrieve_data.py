@@ -171,7 +171,7 @@ def test_try_data_store_disk_success(data_locations, tmp_path):
         file_templates=[tmp_file],
         lead_times=lead_times,
         locations=[file_path],
-        members=[0],
+        members=[-999],
         outpath=output_path,
     )
     assert all([(output_path / f.name).is_file() for f in new_files])
@@ -297,7 +297,7 @@ def test_possible_hpss_configs(data_locations):
         cycle=cycle,
         file_templates=data_locations["GFS"]["file_names"]["anl"]["grib2"],
         lead_times=lead_times,
-        members=[0],
+        members=[-999],
     )
 
     assert config.__next__() == expected1
@@ -320,7 +320,7 @@ def test_prepare_fs_copy_config_gfs_grib2_aws(data_locations):
         file_templates=data_locations["GFS"]["file_names"]["fcst"]["netcdf"],
         lead_times=lead_times,
         locations=data_locations["GFS"]["aws"]["locations"],
-        members=[0],
+        members=[-999],
     )
     assert configs.__next__() == expected
 
@@ -441,13 +441,13 @@ def test_retrieve_data_summary_file(data_locations, tmp_path):
 
 
 @mark.parametrize(
-    "data_set,filenames",
+    "data_set,filename",
     [
-        ("GFS", "gfs.t12z.pgrb2.0p25.f{h:03d}"),
-        ("HRRR", "hrrr.t12z.wrfprsf{h:02d}.grib2"),
-        ("RAP", "rap.t12z.wrfnatf{h:02d}.grib2"),
+        ("GFS", "gfs.t00z.pgrb2.0p25.f{h:03d}"),
+        ("HRRR", "hrrr.t00z.wrfprsf{h:02d}.grib2"),
+        ("RAP", "rap.t00z.wrfnatf{h:02d}.grib2"),
     ],
-    )
+)
 def test_retrieve_data_hpss_pull_data_systest(data_set, filename, tmp_path):
     cycle = "2025-05-04T00"
     args = [
@@ -472,6 +472,7 @@ def test_retrieve_data_hpss_pull_data_systest(data_set, filename, tmp_path):
         "grib2",
     ]
     retrieve_data.main(args)
+    print(sorted(tmp_path.glob("*")))
     fcst_hrs = (6, 9, 12)
     for fcst_hr in fcst_hrs:
         path = tmp_path / filename.format(h=fcst_hr)
@@ -481,8 +482,12 @@ def test_retrieve_data_hpss_pull_data_systest(data_set, filename, tmp_path):
 @mark.parametrize(
     "data_set,file_fmt,filenames",
     [
-        ("GDAS", "netcdf", ["gdas.t12z.sfcf003.nc", "gdas.t12z.atmf003.nc"]),
-        ("GEFS", "grib2", ["gep001.t12z.pgrb2a.0p50.f003", "gep001.t12z.pgrb2b.0p50.f003"]),
+        ("GDAS", "netcdf", ["gdas.t12z.sfcf003.nc"]),
+        (
+            "GEFS",
+            "grib2",
+            ["gep{mem:02d}.t12z.pgrb2a.0p50.f003", "gep{mem:02d}.t12z.pgrb2b.0p50.f003"],
+        ),
     ],
 )
 def test_retrieve_data_aws_pull_data_systest(data_set, file_fmt, filenames, tmp_path):
@@ -501,13 +506,17 @@ def test_retrieve_data_aws_pull_data_systest(data_set, file_fmt, filenames, tmp_
         "--fcst-hrs",
         "3",
         "--output-path",
-        str(tmp_path / "mem{{mem}}"),
+        str(tmp_path),
         "--debug",
         "--file-fmt",
         file_fmt,
         "--members",
         "1",
+        "2",
     ]
     retrieve_data.main(args)
+    print(sorted(tmp_path.glob("*/*")))
     for filename in filenames:
-        assert (tmp_path / "mem1" / filename).is_file()
+        for mem in (1, 2):
+            fn = filename.format(mem=mem)
+            assert (tmp_path / f"mem{mem:03d}" / fn).is_file()
