@@ -211,31 +211,30 @@ GSMGFS:
 RAP:
   hpss:
     protocol: htar
-    archive_format: tar
+    archive_format: zip
     archive_path:
-      - /NCEPPROD/hpssprod/runhistory/rh{yyyy}/{yyyymm}/{yyyymmdd}
-      - /NCEPPROD/hpssprod/runhistory/rh{yyyy}/{yyyymm}/{yyyymmdd}
-      - /NCEPPROD/hpssprod/runhistory/rh{yyyy}/{yyyymm}/{yyyymmdd}
-    archive_internal_dir:
-      - ./
-      - ./
-      - ./
+      - /BMC/fdr/Permanent/{yyyy}/{mm}/{dd}/grib/ftp_rap_hyb/7/0/105/0_794802_32769/
     archive_file_names:
-      # RAP forecasts are binned into 6 hour tar files.
-      - gpfs_hps_nco_ops_com_rap_prod_rap.{yyyymmdd}{bin6}.wrf.tar
-      - com_rap_prod_rap.{yyyymmdd}{bin6}.wrf.tar
-      - com_rap_v5.1_rap.{yyyymmdd}{bin6}.wrf.tar
-    file_names: &rap_file_names
-      anl:
-        - rap.t{hh}z.wrfnatf{fcst_hr:02d}.grib2
-      fcst:
-        - rap.t{hh}z.wrfnatf{fcst_hr:02d}.grib2
+      grib2:
+        anl:
+          - "{yyyymmdd}0000.zip"
+        fcst:
+          - "{yyyymmdd}0000.zip"
+    file_names:
+      grib2:
+        anl:
+          - "{yy}{jjj}000000{hh}"
+        fcst:
+          - "{yy}{jjj}000000{hh}"
   aws:
     protocol: download
     url: https://noaa-rap-pds.s3.amazonaws.com/rap.{yyyymmdd}
     file_names:
       grib2:
-        <<: *rap_file_names
+        anl:
+          - rap.t{hh}z.wrfnatf{fcst_hr:02d}.grib2
+        fcst:
+          - rap.t{hh}z.wrfnatf{fcst_hr:02d}.grib2
 
 HRRR:
   hpss:

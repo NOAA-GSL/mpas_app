@@ -18,7 +18,7 @@ set -x
 args=(
   maps
   -d "${FCST_LOCATION}"
-  -f 0 "${FCST_LENGTH}" 6
+  -f 0 "${FCST_LENGTH}" 1
   --tiles CONUS
   --file_type prs
   --file_tmpl COMBINED.GrbF{FCST_TIME:02d}

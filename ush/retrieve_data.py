@@ -39,6 +39,8 @@ from copy import deepcopy
 from textwrap import dedent
 
 import yaml
+import zipfile
+from pathlib import Path
 
 
 def clean_up_output_dir(expected_subdir, local_archive, output_path, source_paths):
@@ -445,6 +447,107 @@ def hsi_single_file(file_path, mode="ls"):
     return file_path
 
 
+def parse_date_parts(cycle_date):
+    if isinstance(cycle_date, dt.datetime):
+        dt_obj = cycle_date
+    else:
+        dt_obj = dt.datetime.strptime(cycle_date[:10], "%Y%m%d%H")
+
+    yyyy = dt_obj.strftime("%Y")
+    yy = dt_obj.strftime("%y")
+    mm = dt_obj.strftime("%m")
+    dd = dt_obj.strftime("%d")
+    julian_day = dt_obj.strftime("%j")
+    hh = dt_obj.strftime("%H")
+
+    return yyyy, yy, mm, dd, julian_day, hh
+
+
+def retrieve_and_process_file(yyyy, yy, mm, dd, julian_day, hh_list, archive_path, output_path, unzip=True, ics_or_lbcs=None):
+
+    zip_filename = f"{yyyy}{mm}{dd}0000.zip"
+    zip_filepath = os.path.join(output_path, zip_filename)
+    local_zip_path = os.path.join(output_path, zip_filename)
+    hpss_file_path = os.path.join(archive_path, zip_filename)
+
+    os.makedirs(output_path, exist_ok=True)
+
+    already_downloaded = os.path.exists(zip_filepath)
+
+    if not already_downloaded:
+        print(f"[INFO] {zip_filename} not found — downloading from HPSS...")
+        print(f"[DEBUG] Creating output_path: {output_path}")
+        print(f"[DEBUG] Retrieving file from: {archive_path}")
+
+        cmd = f"cd {output_path}; hsi get {hpss_file_path}"
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+
+        if result.returncode != 0:
+            raise RuntimeError(f"Failed to retrieve {hpss_file_path} from HPSS.")
+        else:
+            print(f"[INFO] {zip_filename} already exists. Skipping download.")
+
+    if os.path.exists(zip_filepath):
+        print(f"[INFO] {zip_filename} already exists — skipping download.")
+    else:
+        if not os.path.exists(local_zip_path):
+            print(f"Getting {hpss_file_path} from HPSS...")
+            cmd = f"cd {output_path}; hsi get {hpss_file_path}"
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+            print(f"[DEBUG] Creating output_path: {output_path}")
+            print(f"[DEBUG] Retrieving file from: {archive_path}")
+            if result.returncode != 0:
+                raise RuntimeError(f"Failed to retrieve {hpss_file_path} from HPSS.")
+
+    # Check if all GRIB2 output files already exist
+    all_exist = all(
+        os.path.exists(os.path.join(output_path, f"rap.t00z.wrfnatf{int(hh):02d}.grib2"))
+        for hh in hh_list
+    )
+    if all_exist:
+        print(f"[INFO] All output files already exist. Skipping processing.")
+        return
+
+    # ICS: Download ZIP from HPSS if needed
+    if unzip:
+        if not os.path.exists(local_zip_path):
+            print(f"[INFO] Downloading {zip_filename} from HPSS...")
+            subprocess.run(["hsi", f"cd {archive_path}; get {zip_filename}"], cwd=output_path, check=True)
+        else:
+            print(f"[INFO] {zip_filename} already exists. Skipping download.")
+
+        # Unzip
+        if (ics_or_lbcs and ics_or_lbcs.lower() == "ics") or not already_downloaded:
+            print(f"[INFO] Unzipping {zip_filename}...")
+            with zipfile.ZipFile(local_zip_path, 'r') as zip_ref:
+                print("[DEBUG] ZIP file contains:")
+                print(zip_ref.namelist())
+                zip_ref.extractall(output_path)
+    else:
+        print(f"[INFO] Skipping download and unzip for LBCS mode.")
+
+    # Rename files
+    for hh in hh_list:
+        hh_str = f"{hh:02d}"
+        original_filename = f"{yy}{julian_day}000000{hh_str}"
+        original_path = os.path.join(output_path, original_filename)
+        new_filename = f"rap.t00z.wrfnatf{hh_str}.grib2"
+        new_path = os.path.join(output_path, new_filename)
+
+        if os.path.exists(new_path):
+            print(f"[INFO] {new_filename} already exists. Skipping rename.")
+        elif os.path.exists(original_path):
+            os.rename(original_path, new_path)
+            print(f"[INFO] Renamed {original_filename} ? {new_filename}")
+        else:
+            print(f"[WARNING] Expected file '{original_filename}' not found.")
+
+    # Remove ZIP only if unzipped
+    if ics_or_lbcs and ics_or_lbcs.lower() == "lbcs" and os.path.exists(zip_filepath):
+        print(f"[INFO] Deleting {zip_filename} after LBCS is complete.")
+        os.remove(zip_filepath)
+
+
 def hpss_requested_files(cla, file_names, store_specs, members=-1, ens_group=-1):
     # pylint: disable=too-many-locals
 
@@ -747,6 +850,49 @@ def main(argv):
     cla = parse_args(argv)
 
     setup_logging(cla.debug)
+
+    with open(cla.config, "r") as stream:
+        config = yaml.safe_load(stream)
+
+    if cla.data_type == "RAP" and "hpss" in cla.data_stores:
+        yyyy, yy, mm, dd, julian_day, _ = parse_date_parts(cla.cycle_date)
+
+        # Create output directory if it doesn't exist
+        if not os.path.exists(cla.output_path):
+            os.makedirs(cla.output_path, exist_ok=True)
+
+        # Convert fcst_hrs to list if needed
+        hh_list = cla.fcst_hrs if isinstance(cla.fcst_hrs, list) else [cla.fcst_hrs]
+
+        # Load archive_path from config
+        with open(cla.config, "r") as stream:
+            config = yaml.safe_load(stream)
+
+        data_type_key = cla.data_type.upper()
+
+        archive_path_list = config.get(data_type_key, {}).get("hpss", {}).get("archive_path", [])
+        if not archive_path_list:
+            raise ValueError(f"archive_path not found in config for data_type '{data_type_key}'")
+
+        archive_path_template = archive_path_list[0]
+        archive_path = archive_path_template.format(yyyy=yyyy, mm=mm, dd=dd)
+
+        # Download, unzip, and rename
+        retrieve_and_process_file(
+            yyyy=yyyy,
+            yy=yy,
+            mm=mm,
+            dd=dd,
+            julian_day=julian_day,
+            hh_list=hh_list,
+            archive_path=archive_path,
+            output_path=cla.output_path,
+            unzip=True,
+            ics_or_lbcs=cla.ics_or_lbcs
+        )
+
+        return
+    
     print("Running script retrieve_data.py with args:", f"\n{('-' * 80)}\n{('-' * 80)}")
     for name, val in cla.__dict__.items():
         if name not in ["config"]:
@@ -776,7 +922,8 @@ def main(argv):
             )
             sys.exit(1)
 
-    known_data_info = cla.config.get(cla.data_type, {})
+    known_data_info = config.get(cla.data_type, {})
+
     if not known_data_info:
         msg = f"No data stores have been defined for {cla.data_type}!"
         if cla.input_file_path is None:
@@ -789,6 +936,19 @@ def main(argv):
     for data_store in cla.data_stores:
         logging.info(f"Checking {data_store} for {cla.data_type}")
         store_specs = known_data_info.get(data_store, {})
+        # === Add these to parse archive info for HPSS ===
+        archive_path = store_specs.get("archive_path", [])
+        archive_path = archive_path if isinstance(archive_path, list) else [archive_path]
+
+        archive_file_names = store_specs.get("archive_file_names", {})
+        if cla.file_fmt:
+            archive_file_names = archive_file_names.get(cla.file_fmt, {})
+        if isinstance(archive_file_names, dict):
+            archive_file_names = archive_file_names.get(cla.file_set, [])
+
+        print("[DEBUG] archive_file_names =", store_specs.get("archive_file_names"))
+        print("[DEBUG] file_names =", store_specs.get("file_names"))
+
 
         if data_store == "disk":
             file_templates = get_file_templates(
@@ -828,15 +988,36 @@ def main(argv):
                     members=cla.members,
                 )
 
+
             if store_specs.get("protocol") == "htar":
                 ens_groups = get_ens_groups(cla.members)
                 for ens_group, members in ens_groups.items():
+                    for mem in members:
+                        existing_archives, which_archive = find_archive_files(
+                        archive_path,
+                        archive_file_names,
+                        cla.cycle_date,
+                        ens_group,
+                    )
+
+                    archive_path = store_specs["archive_path"]
+                    archive_path = archive_path if isinstance(archive_path, list) else [archive_path]
+
+                    archive_file_names = store_specs.get("archive_file_names", {})
+                    if cla.file_fmt is not None:
+                        archive_file_names = archive_file_names[cla.file_fmt]
+
+                    if isinstance(archive_file_names, dict):
+                        archive_file_names = archive_file_names[cla.file_set]
+
+
                     unavailable = hpss_requested_files(
                         cla,
                         file_templates,
                         store_specs,
                         members=members,
                         ens_group=ens_group,
+                        output_path=cla.output_path,
                     )
 
         if not unavailable:
@@ -903,7 +1084,7 @@ def parse_args(argv):
         naming conventions for known data streams. The default included \
         in this repository is in parm/data_locations.yml",
         required=False,
-        type=config_exists,
+        type=str,
     )
     parser.add_argument(
         "--cycle_date",
