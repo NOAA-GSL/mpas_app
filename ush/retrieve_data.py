@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+
+# Ignore PLR0913 Too many arguments in function definition
 # ruff: noqa: PLR0913
 
 """
@@ -37,7 +39,7 @@ import sys
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import TYPE_CHECKING, NoReturn
+from typing import TYPE_CHECKING, Any, NoReturn
 
 from uwtools.api import fs
 from uwtools.api.config import Config, YAMLConfig, get_yaml_config
@@ -240,12 +242,12 @@ def parse_args(argv):
 
 
 def get_file_names(
-    file_name_config: dict[str, list[str]],
+    file_name_config: dict[str, Any],
     file_fmt: str | None,
     file_set: str,
-) -> list[str]:
+) -> Any:
     files = file_name_config.get(file_set, [])
-    return files.get(file_fmt, []) if isinstance(files, dict) else files
+    return files.get(file_fmt or "", []) if isinstance(files, dict) else files
 
 
 def retrieve_data(
@@ -257,7 +259,7 @@ def retrieve_data(
     outpath: Path,
     file_templates: list[str],
     lead_times: list[timedelta],
-    members: list[int | None],
+    members: list[int],
     file_fmt: str | None = None,
     inpath: Path | None = None,
     summary_file: str | Path | None = None,
@@ -320,7 +322,7 @@ def possible_hpss_configs(
     cycle: datetime,
     file_templates: list[str],
     lead_times: list[timedelta],
-    members: list[int | None],
+    members: list[int],
 ):
     for archive_loc in archive_locations["locations"]:
         for internal_dir in archive_locations["archive_internal_dirs"]:
@@ -360,7 +362,7 @@ def prepare_fs_copy_config(
     file_templates: list[str],
     lead_times: list[timedelta],
     locations: list[list | Path | str],
-    members: list[int | None],
+    members: list[int],
 ) -> Generator[dict[str, str]]:
     fs_copy_config: dict[str, str] = {}
     for location in locations:
@@ -404,7 +406,7 @@ def try_data_store(
     file_templates: list[str],
     lead_times: list[timedelta],
     locations: list[list | Path | str],
-    members: list[int | None],
+    members: list[int],
     outpath: Path,
     archive_config: dict[str, str] | None = None,
     archive_names: list[str] | None = None,

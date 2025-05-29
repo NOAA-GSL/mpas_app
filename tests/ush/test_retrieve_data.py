@@ -4,14 +4,16 @@ import sys
 from datetime import datetime, timedelta, timezone
 from io import StringIO
 from pathlib import Path
-from unittest.mock import Mock, call, patch
+from unittest.mock import call, patch
 
 from pytest import fixture, mark, raises
 from uwtools.api.config import YAMLConfig, get_yaml_config
-from uwtools.api.logging import use_uwtools_logger
 from uwtools.api.template import render
 
 from ush import retrieve_data
+
+# Ignore SLF001 Private member accessed
+# ruff: noqa: SLF001
 
 
 @fixture
@@ -27,12 +29,14 @@ def test__abort(capsys):
     msg = "exit from _abort"
     with raises(SystemExit) as e:
         retrieve_data._abort(msg)
-    assert e.type == SystemExit
+    assert e.type is SystemExit
     assert e.value.code == 1
     assert msg in capsys.readouterr().err
 
 
-@mark.parametrize("inargs,expected", [([0], [0]), ([2, 5], [2, 3, 4, 5]), ([0, 12, 6], [0, 6, 12])])
+@mark.parametrize(
+    ("inargs", "expected"), [([0], [0]), ([2, 5], [2, 3, 4, 5]), ([0, 12, 6], [0, 6, 12])]
+)
 def test__arg_list_to_range_list(expected, inargs):
     result = retrieve_data._arg_list_to_range(inargs)
     assert result == expected
@@ -48,7 +52,7 @@ def test__timedelta_from_str(capsys):
     assert retrieve_data._timedelta_from_str("01:15:07").total_seconds() == 1 * 3600 + 15 * 60 + 7
     with raises(SystemExit):
         retrieve_data._timedelta_from_str("foo")
-    assert f"Specify leadtime as hours[:minutes[:seconds]]" in capsys.readouterr().err
+    assert "Specify leadtime as hours[:minutes[:seconds]]" in capsys.readouterr().err
 
 
 def test_get_file_names_file_fmt():
@@ -91,7 +95,6 @@ def test_main(tmp_path):
     ]
     with patch.object(retrieve_data, "retrieve_data") as retrieve:
         retrieve_data.main(args)
-    actual = retrieve.call_args.kwargs
     expected_args = dict(
         config=get_yaml_config(str(config)),
         cycle=cycle_dt,
@@ -107,16 +110,6 @@ def test_main(tmp_path):
         summary_file=None,
         symlink=False,
     )
-    from pprint import pprint
-
-    print("ACTUAL")
-    # pprint(actual)
-    print("EXPECTED")
-    # pprint(expected_args)
-    print(expected_args["config"].compare_config(actual["config"].data))
-    # expected_args["config"].dump(Path("./expected_args.yaml"))
-    # actual["config"].dump(Path("actual_args.yaml"))
-    # actual["config"].compare_config(expected_args["config"].__dict__)
     retrieve.assert_called_with(**expected_args)
 
 
@@ -125,7 +118,6 @@ def test_try_data_store_disk_fail(tmp_path):
     output_path = tmp_path / "output"
     output_path.mkdir()
     tmp_file = "tmp.f{{ fcst_hr }}"
-    existing_file_template = file_path / tmp_file
     cycle = datetime.now(tz=timezone.utc)
     lead_times = [timedelta(hours=6), timedelta(hours=12)]
 
@@ -174,7 +166,7 @@ def test_try_data_store_disk_success(data_locations, tmp_path):
         members=[-999],
         outpath=output_path,
     )
-    assert all([(output_path / f.name).is_file() for f in new_files])
+    assert all((output_path / f.name).is_file() for f in new_files)
     assert success
 
 
@@ -189,9 +181,9 @@ def test_try_data_store_hpss(data_locations, tmp_path):
             cycle=cycle,
             data_store="hpss",
             file_templates=retrieve_data.get_file_names(gfs_config["file_names"], "grib2", "anl"),
-            lead_times=[0],
+            lead_times=[timedelta(hours=0)],
             locations=gfs_config["hpss"]["locations"],
-            members=[None],
+            members=[-999],
             outpath=tmp_path / "output",
             archive_config=gfs_config["hpss"],
             archive_names=retrieve_data.get_file_names(
@@ -204,12 +196,12 @@ def test_try_data_store_hpss(data_locations, tmp_path):
         config={"GFS": gfs_config},
         cycle=cycle,
         file_templates=["gfs.t{{hh}}z.pgrb2.0p25.f000"],
-        lead_times=[0],
-        members=[None],
+        lead_times=[timedelta(hours=0)],
+        members=[-999],
     )
 
 
-def test_parse_args(capsys, tmp_path):
+def test_parse_args(tmp_path):
     cycle = "2025-05-04T00"
     sysargs = [
         "--file-set",
@@ -244,7 +236,7 @@ def test_parse_args(capsys, tmp_path):
     assert isinstance(args.config, YAMLConfig)
     assert isinstance(args.cycle, datetime)
     assert isinstance(args.data_stores, list)
-    assert all([ds in ["hpss", "nomads", "aws", "disk"] for ds in args.data_stores])
+    assert all(ds in ["hpss", "nomads", "aws", "disk"] for ds in args.data_stores)
     assert args.data_type is not None
     assert args.fcst_hrs == [timedelta(hours=h) for h in (6, 9, 12)]
     assert args.output_path.is_absolute()
@@ -256,12 +248,14 @@ def test_parse_args(capsys, tmp_path):
     assert args.members == [-999]
     assert args.summary_file is None
 
-    with patch(
-        "ush.retrieve_data.subprocess.run",
-        side_effect=subprocess.CalledProcessError(cmd="foo", returncode=1),
+    with (
+        patch(
+            "ush.retrieve_data.subprocess.run",
+            side_effect=subprocess.CalledProcessError(cmd="foo", returncode=1),
+        ),
+        raises(SystemExit),
     ):
-        with raises(SystemExit) as e:
-            args = retrieve_data.parse_args(sysargs)
+        args = retrieve_data.parse_args(sysargs)
 
     sysargs.remove("--input-file-path")
     sysargs.remove(str(tmp_path / "input"))
@@ -279,7 +273,7 @@ def count_iterator(iterator):
 def test_possible_hpss_configs(data_locations):
     leads = (6, 12)
     cycle = datetime.fromisoformat("2025-05-04T00").replace(tzinfo=timezone.utc)
-    lead_times = [timedelta(hours=l) for l in leads]
+    lead_times = [timedelta(hours=lead) for lead in leads]
 
     expected1 = {
         "gfs.t00z.pgrb2.0p25.f000": "htar:///NCEPPROD/hpssprod/runhistory/rh2025/202505/20250504/gpfs_dell1_nco_ops_com_gfs_prod_gfs.20250504_00.gfs_pgrb2.tar?./gfs.20250504/00/gfs.t00z.pgrb2.0p25.f000"
@@ -328,7 +322,7 @@ def test_prepare_fs_copy_config_gefs_grib2_aws(data_locations):
 def test_prepare_fs_copy_config_gfs_grib2_aws(data_locations):
     leads = (6, 12)
     cycle = datetime.fromisoformat("2025-05-04T00").replace(tzinfo=timezone.utc)
-    lead_times = [timedelta(hours=l) for l in leads]
+    lead_times = [timedelta(hours=lead) for lead in leads]
     expected = {
         f"gfs.t{cycle.hour:02d}z.{level}f{lead:03d}.nc": f"https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.{cycle.strftime('%Y%m%d')}/{cycle.hour:02d}/atmos/gfs.t{cycle.hour:02d}z.{level}f{lead:03d}.nc"
         for lead in leads
@@ -367,7 +361,7 @@ def test_retrieve_data(data_locations, data_set, tmp_path):
         "summary_file": tmp_path / "summary.yaml",
     }
     with patch.object(retrieve_data, "try_data_store", return_value=(False, {})) as try_data_store:
-        retrieved = retrieve_data.retrieve_data(**args)
+        retrieve_data.retrieve_data(**args)
         disk_calls = args.copy()
         data_store_args = {
             "data_store": "disk",
@@ -412,13 +406,6 @@ def test_retrieve_data(data_locations, data_set, tmp_path):
         hpss_calls.update(data_store_args)
         for key in remove_args:
             hpss_calls.pop(key)
-
-        from pprint import pprint
-
-        print("CALLS")
-        pprint(try_data_store.mock_calls[2].kwargs)
-        print("expected")
-        pprint(hpss_calls)
         (
             try_data_store.assert_has_calls(
                 [call(**disk_calls), call(**aws_calls), call(**hpss_calls)]
@@ -450,9 +437,7 @@ def test_retrieve_data_summary_file(data_locations, tmp_path):
         "a.f000.grib": str(tmp_path / "input" / "a.f000.grib"),
     }
 
-    with patch.object(
-        retrieve_data, "try_data_store", return_value=(True, summary)
-    ) as try_data_store:
+    with patch.object(retrieve_data, "try_data_store", return_value=(True, summary)):
         retrieved = retrieve_data.retrieve_data(**args)
 
     assert retrieved is True
@@ -464,7 +449,7 @@ def test_retrieve_data_summary_file(data_locations, tmp_path):
 
 
 @mark.parametrize(
-    "data_set,filename",
+    ("data_set", "filename"),
     [
         ("GFS", "gfs.t00z.pgrb2.0p25.f{h:03d}"),
         ("HRRR", "hrrr.t00z.wrfprsf{h:02d}.grib2"),
@@ -503,7 +488,7 @@ def test_retrieve_data_hpss_pull_data_systest(data_set, filename, tmp_path):
 
 
 @mark.parametrize(
-    "data_set,file_fmt,filenames",
+    ("data_set", "file_fmt", "filenames"),
     [
         ("GDAS", "netcdf", ["gdas.t12z.sfcf003.nc"]),
         (
