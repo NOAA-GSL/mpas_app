@@ -9,24 +9,16 @@ source = ["scripts", "ush"]
 
 [tool.mypy]
 check_untyped_defs = true
+exclude = ["conda", "pygraf", "src"]
 pretty = true
 warn_return_any = true
-exclude = [
-  "pygraf",
-  "conda",
-  "src",
-  ]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
 
 [tool.ruff]
 line-length = 100
-exclude = [
-  "pygraf",
-  "conda",
-  "src",
-  ]
+exclude = ["conda", "pygraf", "src"]
 
 [tool.ruff.lint]
 select = ["ALL"]

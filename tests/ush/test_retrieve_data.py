@@ -209,8 +209,8 @@ def test_possible_hpss_configs(data_locations):
         members=[-999],
     )
 
-    assert config.__next__() == expected1
-    assert config.__next__() == expected2
+    assert next(config) == expected1
+    assert next(config) == expected2
     assert count_iterator(config) == 6  # already used first 2 of 8
 
 
