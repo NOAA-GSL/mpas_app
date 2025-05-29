@@ -18,6 +18,34 @@ def data_locations():
     return get_yaml_config(Path(f"{__file__}/../../../parm/data_locations.yml").resolve())
 
 
+@fixture
+def sysargs(tmp_path):
+    return [
+        "--fileset",
+        "fcst",
+        "--config",
+        str(Path(f"{__file__}/../../../parm/data_locations.yml").resolve()),
+        "--cycle",
+        "2025-05-04T00",
+        "--data-stores",
+        "disk",
+        "hpss",
+        "--data-type",
+        "GFS",
+        "--fcst-hrs",
+        "6",
+        "12",
+        "3",
+        "--input-file-path",
+        str(tmp_path / "input"),
+        "--output-path",
+        str(tmp_path),
+        "--debug",
+        "--filefmt",
+        "grib2",
+    ]
+
+
 def test_import():
     assert retrieve_data
 
@@ -109,33 +137,7 @@ def test_main(tmp_path):
     retrieve.assert_called_with(**expected_args)
 
 
-def test_parse_args(tmp_path):
-    cycle = "2025-05-04T00"
-    sysargs = [
-        "--fileset",
-        "fcst",
-        "--config",
-        str(Path(f"{__file__}/../../../parm/data_locations.yml").resolve()),
-        "--cycle",
-        cycle,
-        "--data-stores",
-        "disk",
-        "hpss",
-        "--data-type",
-        "GFS",
-        "--fcst-hrs",
-        "6",
-        "12",
-        "3",
-        "--input-file-path",
-        str(tmp_path / "input"),
-        "--output-path",
-        str(tmp_path),
-        "--debug",
-        "--filefmt",
-        "grib2",
-    ]
-    # Make sure it behaves as expected when hsi is available, even when not run on RDHPCS platforms
+def test_parse_args_hsi_available(sysargs, tmp_path):
     with patch(
         "ush.retrieve_data.subprocess.run",
         side_effect=[subprocess.CompletedProcess(args="/usr/bin/which hsi", returncode=0)],
@@ -157,7 +159,8 @@ def test_parse_args(tmp_path):
     assert args.members == [-999]
     assert args.summary_file is None
 
-    # Make sure it behaves as expected when hsi is not available, even when run on RDHPCS platforms
+
+def test_parse_args_hsi_not_available(sysargs):
     with (
         patch(
             "ush.retrieve_data.subprocess.run",
@@ -165,20 +168,14 @@ def test_parse_args(tmp_path):
         ),
         raises(SystemExit),
     ):
-        args = retrieve_data.parse_args(sysargs)
+        retrieve_data.parse_args(sysargs)
 
-    # Make sure it fails when disk is a data store, but no path is provided
+
+def test_parse_args_no_input_path_for_disk(sysargs, tmp_path):
     sysargs.remove("--input-file-path")
     sysargs.remove(str(tmp_path / "input"))
     with raises(argparse.ArgumentTypeError):
-        args = retrieve_data.parse_args(sysargs)
-
-
-def count_iterator(iterator):
-    count = 0
-    for _ in iterator:
-        count += 1
-    return count
+        retrieve_data.parse_args(sysargs)
 
 
 def test_possible_hpss_configs(data_locations):
@@ -205,9 +202,15 @@ def test_possible_hpss_configs(data_locations):
         members=[-999],
     )
 
+    def _count_iterator(iterator):
+        count = 0
+        for _ in iterator:
+            count += 1
+        return count
+
     assert config.__next__() == expected1
     assert config.__next__() == expected2
-    assert count_iterator(config) == 6  # already used first 2 of 8
+    assert _count_iterator(config) == 6  # already used first 2 of 8
 
 
 def test_prepare_fs_copy_config_gefs_grib2_aws(data_locations):
@@ -317,11 +320,9 @@ def test_retrieve_data(data_locations, data_set, tmp_path):
         hpss_calls.update(data_store_args)
         for key in remove_args:
             hpss_calls.pop(key)
-        (
             try_data_store.assert_has_calls(
                 [call(**disk_calls), call(**aws_calls), call(**hpss_calls)]
-            ),
-        )
+            )
 
 
 def test_retrieve_data_summary_file(data_locations, tmp_path):
@@ -353,7 +354,7 @@ def test_retrieve_data_summary_file(data_locations, tmp_path):
 
     assert retrieved is True
     assert summary_file.is_file()
-    assert summary_file.read_text().strip() == get_yaml_config(summary).__repr__()
+    assert summary_file.read_text().strip() == repr(get_yaml_config(summary))
 
 
 def test_try_data_store_disk_fail(tmp_path):
@@ -483,7 +484,6 @@ def test_retrieve_data_aws_pull_data_systest(data_set, filefmt, filenames, tmp_p
         "2",
     ]
     retrieve_data.main(args)
-    print(sorted(tmp_path.glob("*/*")))
     for filename in filenames:
         for mem in (1, 2):
             fn = filename.format(mem=mem)
@@ -522,7 +522,6 @@ def test_retrieve_data_hpss_pull_data_systest(data_set, filename, tmp_path):
         "grib2",
     ]
     retrieve_data.main(args)
-    print(sorted(tmp_path.glob("*")))
     fcst_hrs = (6, 9, 12)
     for fcst_hr in fcst_hrs:
         path = tmp_path / filename.format(h=fcst_hr)
