@@ -101,11 +101,11 @@ def _timedelta_from_str(tds: str) -> timedelta:
 
 def get_filenames(
     filename_config: dict[str, Any],
-    file_fmt: str | None,
-    file_set: str,
+    filefmt: str | None,
+    fileset: str,
 ) -> Any:
-    files = filename_config.get(file_set, [])
-    return files.get(file_fmt or "", []) if isinstance(files, dict) else files
+    files = filename_config.get(fileset, [])
+    return files.get(filefmt or "", []) if isinstance(files, dict) else files
 
 
 def main(args):
@@ -123,8 +123,8 @@ def main(args):
         cycle=clargs.cycle,
         data_stores=clargs.data_stores,
         data_type=clargs.data_type,
-        file_set=clargs.file_set,
-        file_fmt=clargs.file_fmt,
+        fileset=clargs.fileset,
+        filefmt=clargs.filefmt,
         lead_times=clargs.fcst_hrs,
         file_templates=clargs.file_templates,
         inpath=clargs.input_file_path,
@@ -146,7 +146,7 @@ def parse_args(argv):
 
     # Required
     parser.add_argument(
-        "--file-set",
+        "--fileset",
         choices=FILE_SETS,
         help="Flag for whether analysis, forecast, \
         fix, or observation files should be gathered",
@@ -218,7 +218,7 @@ def parse_args(argv):
         default=[],
     )
     parser.add_argument(
-        "--file-fmt",
+        "--filefmt",
         choices=("grib2", "nemsio", "netcdf", "prepbufr", "tcvitals"),
         help="External model file format",
     )
@@ -366,12 +366,12 @@ def retrieve_data(
     cycle: datetime,
     data_stores: list[str],
     data_type: str,
-    file_set: str,
+    fileset: str,
     outpath: Path,
     file_templates: list[str],
     lead_times: list[timedelta],
     members: list[int],
-    file_fmt: str | None = None,
+    filefmt: str | None = None,
     inpath: Path | None = None,
     summary_file: str | Path | None = None,
     *,
@@ -381,7 +381,7 @@ def retrieve_data(
     Checks for and gathers the requested data.
     """
 
-    standard_filenames = get_filenames(config[data_type]["filenames"], file_fmt, file_set)
+    standard_filenames = get_filenames(config[data_type]["filenames"], filefmt, fileset)
     config.dereference(context={"cycle": cycle})
     for store in data_stores:
         # checks for given data_store
@@ -389,17 +389,17 @@ def retrieve_data(
             assert inpath is not None
         else:
             assert config
-            assert file_set in FILE_SETS
+            assert fileset in FILE_SETS
 
         archive_names = None
         if store == "hpss":
             archive_names = config[data_type][store]["archive_filenames"]
             if isinstance(archive_names, dict):
-                archive_names = get_filenames(archive_names, file_fmt, file_set)
+                archive_names = get_filenames(archive_names, filefmt, fileset)
 
         store_filenames = []
         if store != "disk" and (fns := config[data_type][store].get("filenames")):
-            store_filenames = get_filenames(fns, file_fmt, file_set)
+            store_filenames = get_filenames(fns, filefmt, fileset)
 
         success, files_copied = try_data_store(
             data_store=store,

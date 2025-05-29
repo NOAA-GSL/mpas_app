@@ -12,9 +12,6 @@ from uwtools.api.template import render
 
 from ush import retrieve_data
 
-# Ignore SLF001 Private member accessed
-# ruff: noqa: SLF001
-
 
 @fixture
 def data_locations():
@@ -29,7 +26,6 @@ def test__abort(capsys):
     msg = "exit from _abort"
     with raises(SystemExit) as e:
         retrieve_data._abort(msg)
-    assert e.type is SystemExit
     assert e.value.code == 1
     assert msg in capsys.readouterr().err
 
@@ -55,15 +51,15 @@ def test__timedelta_from_str(capsys):
     assert "Specify leadtime as hours[:minutes[:seconds]]" in capsys.readouterr().err
 
 
-def test_get_filenames_file_fmt():
+def test_get_filenames_filefmt():
     files = {"anl": {"grib2": ["file1.txt", "file2.txt"]}}
-    result = retrieve_data.get_filenames(filename_config=files, file_fmt="grib2", file_set="anl")
+    result = retrieve_data.get_filenames(filename_config=files, filefmt="grib2", fileset="anl")
     assert result == files["anl"]["grib2"]
 
 
-def test_get_filenames_no_file_fmt():
+def test_get_filenames_no_filefmt():
     files = {"anl": ["file1.txt", "file2.txt"]}
-    result = retrieve_data.get_filenames(filename_config=files, file_fmt="foo", file_set="anl")
+    result = retrieve_data.get_filenames(filename_config=files, filefmt="foo", fileset="anl")
     assert result == files["anl"]
 
 
@@ -74,7 +70,7 @@ def test_main(tmp_path):
     cycle = "2025-05-04T00"
     cycle_dt = datetime.fromisoformat(cycle).replace(tzinfo=timezone.utc)
     args = [
-        "--file-set",
+        "--fileset",
         "fcst",
         "--config",
         str(config),
@@ -90,7 +86,7 @@ def test_main(tmp_path):
         "3",
         "--output-path",
         str(tmp_path),
-        "--file-fmt",
+        "--filefmt",
         "grib2",
     ]
     with patch.object(retrieve_data, "retrieve_data") as retrieve:
@@ -100,8 +96,8 @@ def test_main(tmp_path):
         cycle=cycle_dt,
         data_stores=["aws"],
         data_type="GFS",
-        file_set="fcst",
-        file_fmt="grib2",
+        fileset="fcst",
+        filefmt="grib2",
         lead_times=[timedelta(hours=i) for i in (6, 9, 12)],
         file_templates=[],
         inpath=None,
@@ -116,7 +112,7 @@ def test_main(tmp_path):
 def test_parse_args(tmp_path):
     cycle = "2025-05-04T00"
     sysargs = [
-        "--file-set",
+        "--fileset",
         "fcst",
         "--config",
         str(Path(f"{__file__}/../../../parm/data_locations.yml").resolve()),
@@ -136,7 +132,7 @@ def test_parse_args(tmp_path):
         "--output-path",
         str(tmp_path),
         "--debug",
-        "--file-fmt",
+        "--filefmt",
         "grib2",
     ]
     # Make sure it behaves as expected when hsi is available, even when not run on RDHPCS platforms
@@ -145,7 +141,7 @@ def test_parse_args(tmp_path):
         side_effect=[subprocess.CompletedProcess(args="/usr/bin/which hsi", returncode=0)],
     ):
         args = retrieve_data.parse_args(sysargs)
-    assert args.file_set in retrieve_data.FILE_SETS
+    assert args.fileset in retrieve_data.FILE_SETS
     assert isinstance(args.config, YAMLConfig)
     assert isinstance(args.cycle, datetime)
     assert isinstance(args.data_stores, list)
@@ -156,7 +152,7 @@ def test_parse_args(tmp_path):
     assert not args.symlink
     assert args.debug
     assert args.file_templates == []
-    assert args.file_fmt in ("grib2", "nemsio", "netcdf", "prepbufr", "tcvitals")
+    assert args.filefmt in ("grib2", "nemsio", "netcdf", "prepbufr", "tcvitals")
     assert args.input_file_path == tmp_path / "input"
     assert args.members == [-999]
     assert args.summary_file is None
@@ -257,7 +253,7 @@ def test_prepare_fs_copy_config_gfs_grib2_aws(data_locations):
 @mark.parametrize("data_set", ["RAP", "GFS", "GDAS"])
 def test_retrieve_data(data_locations, data_set, tmp_path):
     data_stores = ["disk", "aws", "hpss"]
-    remove_args = ("data_stores", "data_type", "file_fmt", "file_set", "inpath", "summary_file")
+    remove_args = ("data_stores", "data_type", "filefmt", "fileset", "inpath", "summary_file")
 
     cycle = datetime.fromisoformat("2025-05-04T00").replace(tzinfo=timezone.utc)
     args = {
@@ -265,9 +261,9 @@ def test_retrieve_data(data_locations, data_set, tmp_path):
         "cycle": cycle,
         "data_stores": data_stores,
         "data_type": data_set,
-        "file_set": "fcst",
+        "fileset": "fcst",
         "outpath": tmp_path / "output",
-        "file_fmt": "netcdf",
+        "filefmt": "netcdf",
         "file_templates": ["a.f{{ '%3d' % fcst_hr }}.grib"],
         "lead_times": [6],
         "members": [None],
@@ -294,7 +290,7 @@ def test_retrieve_data(data_locations, data_set, tmp_path):
             "file_templates": retrieve_data.get_filenames(
                 data_locations[data_set].get("aws", {}).get("filenames")
                 or data_locations[data_set]["filenames"],
-                args["file_fmt"],
+                args["filefmt"],
                 "fcst",
             ),
             "locations": data_locations[data_set]["aws"]["locations"],
@@ -312,7 +308,7 @@ def test_retrieve_data(data_locations, data_set, tmp_path):
         data_store_args = {
             "data_store": "hpss",
             "file_templates": retrieve_data.get_filenames(
-                data_locations[data_set]["filenames"], args["file_fmt"], "fcst"
+                data_locations[data_set]["filenames"], args["filefmt"], "fcst"
             ),
             "locations": data_locations[data_set]["hpss"]["locations"],
             "archive_config": data_locations[data_set]["hpss"],
@@ -338,9 +334,9 @@ def test_retrieve_data_summary_file(data_locations, tmp_path):
         "cycle": cycle,
         "data_stores": data_stores,
         "data_type": data_set,
-        "file_set": "anl",
+        "fileset": "anl",
         "outpath": tmp_path / "output",
-        "file_fmt": "wgrib2",
+        "filefmt": "wgrib2",
         "file_templates": ["a.f{{ '%3d' % fcst_hr }}.grib"],
         "lead_times": [0],
         "members": [None],
@@ -452,7 +448,7 @@ def test_try_data_store_hpss(data_locations, tmp_path):
 
 
 @mark.parametrize(
-    ("data_set", "file_fmt", "filenames"),
+    ("data_set", "filefmt", "filenames"),
     [
         ("GDAS", "netcdf", ["gdas.t12z.sfcf003.nc"]),
         (
@@ -462,10 +458,10 @@ def test_try_data_store_hpss(data_locations, tmp_path):
         ),
     ],
 )
-def test_retrieve_data_aws_pull_data_systest(data_set, file_fmt, filenames, tmp_path):
+def test_retrieve_data_aws_pull_data_systest(data_set, filefmt, filenames, tmp_path):
     cycle = "2025-05-05T12"
     args = [
-        "--file-set",
+        "--fileset",
         "anl",
         "--config",
         str(Path(f"{__file__}/../../../parm/data_locations.yml").resolve()),
@@ -480,8 +476,8 @@ def test_retrieve_data_aws_pull_data_systest(data_set, file_fmt, filenames, tmp_
         "--output-path",
         str(tmp_path),
         "--debug",
-        "--file-fmt",
-        file_fmt,
+        "--filefmt",
+        filefmt,
         "--members",
         "1",
         "2",
@@ -505,7 +501,7 @@ def test_retrieve_data_aws_pull_data_systest(data_set, file_fmt, filenames, tmp_
 def test_retrieve_data_hpss_pull_data_systest(data_set, filename, tmp_path):
     cycle = "2025-05-04T00"
     args = [
-        "--file-set",
+        "--fileset",
         "fcst",
         "--config",
         str(Path(f"{__file__}/../../../parm/data_locations.yml").resolve()),
@@ -522,7 +518,7 @@ def test_retrieve_data_hpss_pull_data_systest(data_set, filename, tmp_path):
         "--output-path",
         str(tmp_path),
         "--debug",
-        "--file-fmt",
+        "--filefmt",
         "grib2",
     ]
     retrieve_data.main(args)
