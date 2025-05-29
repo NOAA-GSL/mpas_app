@@ -130,7 +130,12 @@ workflow:
             attrs:
               task: ungrib_lbcs
     task_mpas:
-      command: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; ; python &MPAS_APP;/scripts/mpas.py'
+      command: 
+        cyclestr:
+          value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; && &MPAS_APP;/scripts/mpas.py
+            -c &EXPERIMENT_CONFIG;
+            --cycle @Y-@m-@dT@H:@M:@S
+            --key-path forecast'
       account: "{{ platform.account }}"
       join:
         cyclestr:
@@ -138,11 +143,6 @@ workflow:
       walltime: "{{ forecast.mpas.execution.batchargs.walltime }}"
       cores: !int "{{ forecast.mpas.execution.batchargs.cores }}"
       partition: "{{ forecast.mpas.execution.batchargs.get('partition') }}"
-      envars:
-        CONFIG_PATH: '&EXPERIMENT_CONFIG;'
-        CYCLE:
-          cyclestr:
-            value: "@Y-@m-@dT@H:@M:@S"
       dependency:
         taskdep:
           attrs:
