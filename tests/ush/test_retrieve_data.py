@@ -1,14 +1,11 @@
 import argparse
 import subprocess
-import sys
 from datetime import datetime, timedelta, timezone
-from io import StringIO
 from pathlib import Path
 from unittest.mock import call, patch
 
 from pytest import fixture, mark, raises
 from uwtools.api.config import YAMLConfig, get_yaml_config
-from uwtools.api.template import render
 
 from ush import retrieve_data
 
@@ -387,13 +384,14 @@ def test_try_data_store_disk_success(data_locations, tmp_path):
 
     new_files = []
     for lead_time in lead_times:
-        input_stream = StringIO(str(existing_file_template))
-        sys.stdin = input_stream
-        values = {
-            "cycle": cycle,
-            "fcst_hr": int(lead_time.total_seconds() // 3600),
-        }
-        new_file = Path(render(values_src=values, stdin_ok=True))
+        file_config = get_yaml_config({"file": str(existing_file_template)})
+        file_config.dereference(
+            context={
+                "cycle": cycle,
+                "fcst_hr": int(lead_time.total_seconds() // 3600),
+            }
+        )
+        new_file = Path(file_config["file"])
         new_file.parent.mkdir(parents=True, exist_ok=True)
         new_file.touch()
         new_files.append(new_file)
