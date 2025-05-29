@@ -320,9 +320,7 @@ def test_retrieve_data(data_locations, data_set, tmp_path):
         hpss_calls.update(data_store_args)
         for key in remove_args:
             hpss_calls.pop(key)
-            try_data_store.assert_has_calls(
-                [call(**disk_calls), call(**aws_calls), call(**hpss_calls)]
-            )
+        try_data_store.assert_has_calls([call(**disk_calls), call(**aws_calls), call(**hpss_calls)])
 
 
 def test_retrieve_data_summary_file(data_locations, tmp_path):
