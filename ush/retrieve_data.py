@@ -99,6 +99,42 @@ def _timedelta_from_str(tds: str) -> timedelta:
     _abort("Specify leadtime as hours[:minutes[:seconds]]")
 
 
+def get_file_names(
+    file_name_config: dict[str, Any],
+    file_fmt: str | None,
+    file_set: str,
+) -> Any:
+    files = file_name_config.get(file_set, [])
+    return files.get(file_fmt or "", []) if isinstance(files, dict) else files
+
+
+def main(args):
+    clargs = parse_args(args)
+
+    use_uwtools_logger(verbose=clargs.debug)
+    print("Running script retrieve_data.py with args:", f"\n{('-' * 80)}\n{('-' * 80)}")
+    for name, val in clargs.__dict__.items():
+        if name not in ["config"]:
+            print(f"{name:>15s}: {val}")
+    print(f"{('-' * 80)}\n{('-' * 80)}")
+
+    retrieve_data(
+        config=clargs.config,
+        cycle=clargs.cycle,
+        data_stores=clargs.data_stores,
+        data_type=clargs.data_type,
+        file_set=clargs.file_set,
+        file_fmt=clargs.file_fmt,
+        lead_times=clargs.fcst_hrs,
+        file_templates=clargs.file_templates,
+        inpath=clargs.input_file_path,
+        members=clargs.members,
+        outpath=clargs.output_path,
+        summary_file=clargs.summary_file,
+        symlink=clargs.symlink,
+    )
+
+
 def parse_args(argv):
     """
     Function maintains the arguments accepted by this script. Please see
@@ -241,80 +277,6 @@ def parse_args(argv):
     return args
 
 
-def get_file_names(
-    file_name_config: dict[str, Any],
-    file_fmt: str | None,
-    file_set: str,
-) -> Any:
-    files = file_name_config.get(file_set, [])
-    return files.get(file_fmt or "", []) if isinstance(files, dict) else files
-
-
-def retrieve_data(
-    config: YAMLConfig,
-    cycle: datetime,
-    data_stores: list[str],
-    data_type: str,
-    file_set: str,
-    outpath: Path,
-    file_templates: list[str],
-    lead_times: list[timedelta],
-    members: list[int],
-    file_fmt: str | None = None,
-    inpath: Path | None = None,
-    summary_file: str | Path | None = None,
-    *,
-    symlink: bool = False,
-) -> bool:
-    """
-    Checks for and gathers the requested data.
-    """
-
-    standard_file_names = get_file_names(config[data_type]["file_names"], file_fmt, file_set)
-    config.dereference(context={"cycle": cycle})
-    for store in data_stores:
-        # checks for given data_store
-        if store == "disk":
-            assert inpath is not None
-        else:
-            assert config
-            assert file_set in FILE_SETS
-
-        archive_names = None
-        if store == "hpss":
-            archive_names = config[data_type][store]["archive_file_names"]
-            if isinstance(archive_names, dict):
-                archive_names = get_file_names(archive_names, file_fmt, file_set)
-
-        store_file_names = []
-        if store != "disk" and (fns := config[data_type][store].get("file_names")):
-            store_file_names = get_file_names(fns, file_fmt, file_set)
-
-        success, files_copied = try_data_store(
-            data_store=store,
-            config=config,
-            cycle=cycle,
-            file_templates=file_templates
-            if all(file_templates) and store == "disk"
-            else store_file_names or standard_file_names,
-            lead_times=lead_times,
-            locations=[inpath]
-            if inpath and store == "disk"
-            else config[data_type][store]["locations"],
-            members=members,
-            outpath=outpath,
-            archive_config=config[data_type][store] if store == "hpss" else None,
-            archive_names=archive_names,
-            symlink=symlink,
-        )
-        if success:
-            if summary_file is not None:
-                summary = get_yaml_config(files_copied)
-                summary.dump(Path(summary_file))
-            return success
-    return success
-
-
 def possible_hpss_configs(
     archive_locations: dict[str, str],
     archive_names: list[str],
@@ -399,6 +361,71 @@ def prepare_fs_copy_config(
         yield fs_copy_config
 
 
+def retrieve_data(
+    config: YAMLConfig,
+    cycle: datetime,
+    data_stores: list[str],
+    data_type: str,
+    file_set: str,
+    outpath: Path,
+    file_templates: list[str],
+    lead_times: list[timedelta],
+    members: list[int],
+    file_fmt: str | None = None,
+    inpath: Path | None = None,
+    summary_file: str | Path | None = None,
+    *,
+    symlink: bool = False,
+) -> bool:
+    """
+    Checks for and gathers the requested data.
+    """
+
+    standard_file_names = get_file_names(config[data_type]["file_names"], file_fmt, file_set)
+    config.dereference(context={"cycle": cycle})
+    for store in data_stores:
+        # checks for given data_store
+        if store == "disk":
+            assert inpath is not None
+        else:
+            assert config
+            assert file_set in FILE_SETS
+
+        archive_names = None
+        if store == "hpss":
+            archive_names = config[data_type][store]["archive_file_names"]
+            if isinstance(archive_names, dict):
+                archive_names = get_file_names(archive_names, file_fmt, file_set)
+
+        store_file_names = []
+        if store != "disk" and (fns := config[data_type][store].get("file_names")):
+            store_file_names = get_file_names(fns, file_fmt, file_set)
+
+        success, files_copied = try_data_store(
+            data_store=store,
+            config=config,
+            cycle=cycle,
+            file_templates=file_templates
+            if all(file_templates) and store == "disk"
+            else store_file_names or standard_file_names,
+            lead_times=lead_times,
+            locations=[inpath]
+            if inpath and store == "disk"
+            else config[data_type][store]["locations"],
+            members=members,
+            outpath=outpath,
+            archive_config=config[data_type][store] if store == "hpss" else None,
+            archive_names=archive_names,
+            symlink=symlink,
+        )
+        if success:
+            if summary_file is not None:
+                summary = get_yaml_config(files_copied)
+                summary.dump(Path(summary_file))
+            return success
+    return success
+
+
 def try_data_store(
     config: Config,
     cycle: datetime,
@@ -449,33 +476,6 @@ def try_data_store(
             return True, fs_copy_config
 
     return False, {}
-
-
-def main(args):
-    clargs = parse_args(args)
-
-    use_uwtools_logger(verbose=clargs.debug)
-    print("Running script retrieve_data.py with args:", f"\n{('-' * 80)}\n{('-' * 80)}")
-    for name, val in clargs.__dict__.items():
-        if name not in ["config"]:
-            print(f"{name:>15s}: {val}")
-    print(f"{('-' * 80)}\n{('-' * 80)}")
-
-    retrieve_data(
-        config=clargs.config,
-        cycle=clargs.cycle,
-        data_stores=clargs.data_stores,
-        data_type=clargs.data_type,
-        file_set=clargs.file_set,
-        file_fmt=clargs.file_fmt,
-        lead_times=clargs.fcst_hrs,
-        file_templates=clargs.file_templates,
-        inpath=clargs.input_file_path,
-        members=clargs.members,
-        outpath=clargs.output_path,
-        summary_file=clargs.summary_file,
-        symlink=clargs.symlink,
-    )
 
 
 if __name__ == "__main__":

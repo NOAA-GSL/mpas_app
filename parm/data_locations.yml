@@ -1,3 +1,4 @@
+# Helpers for commonly used data derived from cycle (datetime), lead_time (timedelta), and mem (int; ensemble member)
 bin6: "{% set low_end = (cycle.hour // 6 * 6) %}{{ '{:02d}-{:02d}'.format(low_end, (low_end+5)) }}"
 dd: "{{ cycle.strftime('%d') }}"
 hh: "{{ cycle.strftime('%H') }}"
@@ -12,6 +13,23 @@ yyyymmddhh: "{{ cycle.strftime('%Y%m%d%H') }}"
 fcst_hr: !int "{{ (lead_time.total_seconds() // 3600) | int}}"
 ens_group: !int "{{ (mem - 1) // 10 + 1}}"
 
+# Each block describes a data stream. It contains the standard file names for the stream, and
+# various locations where the data is available.
+# If a location includes a subset of files, or a different naming convention, a file_names entry
+# under that section will override the standard set at the top level of the block. See GDAS aws for
+# an example.
+#
+# The locations entry is a list of potential locations of the files or the archives on HPSS. Each
+# item can be a path or list of paths. When a nested list of paths is used, the file names should
+# have the same number of entries so that the files will be matched with the appropriate paths. See
+# GEFS aws as an example. Otherwise all filenames will be expected to be at the same base location.
+#
+# All location combinations will be tried until one is successful, or all are exhausted. This
+# includes HPSS archive location, internal directory, file name combinations.
+#
+# In general, information is gathered first by file type (source model name), data store (aws, hpss,
+# etc.), file set (analysis or forecast), then file format (grib2, netcdf, etc.). Not all sections
+# will be available for all file types.
 
 GFS:
   file_names: &gfs_file_names

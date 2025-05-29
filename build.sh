@@ -226,6 +226,7 @@ if [ ! -d "${CONDA_BUILD_DIR}" ]; then
   install_miniforge
   install_conda_envs
 fi
+
 # check if COMPILER is set to gcc and reset as gnu
 if [ "${COMPILER}" = "gcc" ]; then
   export COMPILER="gnu"
