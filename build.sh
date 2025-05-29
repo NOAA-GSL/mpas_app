@@ -10,7 +10,7 @@ OPTIONS
       show this help guide
   -p, --platform=PLATFORM
       name of machine you are building on
-      (e.g. hera | jet | hercules)
+      (e.g. hera | jet | hercules | ursa)
   -c, --compiler=COMPILER
       compiler to use; default depends on platform
       (e.g. intel | gnu | gcc)

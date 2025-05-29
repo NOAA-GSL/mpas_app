@@ -24,7 +24,7 @@ if [ "$L_MACHINE" != wcoss2 ]; then
   $has_me && set -e
 fi
 
-if [ "$L_MACHINE" = hera ] || [ "$L_MACHINE" = jet ] || [ "$L_MACHINE" = hercules ]; then
+if [[ "hera jet hercules ursa" =~ "$L_MACHINE" ]] ; then
    module purge
 else
    echo "ERROR: Unsupported platform ${L_MACHINE}"

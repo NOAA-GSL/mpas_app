@@ -1,28 +1,50 @@
+user:
+  mesh_label: x5.8060930
+  workflow_blocks:
+    - cold_start.yaml
 
+workflow:
+  tasks:
+    task_get_lbcs_data: !remove
+    task_ungrib_lbcs: !remove
+    task_mpas_lbcs: !remove
+    task_mpas:
+      dependency:
+        taskdep:
+          attrs:
+            task: mpas_ics
 
 create_ics:
   mpas_init: &mpas_init
     files_to_copy:
-      QNWFA_QNIFA_SIGMA_MONTHLY.dat: "{{ platform.hrrr_fix }}/QNWFA_QNIFA_SIGMA_MONTHLY.dat"
+      QNWFA_QNIFA_SIGMA_MONTHLY.dat: "{{ platform.hrrr_fix }}/../QNWFA_QNIFA_SIGMA_MONTHLY.dat"
+      stream_list.atmosphere.diag_ugwp: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.diag_ugwp"
+    files_to_link:
+      "{{ user.mesh_label }}.ugwp_oro_data.nc": "{{ platform.hrrr_fix }}/{{ user.mesh_label }}.ugwp_oro_data.nc" 
     namelist:
       update_values:
+        data_sources:
+          config_use_spechumd: true
         dimensions:
           config_nvertlevels: 79
-        data_sources:
-          config_met_prefix: "{{ user.ics.external_model }}"
+          config_nsoillevels: 4
+          config_nvegopt: 1
         vertical_grid:
           config_ztop: 38000.
           config_specified_zeta_levels: "{{ user.mpas_app }}/parm/mpas//L80_hfip.txt"
+          config_blend_bdy_terrain: false
         preproc_stages:
           config_aerosol_climo: true
-
-create_lbcs:
-  mpas_init: *mpas_init
 
 forecast:
   mpas:
     domain: global
     length: 120
+    files_to_copy:
+      stream_list.atmosphere.diag_ugwp: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.diag_ugwp"
+    files_to_link:
+      CCN_ACTIVATE.BIN: !remove
+      "{{ user.mesh_label }}.ugwp_oro_data.nc": "{{ platform.hrrr_fix }}/{{ user.mesh_label }}.ugwp_oro_data.nc" 
     namelist:
       update_values:
         nhyd_model:
@@ -37,7 +59,9 @@ forecast:
           config_rayleigh_damp_u_timescale_days: 2.5
         io:
           config_pio_num_iotasks: 64
-          config_pio_stride: 192
+          config_pio_stride: 125
+        limited_area:
+          config_apply_lbcs: false
         physics:
           config_frac_seaice: true
           config_radtlw_interval: 00:15:00
@@ -48,4 +72,17 @@ forecast:
           config_lsm_scheme: sf_noahmp
           num_soil_layers: 4
           config_gf_sub3d: 1
+        physics_lsm_noahmp:
+          config_noahmp_iopt_crs: 2
+          config_noahmp_iopt_stc: 3
+    streams:
+      ugwp_oro_data_in:
+        filename_template: "{{ user.mesh_label }}.ugwp_oro_data.nc"
+        input_interval: initial_only
+        type: input
+        mutable: false
+        io_type: "pnetcdf,cdf5"
+        packages: ugwp_orog_stream
+
+
 
