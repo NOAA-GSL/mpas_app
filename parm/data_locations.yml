@@ -15,7 +15,7 @@ ens_group: !int "{{ (mem - 1) // 10 + 1}}"
 
 # Each block describes a data stream. It contains the standard file names for the stream, and
 # various locations where the data is available.
-# If a location includes a subset of files, or a different naming convention, a file_names entry
+# If a location includes a subset of files, or a different naming convention, a filenames entry
 # under that section will override the standard set at the top level of the block. See GDAS aws for
 # an example.
 #
@@ -32,7 +32,7 @@ ens_group: !int "{{ (mem - 1) // 10 + 1}}"
 # will be available for all file types.
 
 GFS:
-  file_names: &gfs_file_names
+  filenames: &gfs_filenames
     anl:
       grib2:
         - gfs.t{{hh}}z.pgrb2.0p25.f000
@@ -60,7 +60,7 @@ GFS:
     archive_internal_dirs:
       - ./gfs.{{yyyymmdd}}/{{hh}}
       - ./gfs.{{yyyymmdd}}/{{hh}}/atmos
-    archive_file_names:
+    archive_filenames:
       anl:
         grib2:
           - gpfs_dell1_nco_ops_com_gfs_prod_gfs.{{yyyymmdd}}_{{hh}}.gfs_pgrb2.tar
@@ -95,8 +95,8 @@ GFS:
       - https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.{{yyyymmdd}}/{{hh}}/atmos
 
 GDAS:
-  file_names:
-     anl: &gdas_file_names
+  filenames:
+     anl: &gdas_filenames
        nemsio:
          - gdas.t{{ hh }}z.atmf{{ "%03d" % fcst_hr }}.nemsio
          - gdas.t{{ hh }}z.sfcf{{ "%03d" % fcst_hr }}.nemsio
@@ -104,7 +104,7 @@ GDAS:
          - gdas.t{{ hh }}z.atmf{{ "%03d" % fcst_hr }}.nc
          - gdas.t{{ hh }}z.sfcf{{ "%03d" % fcst_hr }}.nc
      fcst:
-       <<: *gdas_file_names
+       <<: *gdas_filenames
   hpss:
     protocol: htar
     locations:
@@ -112,7 +112,7 @@ GDAS:
     archive_internal_dir:
       - ./enkfgdas.{{ yyyymmdd }}/{{ hh }}/atmos/mem{{ "%03d" % mem }}
       - ./enkfgdas.{{ yyyymmdd }}/{{ hh }}/mem{{ "%03d" % mem }}
-    archive_file_names:
+    archive_filenames:
       anl:
         nemsio: &gdas_tar_files
           - com_gfs_prod_enkfgdas.{{yyyymmdd}}_{{hh}}.enkfgdas_grp{{ ens_group }}.tar
@@ -124,20 +124,20 @@ GDAS:
   nomads:
     locations:
       - https://nomads.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/enkfgdas.{{ yyyymmdd }}/{{ hh }}/atmos/mem{{ "%03d" % mem }}
-    file_names:
+    filenames:
       fcst:
         netcdf:
           - gdas.t{{hh}}z.sfcf{{ "%03d" % fcst_hr }}.nc
   aws:
     locations:
       - https://noaa-gfs-bdp-pds.s3.amazonaws.com/enkfgdas.{{ yyyymmdd }}/{{hh}}/atmos/mem{{ "%03d" % mem }}
-    file_names:
+    filenames:
       fcst:
         netcdf:
           - gdas.t{{hh}}z.sfcf{{ "%03d" % fcst_hr }}.nc
 
 GEFS:
-  file_names:
+  filenames:
     anl:
       grib2:
         - gep{{ "%02d" % mem }}.t{{hh}}z.pgrb2a.0p50.f{{ "%03d" % fcst_hr }}
@@ -152,7 +152,7 @@ GEFS:
         - https://noaa-gefs-pds.s3.amazonaws.com/gefs.{{yyyymmdd}}/{{hh}}
 
 RAP:
-  file_names: &rap_file_names
+  filenames: &rap_filenames
     anl:
       - rap.t{{hh}}z.wrfnatf{{ "%02d" % fcst_hr }}.grib2
     fcst:
@@ -163,7 +163,7 @@ RAP:
       - /NCEPPROD/hpssprod/runhistory/rh{{yyyy}}/{{yyyymm}}/{{yyyymmdd}}
     archive_internal_dirs:
       - ./
-    archive_file_names:
+    archive_filenames:
       # RAP forecasts are binned into 6 hour tar files.
       - gpfs_hps_nco_ops_com_rap_prod_rap.{{yyyymmdd}}{{bin6}}.wrf.tar
       - com_rap_prod_rap.{{yyyymmdd}}{{bin6}}.wrf.tar
@@ -173,7 +173,7 @@ RAP:
       - https://noaa-rap-pds.s3.amazonaws.com/rap.{{yyyymmdd}}
 
 HRRR:
-  file_names: &hrrr_file_names
+  filenames: &hrrr_filenames
     anl:
       - hrrr.t{{hh}}z.wrfprsf{{ "%02d" % fcst_hr }}.grib2
     fcst:
@@ -184,7 +184,7 @@ HRRR:
       - /NCEPPROD/hpssprod/runhistory/rh{{yyyy}}/{{yyyymm}}/{{yyyymmdd}}
     archive_internal_dirs:
       - ./
-    archive_file_names:
+    archive_filenames:
       # HRRR forecasts are binned into 6 hour tar files.
       - gpfs_hps_nco_ops_com_hrrr_prod_hrrr.{{yyyymmdd}}_conus{{bin6}}.wrf.tar
       - com_hrrr_prod_hrrr.{{yyyymmdd}}_conus{{bin6}}.wrf.tar
@@ -200,10 +200,10 @@ NAM:
       - /NCEPPROD/hpssprod/runhistory/rh{{yyyy}}/{{yyyymm}}/{{yyyymmdd}}
     archive_internal_dirs:
       - ./
-    archive_file_names:
+    archive_filenames:
       - com_nam_prod_nam.{{yyyymmddhh}}.awphys.tar
       - com_nam_prod_nam.{{yyyymmddhh}}.awphys{{ "%02d" % fcst_hr }}.tar
-    file_names:
+    filenames:
       anl:
         - nam.t{{hh}}z.awphys{{ "%02d" % fcst_hr }}.tm00.grib2
       fcst:
@@ -225,17 +225,17 @@ CCPA_obs:
       - "./06"
       - "./12"
       - "./18"
-    archive_file_names:
+    archive_filenames:
       - com2_ccpa_prod_ccpa.{{yyyymmdd}}.tar
       - gpfs_dell1_nco_ops_com_ccpa_prod_ccpa.{{yyyymmdd}}.tar
       - com_ccpa_prod_ccpa.{{yyyymmdd}}.tar
       - com_ccpa_v4.2_ccpa.{{yyyymmdd}}.tar
-    file_names:
+    filenames:
       obs:
         - "ccpa.t{{hh}}z.01h.hrap.conus.gb2"
 
 MRMS_obs:
-  file_names:
+  filenames:
     obs:
       - "MergedReflectivityQCComposite_00.50_{{yyyymmdd}}-*.grib2.gz"
       - "EchoTop_18_00.50_{{yyyymmdd}}-*.grib2.gz"
@@ -248,7 +248,7 @@ MRMS_obs:
       - /dcom/us007003/ldmdata/obs/upperair/mrms/conus/EchoTop
       - ./upperair/mrms/conus/MergedReflectivityQCComposite
       - ./upperair/mrms/conus/EchoTop
-    archive_file_names:
+    archive_filenames:
       - dcom_ldmdata_obs.tar
       - dcom_prod_ldmdata_obs.tar
       - ldmdata.tide.{{yyyymmdd}}.tar
@@ -261,12 +261,12 @@ NDAS_obs:
       - /NCEPPROD/hpssprod/runhistory/rh{{yyyy}}/{{yyyymm}}/{{yyyymmdd}}
     archive_internal_dirs:
       - ./
-    archive_file_names:
+    archive_filenames:
       - com2_nam_prod_nam.{{yyyymmddhh}}.bufr.tar
       - gpfs_dell1_nco_ops_com_nam_prod_nam.{{yyyymmddhh}}.bufr.tar
       - com_nam_prod_nam.{{yyyymmddhh}}.bufr.tar
       - com_obsproc_v1.1_nam.{{yyyymmddhh}}.bufr.tar
-    file_names:
+    filenames:
       obs:
         - nam.t{{hh}}z.prepbufr.tm*.nr
 
@@ -277,10 +277,10 @@ NOHRSC_obs:
       - /NCEPPROD/hpssprod/runhistory/rh{{yyyy}}/{{yyyymm}}/{{yyyymmdd}}
     archive_internal_dirs:
       - ./wgrbbul/nohrsc_snowfall/
-    archive_file_names:
+    archive_filenames:
       - dcom_prod_{{yyyymmdd}}.tar
       - dcom_{{yyyymmdd}}.tar
-    file_names:
+    filenames:
       obs:
         - !glob "sfav2_CONUS_*h_{{yyyymmddhh}}_grid184.grb2"
 

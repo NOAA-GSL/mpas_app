@@ -17,8 +17,8 @@ own file with alternative locations and naming conventions.
 
 When using this script to pull from disk, the user is required to
 provide the path to the data location, which can include Python
-templates. The file names follow those included in the --config file by
-default, or can be user-supplied via the --file_name flag. That flag
+templates. The filenames follow those included in the --config file by
+default, or can be user-supplied via the --filename flag. That flag
 takes a YAML-formatted string that follows the same conventions outlined
 in the parm/data_locations.yml file for naming files.
 
@@ -99,12 +99,12 @@ def _timedelta_from_str(tds: str) -> timedelta:
     _abort("Specify leadtime as hours[:minutes[:seconds]]")
 
 
-def get_file_names(
-    file_name_config: dict[str, Any],
+def get_filenames(
+    filename_config: dict[str, Any],
     file_fmt: str | None,
     file_set: str,
 ) -> Any:
-    files = file_name_config.get(file_set, [])
+    files = filename_config.get(file_set, [])
     return files.get(file_fmt or "", []) if isinstance(files, dict) else files
 
 
@@ -225,8 +225,8 @@ def parse_args(argv):
     parser.add_argument(
         "--input-file-path",
         help="A path to data stored on disk. The path may contain \
-        Python templates. File names may be supplied using the \
-        --file_templates flag, or the default naming convention will be \
+        Python templates. Filenames may be supplied using the \
+        --file-templates flag, or the default naming convention will be \
         taken from the --config file.",
         type=Path,
     )
@@ -381,7 +381,7 @@ def retrieve_data(
     Checks for and gathers the requested data.
     """
 
-    standard_file_names = get_file_names(config[data_type]["file_names"], file_fmt, file_set)
+    standard_filenames = get_filenames(config[data_type]["filenames"], file_fmt, file_set)
     config.dereference(context={"cycle": cycle})
     for store in data_stores:
         # checks for given data_store
@@ -393,13 +393,13 @@ def retrieve_data(
 
         archive_names = None
         if store == "hpss":
-            archive_names = config[data_type][store]["archive_file_names"]
+            archive_names = config[data_type][store]["archive_filenames"]
             if isinstance(archive_names, dict):
-                archive_names = get_file_names(archive_names, file_fmt, file_set)
+                archive_names = get_filenames(archive_names, file_fmt, file_set)
 
-        store_file_names = []
-        if store != "disk" and (fns := config[data_type][store].get("file_names")):
-            store_file_names = get_file_names(fns, file_fmt, file_set)
+        store_filenames = []
+        if store != "disk" and (fns := config[data_type][store].get("filenames")):
+            store_filenames = get_filenames(fns, file_fmt, file_set)
 
         success, files_copied = try_data_store(
             data_store=store,
@@ -407,7 +407,7 @@ def retrieve_data(
             cycle=cycle,
             file_templates=file_templates
             if all(file_templates) and store == "disk"
-            else store_file_names or standard_file_names,
+            else store_filenames or standard_filenames,
             lead_times=lead_times,
             locations=[inpath]
             if inpath and store == "disk"

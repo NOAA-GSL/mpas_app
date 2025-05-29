@@ -55,15 +55,15 @@ def test__timedelta_from_str(capsys):
     assert "Specify leadtime as hours[:minutes[:seconds]]" in capsys.readouterr().err
 
 
-def test_get_file_names_file_fmt():
+def test_get_filenames_file_fmt():
     files = {"anl": {"grib2": ["file1.txt", "file2.txt"]}}
-    result = retrieve_data.get_file_names(file_name_config=files, file_fmt="grib2", file_set="anl")
+    result = retrieve_data.get_filenames(filename_config=files, file_fmt="grib2", file_set="anl")
     assert result == files["anl"]["grib2"]
 
 
-def test_get_file_names_no_file_fmt():
+def test_get_filenames_no_file_fmt():
     files = {"anl": ["file1.txt", "file2.txt"]}
-    result = retrieve_data.get_file_names(file_name_config=files, file_fmt="foo", file_set="anl")
+    result = retrieve_data.get_filenames(filename_config=files, file_fmt="foo", file_set="anl")
     assert result == files["anl"]
 
 
@@ -201,10 +201,10 @@ def test_possible_hpss_configs(data_locations):
     gfs_hpss = data_locations["GFS"]["hpss"]
     config = retrieve_data.possible_hpss_configs(
         archive_locations=gfs_hpss,
-        archive_names=gfs_hpss["archive_file_names"]["anl"]["grib2"],
+        archive_names=gfs_hpss["archive_filenames"]["anl"]["grib2"],
         config=data_locations,
         cycle=cycle,
-        file_templates=data_locations["GFS"]["file_names"]["anl"]["grib2"],
+        file_templates=data_locations["GFS"]["filenames"]["anl"]["grib2"],
         lead_times=lead_times,
         members=[-999],
     )
@@ -226,7 +226,7 @@ def test_prepare_fs_copy_config_gefs_grib2_aws(data_locations):
     configs = retrieve_data.prepare_fs_copy_config(
         config=data_locations,
         cycle=cycle,
-        file_templates=data_locations["GEFS"]["file_names"]["anl"]["grib2"],
+        file_templates=data_locations["GEFS"]["filenames"]["anl"]["grib2"],
         lead_times=lead_times,
         locations=data_locations["GEFS"]["aws"]["locations"],
         members=members,
@@ -246,7 +246,7 @@ def test_prepare_fs_copy_config_gfs_grib2_aws(data_locations):
     configs = retrieve_data.prepare_fs_copy_config(
         config=data_locations,
         cycle=cycle,
-        file_templates=data_locations["GFS"]["file_names"]["fcst"]["netcdf"],
+        file_templates=data_locations["GFS"]["filenames"]["fcst"]["netcdf"],
         lead_times=lead_times,
         locations=data_locations["GFS"]["aws"]["locations"],
         members=[-999],
@@ -291,9 +291,9 @@ def test_retrieve_data(data_locations, data_set, tmp_path):
         aws_calls = args.copy()
         data_store_args = {
             "data_store": "aws",
-            "file_templates": retrieve_data.get_file_names(
-                data_locations[data_set].get("aws", {}).get("file_names")
-                or data_locations[data_set]["file_names"],
+            "file_templates": retrieve_data.get_filenames(
+                data_locations[data_set].get("aws", {}).get("filenames")
+                or data_locations[data_set]["filenames"],
                 args["file_fmt"],
                 "fcst",
             ),
@@ -306,13 +306,13 @@ def test_retrieve_data(data_locations, data_set, tmp_path):
             aws_calls.pop(key)
 
         hpss_calls = args.copy()
-        archive_names = data_locations[data_set]["hpss"]["archive_file_names"]
+        archive_names = data_locations[data_set]["hpss"]["archive_filenames"]
         if isinstance(archive_names, dict):
-            archive_names = data_locations[data_set]["hpss"]["archive_file_names"]["fcst"]["netcdf"]
+            archive_names = data_locations[data_set]["hpss"]["archive_filenames"]["fcst"]["netcdf"]
         data_store_args = {
             "data_store": "hpss",
-            "file_templates": retrieve_data.get_file_names(
-                data_locations[data_set]["file_names"], args["file_fmt"], "fcst"
+            "file_templates": retrieve_data.get_filenames(
+                data_locations[data_set]["filenames"], args["file_fmt"], "fcst"
             ),
             "locations": data_locations[data_set]["hpss"]["locations"],
             "archive_config": data_locations[data_set]["hpss"],
@@ -427,19 +427,19 @@ def test_try_data_store_hpss(data_locations, tmp_path):
             config=get_yaml_config({"GFS": gfs_config}),
             cycle=cycle,
             data_store="hpss",
-            file_templates=retrieve_data.get_file_names(gfs_config["file_names"], "grib2", "anl"),
+            file_templates=retrieve_data.get_filenames(gfs_config["filenames"], "grib2", "anl"),
             lead_times=[timedelta(hours=0)],
             locations=gfs_config["hpss"]["locations"],
             members=[-999],
             outpath=tmp_path / "output",
             archive_config=gfs_config["hpss"],
-            archive_names=retrieve_data.get_file_names(
-                gfs_config["hpss"]["archive_file_names"], "grib2", "anl"
+            archive_names=retrieve_data.get_filenames(
+                gfs_config["hpss"]["archive_filenames"], "grib2", "anl"
             ),
         )
     possible_hpss_configs.assert_called_once_with(
         archive_locations=gfs_config["hpss"],
-        archive_names=gfs_config["hpss"]["archive_file_names"]["anl"]["grib2"],
+        archive_names=gfs_config["hpss"]["archive_filenames"]["anl"]["grib2"],
         config={"GFS": gfs_config},
         cycle=cycle,
         file_templates=["gfs.t{{hh}}z.pgrb2.0p25.f000"],
