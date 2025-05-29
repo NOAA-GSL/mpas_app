@@ -24,7 +24,7 @@ ens_group: !int "{{ (mem - 1) // 10 + 1}}"
 # have the same number of entries so that the files will be matched with the appropriate paths. See
 # GEFS aws as an example. Otherwise all filenames will be expected to be at the same base location.
 #
-# All location combinations will be tried until one is successful, or all are exhausted. This
+# All location combinations will be tried in the order listed until one is successful, or all are exhausted. This
 # includes HPSS archive location, internal directory, file name combinations.
 #
 # In general, information is gathered first by file type (source model name), data store (aws, hpss,

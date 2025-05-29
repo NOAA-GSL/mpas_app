@@ -208,8 +208,8 @@ def test_possible_hpss_configs(data_locations):
             count += 1
         return count
 
-    assert config.__next__() == expected1
-    assert config.__next__() == expected2
+    assert next(config) == expected1
+    assert next(config) == expected2
     assert _count_iterator(config) == 6  # already used first 2 of 8
 
 
