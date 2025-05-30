@@ -45,6 +45,7 @@ forecast:
     files_to_link:
       CCN_ACTIVATE.BIN: !remove
       "{{ user.mesh_label }}.ugwp_oro_data.nc": "{{ platform.hrrr_fix }}/{{ user.mesh_label }}.ugwp_oro_data.nc" 
+      "NoahmpTable.TBL": "{{ user.mpas_app }}/src/MPAS-Model/NoahmpTable.TBL"
     namelist:
       update_values:
         nhyd_model:
@@ -83,6 +84,18 @@ forecast:
         mutable: false
         io_type: "pnetcdf,cdf5"
         packages: ugwp_orog_stream
+      diag_ugwp:
+        type: output
+        mutable: true
+        filename_template: "{{ user.mesh_label }}.diag_ugwp.$Y-$M-$D_$h.$m.$s.nc"
+        io_type: "pnetcdf,cdf5"
+        clobber_node: replace_files
+        packages: ugwp_diags_stream
+        output_interval: 00:06:00
+        files:
+          - stream_list.atmosphere.diag_ugwp
+      surface: !remove
+      lbc_in: !remove
 
 
 
