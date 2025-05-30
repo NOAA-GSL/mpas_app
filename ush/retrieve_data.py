@@ -393,20 +393,25 @@ def retrieve_data(
         if store != "disk" and (fns := config[data_type][store].get("filenames")):
             store_filenames = get_filenames(fns, filefmt, fileset)
 
+        file_templates = (
+            file_templates
+            if all(file_templates) and store == "disk"
+            else store_filenames or standard_filenames
+        )
+        locations: list[list | Path | str] = (
+            [inpath] if inpath and store == "disk" else config[data_type][store]["locations"]
+        )
+        archive_config = config[data_type][store] if store == "hpss" else None
         success, files_copied = try_data_store(
             data_store=store,
             config=config,
             cycle=cycle,
-            file_templates=file_templates
-            if all(file_templates) and store == "disk"
-            else store_filenames or standard_filenames,
+            file_templates=file_templates,
             lead_times=lead_times,
-            locations=[inpath]
-            if inpath and store == "disk"
-            else config[data_type][store]["locations"],
+            locations=locations,
             members=members,
             outpath=outpath,
-            archive_config=config[data_type][store] if store == "hpss" else None,
+            archive_config=archive_config,
             archive_names=archive_names,
             symlink=symlink,
         )
