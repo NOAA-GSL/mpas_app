@@ -412,8 +412,8 @@ def retrieve_data(
             if summary_file is not None:
                 summary = get_yaml_config(files_copied)
                 summary.dump(Path(summary_file))
-            return success
-    return success
+            return True
+    return False
 
 
 def try_data_store(
@@ -435,7 +435,7 @@ def try_data_store(
     data. Iterate through each potential option until the data set is retrieved.
     """
 
-    # form a UW YAML to try a copy
+    # Form a UW YAML to try a copy.
     fs_copy_configs: Generator[dict[str, str], None, None]
     if data_store == "hpss":
         assert archive_config is not None
