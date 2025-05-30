@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
 
-
-# Ignore PLR0913 Too many arguments in function definition
-# ruff: noqa: PLR0913
-
 """
 This script helps users pull data from known data streams, including
 URLS and HPSS (only on supported NOAA platforms), or from user-supplied
@@ -38,6 +34,7 @@ import subprocess
 import sys
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
+from itertools import product
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, NoReturn
 
@@ -77,7 +74,7 @@ def _arg_list_to_range(args: list[int | str] | str) -> list:
     Must ensure that the list contains integers.
     """
 
-    arg_list = args.split(" ") if isinstance(args, str) else args
+    arg_list = args.split() if isinstance(args, str) else args
     arg_vals = [int(i) for i in arg_list]
     arg_len = len(arg_vals)
     if arg_len in (2, 3):
@@ -113,7 +110,7 @@ def main(args):
 
     use_uwtools_logger(verbose=clargs.debug)
     print("Running script retrieve_data.py with args:", f"\n{('-' * 80)}\n{('-' * 80)}")
-    for name, val in clargs.__dict__.items():
+    for name, val in vars(clargs).items():
         if name not in ["config"]:
             print(f"{name:>15s}: {val}")
     print(f"{('-' * 80)}\n{('-' * 80)}")
@@ -285,37 +282,31 @@ def possible_hpss_configs(
     file_templates: list[str],
     lead_times: list[timedelta],
     members: list[int],
-):
-    for archive_loc in archive_locations["locations"]:
-        for internal_dir in archive_locations["archive_internal_dirs"]:
-            for archive_name in archive_names:
-                location = f"htar://{archive_loc}/{archive_name}?{internal_dir}"
-                fs_copy_config: dict[str, str] = {}
-                for member in members:
-                    for lead_time in lead_times:
-                        for file_template in file_templates:
-                            # Don't path join the next line because location won't be a path on disk
-                            local_name = (
-                                f"mem{member:03d}/{file_template}"
-                                if member != -999
-                                else file_template
-                            )
-                            file_item = get_yaml_config({local_name: f"{location}/{file_template}"})
-                            context = {
-                                "cycle": cycle,
-                                "lead_time": lead_time,
-                                "mem": member,
-                            }
-                            file_item.dereference(
-                                context={
-                                    **context,
-                                    **deepcopy(config).dereference(
-                                        context=context,
-                                    ),
-                                }
-                            )
-                            fs_copy_config.update(file_item)
-                yield fs_copy_config
+) -> Generator[dict[str, str]]:
+    for archive_loc, internal_dir, archive_name in product(
+        archive_locations["locations"], archive_locations["archive_internal_dirs"], archive_names
+    ):
+        location = f"htar://{archive_loc}/{archive_name}?{internal_dir}"
+        fs_copy_config: dict[str, str] = {}
+        for member, lead_time, file_template in product(members, lead_times, file_templates):
+            # Don't path join the next line because location won't be a path on disk
+            local_name = f"mem{member:03d}/{file_template}" if member != -999 else file_template
+            file_item = get_yaml_config({local_name: f"{location}/{file_template}"})
+            context = {
+                "cycle": cycle,
+                "lead_time": lead_time,
+                "mem": member,
+            }
+            file_item.dereference(
+                context={
+                    **context,
+                    **deepcopy(config).dereference(
+                        context=context,
+                    ),
+                }
+            )
+            fs_copy_config.update(file_item)
+        yield fs_copy_config
 
 
 def prepare_fs_copy_config(
@@ -328,36 +319,35 @@ def prepare_fs_copy_config(
 ) -> Generator[dict[str, str]]:
     fs_copy_config: dict[str, str] = {}
     for location in locations:
-        for member in members:
-            for lead_time in lead_times:
-                # Don't path join because location can be a url
-                mem_prefix = f"mem{member:03d}/" if member != -999 else ""
-                if isinstance(location, list):
-                    if isinstance(file_templates, list) and len(file_templates) == len(location):
-                        file_item = get_yaml_config(
-                            {
-                                f"{mem_prefix}{fn}": f"{loc}/{fn}"
-                                for loc, fn in zip(location, file_templates)
-                            }
-                        )
-                else:
+        for member, lead_time in product(members, lead_times):
+            # Don't path join because location can be a url
+            mem_prefix = f"mem{member:03d}/" if member != -999 else ""
+            if isinstance(location, list):
+                if isinstance(file_templates, list) and len(file_templates) == len(location):
                     file_item = get_yaml_config(
-                        {f"{mem_prefix}{fn}": f"{location}/{fn}" for fn in file_templates}
+                        {
+                            f"{mem_prefix}{fn}": f"{loc}/{fn}"
+                            for loc, fn in zip(location, file_templates)
+                        }
                     )
-                context = {
-                    "cycle": cycle,
-                    "lead_time": lead_time,
-                    "mem": member,
-                }
-                file_item.dereference(
-                    context={
-                        **context,
-                        **deepcopy(config).dereference(
-                            context=context,
-                        ),
-                    }
+            else:
+                file_item = get_yaml_config(
+                    {f"{mem_prefix}{fn}": f"{location}/{fn}" for fn in file_templates}
                 )
-                fs_copy_config.update(file_item)
+            context = {
+                "cycle": cycle,
+                "lead_time": lead_time,
+                "mem": member,
+            }
+            file_item.dereference(
+                context={
+                    **context,
+                    **deepcopy(config).dereference(
+                        context=context,
+                    ),
+                }
+            )
+            fs_copy_config.update(file_item)
         yield fs_copy_config
 
 

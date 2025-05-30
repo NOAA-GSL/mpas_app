@@ -46,3 +46,6 @@ ignore = [
   "PT013",   # pytest-incorrect-pytest-import
   "SLF001",  # private-member-access
 ]
+"ush/retrieve_data.py" = [
+  "PLR0913", # too-many-arguments
+]

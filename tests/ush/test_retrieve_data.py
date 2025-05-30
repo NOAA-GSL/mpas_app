@@ -56,7 +56,15 @@ def test__abort(capsys):
 
 
 @mark.parametrize(
-    ("inargs", "expected"), [([0], [0]), ([2, 5], [2, 3, 4, 5]), ([0, 12, 6], [0, 6, 12])]
+    ("inargs", "expected"),
+    [
+        ([0], [0]),
+        ([2, 5], [2, 3, 4, 5]),
+        ([3, 4, 5, 6], [3, 4, 5, 6]),
+        ([0, 12, 6], [0, 6, 12]),
+        ("0 12 6", [0, 6, 12]),
+        ("12    13 14  22", [12, 13, 14, 22]),
+    ],
 )
 def test__arg_list_to_range_list(expected, inargs):
     result = retrieve_data._arg_list_to_range(inargs)
