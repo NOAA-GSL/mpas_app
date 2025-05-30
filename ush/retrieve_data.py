@@ -97,12 +97,13 @@ def _timedelta_from_str(tds: str) -> timedelta:
 
 
 def get_filenames(
-    filename_config: dict[str, Any],
+    filename_config: dict[str, list[str] | dict[str, list[str]]],
     filefmt: str | None,
     fileset: str,
-) -> Any:
-    files = filename_config.get(fileset, [])
-    return files.get(filefmt or "", []) if isinstance(files, dict) else files
+) -> list[str]:
+    val = filename_config.get(fileset)
+    filenames = val.get(filefmt) if isinstance(val, dict) else val
+    return cast(list[str], filenames)
 
 
 def main(args):
