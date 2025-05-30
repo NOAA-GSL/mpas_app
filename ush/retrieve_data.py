@@ -43,7 +43,7 @@ from uwtools.api.config import Config, YAMLConfig, get_yaml_config
 from uwtools.api.logging import use_uwtools_logger
 
 if TYPE_CHECKING:
-    from collections.abc import Generator
+    from collections.abc import Iterator
 
 FILE_SETS = ("anl", "fcst", "obs", "fix")
 
@@ -284,7 +284,7 @@ def possible_hpss_configs(
     file_templates: list[str],
     lead_times: list[timedelta],
     members: list[int],
-) -> Generator[dict[str, str]]:
+) -> Iterator[dict[str, str]]:
     for archive_loc, internal_dir, archive_name in product(
         archive_locations["locations"], archive_locations["archive_internal_dirs"], archive_names
     ):
@@ -318,7 +318,7 @@ def prepare_fs_copy_config(
     lead_times: list[timedelta],
     locations: list[list | Path | str],
     members: list[int],
-) -> Generator[dict[str, str]]:
+) -> Iterator[dict[str, str]]:
     fs_copy_config: dict[str, str] = {}
     for location in locations:
         for member, lead_time in product(members, lead_times):
@@ -443,7 +443,7 @@ def try_data_store(
     """
 
     # Form a UW YAML to try a copy.
-    fs_copy_configs: Generator[dict[str, str], None, None]
+    fs_copy_configs: Iterator[dict[str, str]]
     if data_store == "hpss":
         assert archive_config is not None
         assert archive_names is not None
