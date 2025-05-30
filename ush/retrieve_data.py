@@ -36,7 +36,7 @@ from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 from itertools import product
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, NoReturn
+from typing import TYPE_CHECKING, NoReturn, cast
 
 from uwtools.api import fs
 from uwtools.api.config import Config, YAMLConfig, get_yaml_config
@@ -97,13 +97,13 @@ def _timedelta_from_str(tds: str) -> timedelta:
 
 
 def get_filenames(
-    filename_config: dict[str, list[str] | dict[str, list[str]]],
-    filefmt: str | None,
+    filename_config: dict[str, list[str]] | dict[str, dict[str, list[str]]],
+    filefmt: str,
     fileset: str,
 ) -> list[str]:
     val = filename_config.get(fileset)
     filenames = val.get(filefmt) if isinstance(val, dict) else val
-    return cast(list[str], filenames)
+    return cast("list[str]", filenames)
 
 
 def main(args):
@@ -218,6 +218,7 @@ def parse_args(argv):
     parser.add_argument(
         "--filefmt",
         choices=("grib2", "nemsio", "netcdf", "prepbufr", "tcvitals"),
+        default="",
         help="External model file format",
     )
     parser.add_argument(
@@ -362,7 +363,7 @@ def retrieve_data(
     file_templates: list[str],
     lead_times: list[timedelta],
     members: list[int],
-    filefmt: str | None = None,
+    filefmt: str = "",
     inpath: Path | None = None,
     summary_file: str | Path | None = None,
     *,

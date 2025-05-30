@@ -176,6 +176,17 @@ def test_parse_args_hsi_not_available(sysargs):
         retrieve_data.parse_args(sysargs)
 
 
+def test_parse_args_no_filefmt(sysargs):
+    for arg in ("--filefmt", "grib2"):
+        sysargs.remove(arg)
+    with patch(
+        "ush.retrieve_data.subprocess.run",
+        side_effect=[subprocess.CompletedProcess(args="/usr/bin/which hsi", returncode=0)],
+    ):
+        args = retrieve_data.parse_args(sysargs)
+    assert isinstance(args.filefmt, str)
+
+
 def test_parse_args_no_input_path_for_disk(sysargs, tmp_path):
     sysargs.remove("--input-file-path")
     sysargs.remove(str(tmp_path / "input"))
