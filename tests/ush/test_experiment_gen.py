@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timezone
 from pathlib import Path
 from subprocess import CalledProcessError
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from pytest import fixture, raises
 from uwtools.api.config import YAMLConfig, get_yaml_config
@@ -79,11 +79,13 @@ def test_create_grid_files_failure(tmp_path, caplog):
         assert "Failed with status: 1" in caplog.text
 
 
-def test_generate_workflow_files(tmp_path, validated_config):
+def test_generate_workflow_files(tmp_path, test_config, validated_config):
     experiment_file = tmp_path / "experiment.yaml"
     mpas_app = tmp_path / "mpas_app"
     with (
-        patch("ush.experiment_gen.get_yaml_config", return_value=MagicMock()) as get_yaml_config,
+        patch(
+            "ush.experiment_gen.get_yaml_config", return_value=YAMLConfig(test_config)
+        ) as get_yaml_config,
         patch("ush.experiment_gen.realize") as realize,
         patch("ush.experiment_gen.rocoto.realize", return_value=True) as rocoto_realize,
         patch("sys.exit") as mock_exit,
@@ -97,11 +99,11 @@ def test_generate_workflow_files(tmp_path, validated_config):
         mock_exit.assert_not_called()
 
 
-def test_generate_workflow_files_failure(tmp_path, validated_config):
+def test_generate_workflow_files_failure(tmp_path, test_config, validated_config):
     experiment_file = tmp_path / "experiment.yaml"
     mpas_app = tmp_path / "mpas_app"
     with (
-        patch("ush.experiment_gen.get_yaml_config", return_value=MagicMock()),
+        patch("ush.experiment_gen.get_yaml_config", return_value=YAMLConfig(test_config)),
         patch("ush.experiment_gen.realize"),
         patch("ush.experiment_gen.rocoto.realize", return_value=False),
         patch("sys.exit") as sysexit,
