@@ -6,7 +6,7 @@ from pytest import fixture
 
 
 @fixture
-def mock_args():
+def args():
     args = Mock()
     args.config_file = Path("/some/config.yaml")
     args.cycle = datetime(2025, 1, 1, 12, tzinfo=timezone.utc)

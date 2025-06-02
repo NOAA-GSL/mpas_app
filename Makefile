@@ -18,7 +18,7 @@ format:
 	@./format
 
 lint:
-	ruff check .
+	ruff check scripts/ tests/ ush/experiment_gen.py
 
 regtest:
 	pytest --cov -k "regtest" tests
@@ -29,7 +29,7 @@ rmenv:
 test: lint typecheck unittest
 
 typecheck:
-	mypy --install-types --non-interactive .
+	mypy --install-types --non-interactive tests/ scripts/ ush/experiment_gen.py
 
 unittest:
 	pytest --cov -k "not regtest" tests

@@ -8,10 +8,10 @@ from scripts import common
 
 
 @fixture
-def fake_driver():
-    class FakeDriver:
+def test_driver():
+    class Driver:
         def __init__(self, config, cycle, key_path, leadtime=None):
-            config = {"rundir": "/mock/rundir"}
+            config = {"rundir": "/some/rundir"}
             self.config = config
             self.cycle = cycle
             self.key_path = key_path
@@ -20,7 +20,7 @@ def fake_driver():
         def run(self):
             pass
 
-    return FakeDriver
+    return Driver
 
 
 def test_parse_args():
@@ -68,37 +68,37 @@ def test_parse_args_missing_leadtime():
 
 
 @mark.parametrize("leadtime", [None, timedelta(hours=6)])
-def test_run_component(caplog, fake_driver, leadtime, mock_args):
+def test_run_component(caplog, test_driver, leadtime, args):
     caplog.set_level("INFO")
-    driver = fake_driver
+    driver = test_driver
     with (
         patch.object(driver, "run", return_value=Mock(ready=True)),
         patch("scripts.common.use_uwtools_logger"),
     ):
         common.run_component(
             driver_class=driver,
-            config_file=mock_args.config_file,
-            cycle=mock_args.cycle,
-            key_path=mock_args.key_path,
+            config_file=args.config_file,
+            cycle=args.cycle,
+            key_path=args.key_path,
             leadtime=leadtime,
         )
-    assert "Running FakeDriver in /mock/rundir" in caplog.text
+    assert "Running Driver in /some/rundir" in caplog.text
 
 
-def test_run_component_failure(caplog, fake_driver, mock_args):
+def test_run_component_failure(caplog, test_driver, args):
     caplog.set_level("ERROR")
-    driver = fake_driver
+    driver = test_driver
     with (
-        patch.object(driver, "run", return_value=Mock(ready=False, refs=["/mock/rundir/file"])),
+        patch.object(driver, "run", return_value=Mock(ready=False, refs=["/some/rundir/file"])),
         patch("scripts.common.use_uwtools_logger"),
-        patch("sys.exit") as mock_exit,
+        patch("sys.exit") as sysexit,
     ):
         common.run_component(
             driver_class=driver,
-            config_file=mock_args.config_file,
-            cycle=mock_args.cycle,
-            key_path=mock_args.key_path,
+            config_file=args.config_file,
+            cycle=args.cycle,
+            key_path=args.key_path,
             leadtime=None,
         )
-    assert "Error occurred. Expected file /mock/rundir/file not found." in caplog.text
-    mock_exit.assert_called_once_with(1)
+    assert "Error occurred. Expected file /some/rundir/file not found." in caplog.text
+    sysexit.assert_called_once_with(1)
