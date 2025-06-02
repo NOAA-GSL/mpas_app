@@ -1,6 +1,6 @@
 help([[
 This module loads libraries for building the MPAS App on
-the NOAA RDHPC machine Ursa using Intel-2023.2.0
+the NOAA RDHPC machine Ursa using Intel-2024.2.1
 ]])
 
 --[[whatis([===[Loads libraries needed for building the MPAS App on Ursa ]===])]]

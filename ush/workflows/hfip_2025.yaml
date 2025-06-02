@@ -91,7 +91,7 @@ forecast:
         io_type: "pnetcdf,cdf5"
         clobber_node: replace_files
         packages: ugwp_diags_stream
-        output_interval: 00:06:00
+        output_interval: 06:00:00
         files:
           - stream_list.atmosphere.diag_ugwp
       surface: !remove

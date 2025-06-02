@@ -24,7 +24,7 @@ if [ "$L_MACHINE" != wcoss2 ]; then
   $has_me && set -e
 fi
 
-if [[ "hera jet hercules ursa" =~ "$L_MACHINE" ]] ; then
+if $(echo "hera hercules jet ursa" | grep -q "\b$L_MACHINE\b"); then
    module purge
 else
    echo "ERROR: Unsupported platform ${L_MACHINE}"
