@@ -8,10 +8,17 @@ from scripts import common
 
 
 @fixture
+<<<<<<< HEAD
 def test_driver():
     class Driver:
         def __init__(self, config, cycle, key_path, leadtime=None):
             config = {"rundir": "/some/rundir"}
+=======
+def fake_driver():
+    class FakeDriver:
+        def __init__(self, config, cycle, key_path, leadtime=None):
+            config = {"rundir": "/mock/rundir"}
+>>>>>>> origin/tests
             self.config = config
             self.cycle = cycle
             self.key_path = key_path
@@ -20,7 +27,11 @@ def test_driver():
         def run(self):
             pass
 
+<<<<<<< HEAD
     return Driver
+=======
+    return FakeDriver
+>>>>>>> origin/tests
 
 
 def test_parse_args():

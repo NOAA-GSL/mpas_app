@@ -26,10 +26,13 @@ regtest:
 rmenv:
 	$(if $(ENVPATH),conda env remove -y -n $(ENVNAME))
 
+systest:
+	pytest --cov -k "systest" -n 5 tests
+
 test: lint typecheck unittest
 
 typecheck:
 	mypy --install-types --non-interactive tests/ scripts/ ush/experiment_gen.py
 
 unittest:
-	pytest --cov -k "not regtest" tests
+	pytest --cov -k "not regtest and not systest" -n 8 tests
