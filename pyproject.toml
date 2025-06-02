@@ -1,6 +1,6 @@
 [tool.coverage.report]
 exclude_also = ["if TYPE_CHECKING:"]
-fail_under = 31
+fail_under = 81
 show_missing = true
 skip_covered = true
 
@@ -9,6 +9,7 @@ source = ["scripts", "ush"]
 
 [tool.mypy]
 check_untyped_defs = true
+exclude = ["conda", "pygraf", "src"]
 pretty = true
 warn_return_any = true
 
@@ -17,6 +18,7 @@ pythonpath = ["."]
 
 [tool.ruff]
 line-length = 100
+exclude = ["conda", "pygraf", "src"]
 
 [tool.ruff.lint]
 select = ["ALL"]
@@ -42,4 +44,8 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = [
   "PT013",   # pytest-incorrect-pytest-import
+  "SLF001",  # private-member-access
+]
+"ush/retrieve_data.py" = [
+  "PLR0913", # too-many-arguments
 ]
