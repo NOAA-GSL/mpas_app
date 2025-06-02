@@ -28,12 +28,10 @@ def create_grid_files(expt_dir: Path, mesh_file_path: Path, nprocs: int) -> None
     mesh_file = expt_dir / mesh_file_path.name
     cmd = f"gpmetis -minconn -contig -niter=200 {mesh_file} {nprocs}"
     try:
-        output = check_output(cmd, encoding="utf=8", shell=True, stderr=STDOUT, text=True)
+        check_output(cmd, encoding="utf=8", shell=True, stderr=STDOUT, text=True)
     except CalledProcessError as e:
-        output = e.output
-        logging.error("Error running command:")
-        logging.error("\t%s", cmd)
-        for line in output.split("\n"):
+        logging.error("Error running command:\n\t%s", cmd)
+        for line in e.output.splitlines():
             logging.error(line)
         logging.error("Failed with status: %s", e.returncode)
         sys.exit(1)
@@ -79,19 +77,16 @@ def parse_args() -> list[Path]:
     Parse command-line arguments.
     """
     use_uwtools_logger()
-
     parser = argparse.ArgumentParser(
         description="Configure an experiment with the following input:"
     )
     parser.add_argument("user_config_files", nargs="+", help="Paths to the user config files.")
-    args = parser.parse_args()
-
-    return [Path(p) for p in args.user_config_files]
+    return [Path(p) for p in parser.parse_args().user_config_files]
 
 
 def prepare_configs(user_config_files: list[Path]) -> tuple[YAMLConfig, Path]:
     """
-    Load base, supplemental, user, platform, and external model configs.
+    Combine base, user, platform, and external model configs into one experiment config.
     """
     # Set up the experiment
     experiment_config = get_yaml_config(Path("./default_config.yaml"))
@@ -120,7 +115,7 @@ def prepare_configs(user_config_files: list[Path]) -> tuple[YAMLConfig, Path]:
 
 def required_nprocs(experiment_config: YAMLConfig) -> list[int]:
     """
-    Extract the number of processors required for each section of the workflow.
+    Get the processor count required for relevant workflow sections.
     """
     sections = [
         ("create_ics", "mpas_init"),
