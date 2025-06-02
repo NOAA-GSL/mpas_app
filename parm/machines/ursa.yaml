@@ -7,11 +7,29 @@ platform:
   geog_data:
     global: /scratch2/BMC/wrfruc/talcott/mpas/global/static/geog/
   service_partition: u1-service
+create_ics:
+  mpas_init:
+    execution:
+      envcmds:
+        - ulimit -s unlimited || true
+        - module use {{ user.mpas_app }}/modulefiles
+        - module load build_{{ user.platform }}_intel_ifort
+create_lbcs:
+  mpas_init:
+    execution:
+      envcmds:
+        - ulimit -s unlimited || true
+        - module use {{ user.mpas_app }}/modulefiles
+        - module load build_{{ user.platform }}_intel_ifort
 forecast:
   mpas:
     execution:
       batchargs:
         partition: u1-compute
+      envcmds:
+        - ulimit -s unlimited || true
+        - module use {{ user.mpas_app }}/modulefiles
+        - module load build_{{ user.platform }}_intel_ifort
 post:
   mpassit:
     execution:
