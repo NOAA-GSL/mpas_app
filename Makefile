@@ -18,7 +18,7 @@ format:
 	@./format
 
 lint:
-	ruff check scripts/ tests/ ush/experiment_gen.py
+	ruff check .
 
 regtest:
 	pytest --cov -k "regtest" tests
@@ -32,7 +32,7 @@ systest:
 test: lint typecheck unittest
 
 typecheck:
-	mypy --install-types --non-interactive tests/ scripts/ ush/experiment_gen.py
+	mypy --install-types --non-interactive .
 
 unittest:
 	pytest --cov -k "not regtest and not systest" -n 8 tests
