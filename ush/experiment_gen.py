@@ -86,7 +86,8 @@ def main(user_config_files: list[Path, str]) -> None:
             workflow_config = get_yaml_config(workflow_block)
         else:
             workflow_config.update_from(get_yaml_config(workflow_block))
-    workflow_config.update_from(experiment_config)
+    for supp_config in (experiment_config, user_config):
+        workflow_config.update_from(supp_config)
 
     realize(
         input_config=workflow_config,

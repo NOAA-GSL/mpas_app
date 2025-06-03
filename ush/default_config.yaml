@@ -30,6 +30,7 @@ data:
 platform:
   # Supported scheduler options include Slurm, PBSPro, and LSF
   scheduler: slurm
+  service_partition: service
 get_ics_data:
   execution:
     cores: 1
