@@ -120,7 +120,7 @@ def test_main(validated_config, test_config, tmp_path):
         patch("ush.experiment_gen.parse_args", return_value=[tmp_path / "user.yaml"]),
         patch(
             "ush.experiment_gen.prepare_configs",
-            return_value=(experiment_config, Path("/mock/mpas_app")),
+            return_value=(experiment_config, Path("/some/mpas_app")),
         ),
         patch("ush.experiment_gen.validate", return_value=validated_config),
         patch(
@@ -159,7 +159,7 @@ def test_prepare_configs(test_config):
         patch("ush.experiment_gen.Path") as path,
     ):
         get_yaml_config.side_effect = [YAMLConfig(cfg) for cfg in config_dicts]
-        path.return_value.parent.parent.resolve.return_value = Path("/mocked/mpas_app")
+        path.return_value.parent.parent.resolve.return_value = Path("/some/mpas_app")
         experiment_config, mpas_app = experiment_gen.prepare_configs([Path("user.yaml")])
     assert isinstance(experiment_config, YAMLConfig)
     assert experiment_config["data"]["mesh_files"] == test_config["data"]["mesh_files"]
@@ -167,7 +167,7 @@ def test_prepare_configs(test_config):
     assert experiment_config["lbcs_key"] == "lbcs_value"
     assert experiment_config["platform"] is True
     assert experiment_config["user"] is True
-    assert mpas_app == Path("/mocked/mpas_app")
+    assert mpas_app == Path("/some/mpas_app")
 
 
 def test_required_nprocs(test_config):
