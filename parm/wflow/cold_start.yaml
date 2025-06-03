@@ -24,7 +24,7 @@ workflow:
       walltime: "{{ get_ics_data.execution.walltime }}"
       cores: !int "{{ get_ics_data.execution.cores }}"
       envars:
-        cycle: 
+        cycle:
           cyclestr:
             value: '@Y-@m-@dT@H:@M:@S'
         OUTPUT_PATH:
