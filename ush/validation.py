@@ -4,7 +4,7 @@ from datetime import datetime  # noqa: TC003
 from pathlib import Path  # noqa: TC003
 from typing import Literal
 
-from pydantic import BaseModel, NonNegativeInt, PositiveInt, root_validator
+from pydantic import BaseModel, NonNegativeInt, PositiveInt, model_validator
 
 Model = Literal["GFS", "RAP"]
 
@@ -35,16 +35,13 @@ class User(BaseModel):
     platform: str
     workflow_blocks: list[str]
 
-    @root_validator()
-    def first_and_last_cycle(cls, values):
-        first = values.get("first_cycle")
-        last = values.get("last_cycle")
-        if first and last and last < first:
-            raise ValueError("last_cycle cannot precede first_cycle")
-        return values
+    @model_validator(mode="after")
+    def first_and_last_cycle(self):
+        if self.last_cycle < self.first_cycle:
+            msg = "last_cycle cannot precede first_cycle"
+            raise ValueError(msg)
+        return self
 
 
 def validate(config: dict) -> Config:
     return Config(**config)
-
-Config.update_forward_refs()

@@ -3,7 +3,7 @@
 if [[ ${ICS_or_LBCS} == "ICS" ]] ; then
   fcst_hours=$TIME_OFFSET_HRS
   if [[ ${TIME_OFFSET_HRS} -eq 0 ]] ; then
-    file_set=anl
+    fileset=anl
   fi
 else
   first_time=$((TIME_OFFSET_HRS + LBC_INTVL_HRS))
@@ -16,7 +16,7 @@ python -u ${MPAS_APP}/ush/retrieve_data.py \
     --debug \
     --fileset ${fileset:-fcst} \
     --config ${MPAS_APP}/parm/data_locations.yml \
-    --cycle ${YYYYMMDDHH} \
+    --cycle ${cycle} \
     --data-stores aws \
     --data-type ${EXTERNAL_MODEL} \
     --fcst-hrs $fcst_hours \
