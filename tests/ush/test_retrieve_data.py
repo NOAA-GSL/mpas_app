@@ -101,7 +101,7 @@ def test_main(tmp_path):
     config = tmp_path / "data_locations.yml"
     config.write_text("foo: bar")
     cycle = "2025-05-04T00"
-    cycle_dt = datetime.strptime(cycle, "%Y%m%d%H").replace(tzinfo=timezone.utc)
+    cycle_dt = datetime.fromisoformat(cycle).replace(tzinfo=timezone.utc)
     args = [
         "--fileset",
         "fcst",
