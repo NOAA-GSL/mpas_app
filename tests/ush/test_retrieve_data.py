@@ -23,7 +23,7 @@ def sysargs(tmp_path):
         "--config",
         str(Path(f"{__file__}/../../../parm/data_locations.yml").resolve()),
         "--cycle",
-        "2025050400",
+        "2025-05-04T00",
         "--data-stores",
         "disk",
         "hpss",
@@ -100,7 +100,7 @@ def test_main(tmp_path):
     # Using a basic YAML here while UW-suported YAML tags are not comparable.
     config = tmp_path / "data_locations.yml"
     config.write_text("foo: bar")
-    cycle = "2025050400"
+    cycle = "2025-05-04T00"
     cycle_dt = datetime.strptime(cycle, "%Y%m%d%H").replace(tzinfo=timezone.utc)
     args = [
         "--fileset",
@@ -475,7 +475,7 @@ def test_try_data_store_hpss(data_locations, tmp_path):
     ],
 )
 def test_retrieve_data_aws_pull_data_systest(data_set, filefmt, filenames, tmp_path):
-    cycle = "2025050512"
+    cycle = "2025-05-05T12"
     args = [
         "--fileset",
         "anl",
@@ -514,7 +514,7 @@ def test_retrieve_data_aws_pull_data_systest(data_set, filefmt, filenames, tmp_p
     ],
 )
 def test_retrieve_data_hpss_pull_data_systest(data_set, filename, tmp_path):
-    cycle = "2025050400"
+    cycle = "2025-05-04T00"
     args = [
         "--fileset",
         "fcst",
