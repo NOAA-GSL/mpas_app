@@ -160,10 +160,10 @@ def parse_args(argv):
     )
     parser.add_argument(
         "--cycle",
-        help="The cycle in ISO8601 format (e.g. yyyy-mm-ddThh)",
+        help="The cycle in YYYYMMDDHH format",
         required=False,
         default=datetime.now(tz=timezone.utc),
-        type=lambda x: datetime.fromisoformat(x).replace(tzinfo=timezone.utc),
+        type=lambda x: datetime.strptime(x, "%Y%m%d%H").replace(tzinfo=timezone.utc),
     )
     parser.add_argument(
         "--data-stores",
