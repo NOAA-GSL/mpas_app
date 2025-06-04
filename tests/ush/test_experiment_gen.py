@@ -117,18 +117,20 @@ def test_generate_workflow_files_failure(tmp_path, test_config, validated_config
 def test_main(validated_config, test_config, tmp_path):
     experiment_config = YAMLConfig(test_config)
     with (
-        patch("ush.experiment_gen.parse_args", return_value=[tmp_path / "user.yaml"]),
-        patch(
-            "ush.experiment_gen.prepare_configs",
+        patch.object(experiment_gen, "parse_args", return_value=[tmp_path / "user.yaml"]),
+        patch.object(
+            experiment_gen,
+            "prepare_configs",
             return_value=(experiment_config, Path("/some/mpas_app")),
         ),
-        patch("ush.experiment_gen.validate", return_value=validated_config),
-        patch(
-            "ush.experiment_gen.setup_experiment_directory",
+        patch.object(experiment_gen, "validate", return_value=validated_config),
+        patch.object(
+            experiment_gen,
+            "setup_experiment_directory",
             return_value=(tmp_path, tmp_path / "experiment.yaml"),
         ),
-        patch("ush.experiment_gen.generate_workflow_files") as generate,
-        patch("ush.experiment_gen.stage_grid_files") as stage,
+        patch.object(experiment_gen, "generate_workflow_files") as generate,
+        patch.object(experiment_gen, "stage_grid_files") as stage,
     ):
         experiment_gen.main()
         generate.assert_called_once()
