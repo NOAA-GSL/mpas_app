@@ -17,7 +17,7 @@ workflow:
     task_get_ics_data:
       command: '&MPAS_APP;/scripts/get_external_data.sh'
       account: "{{ platform.account }}"
-      partition: service
+      partition: "{{ platform.service_partition }}"
       join:
         cyclestr:
           value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
@@ -37,7 +37,7 @@ workflow:
     task_get_lbcs_data:
       command: '&MPAS_APP;/scripts/get_external_data.sh'
       account: "{{ platform.account }}"
-      partition: service
+      partition: "{{ platform.service_partition }}"
       join:
         cyclestr:
           value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'

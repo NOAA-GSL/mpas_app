@@ -10,7 +10,7 @@ OPTIONS
       show this help guide
   -p, --platform=PLATFORM
       name of machine you are building on
-      (e.g. hera | jet | hercules)
+      (e.g. hera | jet | hercules | ursa)
   -c, --compiler=COMPILER
       compiler to use; default depends on platform
       (e.g. intel | gnu | gcc)
@@ -257,6 +257,9 @@ fi
 
 # set MODULE_FILE for this platform/compiler combination
 MODULE_FILE="build_${PLATFORM}_${COMPILER}"
+if [[ "$PLATFORM" == "ursa" ]] ; then
+  MODULE_FILE="${MODULE_FILE}_ifort"
+fi
 if [ ! -f "${MPAS_APP_DIR}/modulefiles/${MODULE_FILE}.lua" ]; then
   printf "ERROR: module file does not exist for platform/compiler\n" >&2
   printf "  MODULE_FILE=${MODULE_FILE}\n" >&2
