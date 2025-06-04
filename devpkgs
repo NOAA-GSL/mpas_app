@@ -1,6 +1,5 @@
 make==4.4.*
 mypy==1.15.*
-pydantic==2.11.*
 pytest-cov==6.1.*
 pytest-regressions==2.7.*
 pytest-xdist==3.6.*

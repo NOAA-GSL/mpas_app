@@ -4,18 +4,18 @@ from unittest.mock import patch
 from scripts import mpas_init
 
 
-def test_main(mock_args):
+def test_main(args):
     with (
-        patch.object(mpas_init, "parse_args", return_value=mock_args) as mock_parse_args,
+        patch.object(mpas_init, "parse_args", return_value=args) as parse_args,
         patch.object(
             mpas_init, "run_component", return_value=Path("/some/rundir")
-        ) as mock_run_component,
+        ) as run_component,
     ):
         mpas_init.main()
-        mock_parse_args.assert_called_once()
-        mock_run_component.assert_called_once_with(
+        parse_args.assert_called_once()
+        run_component.assert_called_once_with(
             driver_class=mpas_init.MPASInit,
-            config_file=mock_args.config_file,
-            cycle=mock_args.cycle,
-            key_path=mock_args.key_path,
+            config_file=args.config_file,
+            cycle=args.cycle,
+            key_path=args.key_path,
         )

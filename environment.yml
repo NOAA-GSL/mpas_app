@@ -4,5 +4,5 @@ channels:
   - ufs-community
 dependencies:
   - metis ==5.1.0.*
-  - numpy ==1.26.*
+  - pydantic==2.11.*
   - uwtools ==2.7.*

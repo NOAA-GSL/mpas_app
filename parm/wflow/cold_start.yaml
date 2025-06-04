@@ -24,9 +24,9 @@ workflow:
       walltime: "{{ get_ics_data.execution.walltime }}"
       cores: !int "{{ get_ics_data.execution.cores }}"
       envars:
-        YYYYMMDDHH:
+        cycle:
           cyclestr:
-            value: '@Y@m@d@H'
+            value: '@Y-@m-@dT@H:@M:@S'
         OUTPUT_PATH:
           cyclestr:
             value: "{{ user.experiment_dir }}/@Y@m@d@H/{{ user.ics.external_model }}"
@@ -44,9 +44,9 @@ workflow:
       walltime: "{{ get_lbcs_data.execution.walltime }}"
       cores: !int "{{ get_lbcs_data.execution.cores }}"
       envars:
-        YYYYMMDDHH:
+        cycle:
           cyclestr:
-            value: '@Y@m@d@H'
+            value: '@Y-@m-@dT@H:@M:@S'
         OUTPUT_PATH:
           cyclestr:
             value: "{{ user.experiment_dir }}/@Y@m@d@H/{{ user.lbcs.external_model }}"

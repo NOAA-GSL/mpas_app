@@ -1,6 +1,6 @@
 [tool.coverage.report]
 exclude_also = ["if TYPE_CHECKING:"]
-fail_under = 81
+fail_under = 100
 show_missing = true
 skip_covered = true
 
@@ -36,6 +36,7 @@ ignore = [
   "S101",    # assert
   "S310",    # suspicious-url-open-usage
   "S602",    # subprocess-popen-with-shell-equals-true
+  "S604",    # call-with-shell-equals-true
   "T201",    # print
   "TRY400",  # error-instead-of-exception
   "UP031",   # printf-string-formatting
