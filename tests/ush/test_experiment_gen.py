@@ -83,11 +83,11 @@ def test_generate_workflow_files(tmp_path, test_config, validated_config):
     experiment_file = tmp_path / "experiment.yaml"
     mpas_app = tmp_path / "mpas_app"
     with (
-        patch(
-            "ush.experiment_gen.get_yaml_config", return_value=YAMLConfig(test_config)
+        patch.object(
+            experiment_gen, "get_yaml_config", return_value=YAMLConfig(test_config)
         ) as get_yaml_config,
-        patch("ush.experiment_gen.realize") as realize,
-        patch("ush.experiment_gen.rocoto.realize", return_value=True) as rocoto_realize,
+        patch.object(experiment_gen, "realize") as realize,
+        patch.object(experiment_gen.rocoto, "realize", return_value=True) as rocoto_realize,
         patch("sys.exit") as sysexit,
     ):
         experiment_gen.generate_workflow_files(
@@ -103,9 +103,9 @@ def test_generate_workflow_files_failure(tmp_path, test_config, validated_config
     experiment_file = tmp_path / "experiment.yaml"
     mpas_app = tmp_path / "mpas_app"
     with (
-        patch("ush.experiment_gen.get_yaml_config", return_value=YAMLConfig(test_config)),
-        patch("ush.experiment_gen.realize"),
-        patch("ush.experiment_gen.rocoto.realize", return_value=False),
+        patch.object(experiment_gen, "get_yaml_config", return_value=YAMLConfig(test_config)),
+        patch.object(experiment_gen, "realize"),
+        patch.object(experiment_gen.rocoto, "realize", return_value=False),
         patch("sys.exit") as sysexit,
     ):
         experiment_gen.generate_workflow_files(
@@ -157,8 +157,8 @@ def test_prepare_configs(test_config):
         },
     ]
     with (
-        patch("ush.experiment_gen.get_yaml_config") as get_yaml_config,
-        patch("ush.experiment_gen.Path") as path,
+        patch.object(experiment_gen, "get_yaml_config") as get_yaml_config,
+        patch.object(experiment_gen, "Path") as path,
     ):
         get_yaml_config.side_effect = [YAMLConfig(cfg) for cfg in config_dicts]
         path.return_value.parent.parent.resolve.return_value = Path("/some/mpas_app")
