@@ -178,7 +178,6 @@ def test_required_nprocs(test_config):
 def test_setup_experiment_directory(validated_config):
     validated_config.user.experiment_dir = validated_config.user.experiment_dir / "experiment"
     experiment_dir, experiment_file = experiment_gen.setup_experiment_directory(validated_config)
-    assert experiment_dir.exists()
     assert experiment_dir.is_dir()
     assert experiment_file == experiment_dir / "experiment.yaml"
 
