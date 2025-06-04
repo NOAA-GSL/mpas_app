@@ -30,7 +30,8 @@ def create_grid_files(expt_dir: Path, mesh_file_path: Path, nprocs: int) -> None
     try:
         check_output(cmd, encoding="utf=8", shell=True, stderr=STDOUT, text=True)
     except CalledProcessError as e:
-        logging.error("Error running command:\n\t%s", cmd)
+        logging.error("Error running command:")
+        logging.error("  %s", cmd)
         for line in e.output.splitlines():
             logging.error(line)
         logging.error("Failed with status: %s", e.returncode)
