@@ -88,7 +88,7 @@ def test_generate_workflow_files(tmp_path, test_config, validated_config):
         ) as get_yaml_config,
         patch("ush.experiment_gen.realize") as realize,
         patch("ush.experiment_gen.rocoto.realize", return_value=True) as rocoto_realize,
-        patch("sys.exit") as mock_exit,
+        patch("sys.exit") as sysexit,
     ):
         experiment_gen.generate_workflow_files(
             get_yaml_config({}), experiment_file, mpas_app, validated_config
@@ -96,7 +96,7 @@ def test_generate_workflow_files(tmp_path, test_config, validated_config):
         get_yaml_config.assert_called()
         realize.assert_called_once()
         rocoto_realize.assert_called_once()
-        mock_exit.assert_not_called()
+        sysexit.assert_not_called()
 
 
 def test_generate_workflow_files_failure(tmp_path, test_config, validated_config):
