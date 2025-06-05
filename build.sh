@@ -106,7 +106,7 @@ install_mpassit () {
   if [[ $PLATFORM == ursa ]] ; then
     compiler=intel-llvm
   fi
-  ./build.sh ${PLATFORM} ${compiler}
+  ./build.sh $PLATFORM $compiler
   cp -v bin/mpassit ${EXEC_DIR}
   popd
 }
