@@ -334,10 +334,13 @@ post:
     execution:
       batchargs:
         walltime: 00:30:00
-        cores: 768
+        tasks_per_node: 32
+        nodes: 24
         native:
           - --exclusive
-    fix_dir: /path/to/fix/files
+    fixdir: /path/to/fix/files
+    nmldir: '{{ user.mpas_app }}/parm/mpassit'
+    parmdir: '{{ user.mpas_app }}/parm/mpassit'
     rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/mpassit'
   upp:
     # upp settings follow UW Tools driver YAML

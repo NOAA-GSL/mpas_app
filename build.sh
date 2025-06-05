@@ -102,7 +102,11 @@ install_mpas_model () {
 install_mpassit () {
   module purge
   pushd ${MPAS_APP_DIR}/src/MPASSIT
-  ./build.sh ${PLATFORM} intel
+  compiler=intel
+  if [[ $PLATFORM == ursa ]] ; then
+    compiler=intel-llvm
+  fi
+  ./build.sh ${PLATFORM} ${compiler}
   cp -v bin/mpassit ${EXEC_DIR}
   popd
 }

@@ -2,6 +2,7 @@ user:
   mesh_label: x5.8060930
   workflow_blocks:
     - cold_start.yaml
+    - post.yaml
 
 workflow:
   tasks:
@@ -13,12 +14,18 @@ workflow:
         taskdep:
           attrs:
             task: mpas_ics
+    metatask_post:
+      task_upp_#fhr#: !remove
+      task_combine_grib_#fhr#: !remove
 
 create_ics:
   mpas_init: &mpas_init
     files_to_copy:
       QNWFA_QNIFA_SIGMA_MONTHLY.dat: "{{ platform.hrrr_fix }}/../QNWFA_QNIFA_SIGMA_MONTHLY.dat"
-      stream_list.atmosphere.diag_ugwp: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.diag_ugwp"
+      stream_list.atmosphere.diag_ugwp: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.diag_ugwp"
+      stream_list.atmosphere.diagnostics: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.diagnostics"
+      stream_list.atmosphere.output: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.output"
+      stream_list.atmosphere.surface: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.surface"
     files_to_link:
       "{{ user.mesh_label }}.ugwp_oro_data.nc": "{{ platform.hrrr_fix }}/{{ user.mesh_label }}.ugwp_oro_data.nc" 
     namelist:
@@ -41,7 +48,10 @@ forecast:
     domain: global
     length: 120
     files_to_copy:
-      stream_list.atmosphere.diag_ugwp: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.diag_ugwp"
+      stream_list.atmosphere.diag_ugwp: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.diag_ugwp"
+      stream_list.atmosphere.diagnostics: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.diagnostics"
+      stream_list.atmosphere.output: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.output"
+      stream_list.atmosphere.surface: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.surface"
     files_to_link:
       CCN_ACTIVATE.BIN: !remove
       "{{ user.mesh_label }}.ugwp_oro_data.nc": "{{ platform.hrrr_fix }}/{{ user.mesh_label }}.ugwp_oro_data.nc" 
@@ -97,5 +107,7 @@ forecast:
       surface: !remove
       lbc_in: !remove
 
-
-
+post:
+  mpassit:
+    nmldir: '{{ user.mpas_app }}/parm/mpassit/hfip_2025'
+    parmdir: '{{ user.mpas_app }}/parm/mpassit/hfip_2025'

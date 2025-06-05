@@ -13,3 +13,10 @@ forecast:
         cores: 8000
         walltime: "8:00:00"
 
+post:
+  mpassit:
+    execution:
+      batchargs:
+        nodes: 24
+        tasks_per_node: 1200
+        walltime: "00:05:00"
