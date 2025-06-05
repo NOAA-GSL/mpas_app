@@ -118,7 +118,7 @@ hstr=$(printf "%02d" $((10#$FCST_HOUR)))
 nmlfile="namelist.fcst_$hstr"
 expt_dir=$WORK_DIR/../../
 
-block_file=$expt_dir/${MESH_LABEL}.graph.info.part.$SLURM_NPROCS
+block_file=$expt_dir/${MESH_LABEL}.graph.info.part.$SLURM_NTASKS
 
 cp $NML_DIR/namelist.mpassit $nmlfile
 sed -i "s|HISTFILE|$histfile|g" $nmlfile
@@ -127,7 +127,7 @@ sed -i "s|BLOCKFILE|$block_file|g" $nmlfile
 sed -i "s/FCSTTIME/$fcst_time_str/g" $nmlfile
 sed -i "s/MESH_LABEL/$MESH_LABEL/g" $nmlfile
 
-srun mpassit $nmlfile
+srun -n $SLURM_NTASKS mpassit $nmlfile
 
 outfile="${WORK_DIR}/${FCST_HOUR}/MPAS-A_out.${fcst_time_str}.nc"
 if [[ -e $outfile ]]; then
