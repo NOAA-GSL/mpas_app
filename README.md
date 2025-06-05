@@ -52,9 +52,11 @@ git submodule update --init --recursive
 
 ## Building the Model
 
-Currently, Jet and Hera are the only platforms supported on the `main` branch.  To run the default build script:
+Currently, Jet and Hera are the only platforms fully supported on the `main` branch.  To run the default build script:
 
 `./build.sh -p=<platform>`
+
+The app is partially supported on Ursa. UPP is not currently supported on that platform.
 
 To see the different build options (including MPAS build options):
 
