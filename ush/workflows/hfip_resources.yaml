@@ -19,4 +19,4 @@ post:
       batchargs:
         nodes: 24
         cores: 1200
-        walltime: "00:05:00"
+        walltime: "00:07:00"

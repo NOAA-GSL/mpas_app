@@ -342,7 +342,9 @@ fi
 
 install_mpas_model
 install_mpassit
-install_upp
+if [[ $PLATFORM != ursa ]] ; then
+  install_upp
+fi
 
 if [ "${CLEAN}" = true ]; then
     if [ -f $PWD/Makefile ]; then
