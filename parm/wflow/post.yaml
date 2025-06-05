@@ -31,7 +31,7 @@ workflow:
         partition: "{{ post.mpassit.execution.batchargs.partition }}"
         walltime: "{{ post.mpassit.execution.batchargs.walltime }}"
         native: "--nodes={{ post.mpassit.execution.batchargs.nodes }}"
-        cores: !int "{{ post.mpassit.execution.batchargs.tasks_per_node }}"
+        cores: !int "{{ post.mpassit.execution.batchargs.cores }}"
         dependency:
           or:
             taskdep:

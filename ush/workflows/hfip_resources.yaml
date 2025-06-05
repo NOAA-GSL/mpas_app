@@ -18,5 +18,5 @@ post:
     execution:
       batchargs:
         nodes: 24
-        tasks_per_node: 1200
+        cores: 1200
         walltime: "00:05:00"

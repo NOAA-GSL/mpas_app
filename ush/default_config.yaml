@@ -334,7 +334,7 @@ post:
     execution:
       batchargs:
         walltime: 00:30:00
-        tasks_per_node: 32
+        cores: 768
         nodes: 24
         native:
           - --exclusive
