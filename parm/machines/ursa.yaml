@@ -1,0 +1,45 @@
+data:
+  mesh_files: /scratch3/BMC/wrfruc/cholt/MPAS-Model/fix
+platform:
+  crtm_dir: /contrib/spack-stack/spack-stack-1.9.1/envs/ue-oneapi-2024.2.1/install/oneapi/2024.2.1/crtm-fix-2.4.0.1_emc-t5jym6r/fix
+  hrrr_fix: /scratch3/BMC/wrfruc/cholt/MPAS-Model/fix
+  scheduler: slurm
+  geog_data:
+    global: /scratch2/BMC/wrfruc/talcott/mpas/global/static/geog/
+  service_partition: u1-service
+create_ics:
+  mpas_init:
+    execution:
+      envcmds:
+        - ulimit -s unlimited || true
+        - module use {{ user.mpas_app }}/modulefiles
+        - module load build_{{ user.platform }}_intel_ifort
+create_lbcs:
+  mpas_init:
+    execution:
+      envcmds:
+        - ulimit -s unlimited || true
+        - module use {{ user.mpas_app }}/modulefiles
+        - module load build_{{ user.platform }}_intel_ifort
+forecast:
+  mpas:
+    execution:
+      batchargs:
+        partition: u1-compute
+      envcmds:
+        - ulimit -s unlimited || true
+        - module use {{ user.mpas_app }}/modulefiles
+        - module load build_{{ user.platform }}_intel_ifort
+post:
+  mpassit:
+    execution:
+      batchargs:
+        partition: u1-compute
+  upp:
+    execution:
+      batchargs:
+        partition: u1-compute
+graphics:
+  execution:
+    batchargs:
+      partition: u1-compute

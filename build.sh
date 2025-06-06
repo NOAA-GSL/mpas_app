@@ -10,7 +10,7 @@ OPTIONS
       show this help guide
   -p, --platform=PLATFORM
       name of machine you are building on
-      (e.g. hera | jet | hercules)
+      (e.g. hera | jet | hercules | ursa)
   -c, --compiler=COMPILER
       compiler to use; default depends on platform
       (e.g. intel | gnu | gcc)
@@ -102,7 +102,11 @@ install_mpas_model () {
 install_mpassit () {
   module purge
   pushd ${MPAS_APP_DIR}/src/MPASSIT
-  ./build.sh ${PLATFORM} intel
+  compiler=intel
+  if [[ $PLATFORM == ursa ]] ; then
+    compiler=intel-llvm
+  fi
+  ./build.sh $PLATFORM $compiler
   cp -v bin/mpassit ${EXEC_DIR}
   popd
 }
@@ -257,6 +261,9 @@ fi
 
 # set MODULE_FILE for this platform/compiler combination
 MODULE_FILE="build_${PLATFORM}_${COMPILER}"
+if [[ "$PLATFORM" == "ursa" ]] ; then
+  MODULE_FILE="${MODULE_FILE}_ifort"
+fi
 if [ ! -f "${MPAS_APP_DIR}/modulefiles/${MODULE_FILE}.lua" ]; then
   printf "ERROR: module file does not exist for platform/compiler\n" >&2
   printf "  MODULE_FILE=${MODULE_FILE}\n" >&2
@@ -335,7 +342,9 @@ fi
 
 install_mpas_model
 install_mpassit
-install_upp
+if [[ $PLATFORM != ursa ]] ; then
+  install_upp
+fi
 
 if [ "${CLEAN}" = true ]; then
     if [ -f $PWD/Makefile ]; then

@@ -1,0 +1,113 @@
+user:
+  mesh_label: x5.8060930
+  workflow_blocks:
+    - cold_start.yaml
+    - post.yaml
+
+workflow:
+  tasks:
+    task_get_lbcs_data: !remove
+    task_ungrib_lbcs: !remove
+    task_mpas_lbcs: !remove
+    task_mpas:
+      dependency:
+        taskdep:
+          attrs:
+            task: mpas_ics
+    metatask_post:
+      task_upp_#fhr#: !remove
+      task_combine_grib_#fhr#: !remove
+
+create_ics:
+  mpas_init: &mpas_init
+    files_to_copy:
+      QNWFA_QNIFA_SIGMA_MONTHLY.dat: "{{ platform.hrrr_fix }}/../QNWFA_QNIFA_SIGMA_MONTHLY.dat"
+      stream_list.atmosphere.diag_ugwp: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.diag_ugwp"
+      stream_list.atmosphere.diagnostics: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.diagnostics"
+      stream_list.atmosphere.output: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.output"
+      stream_list.atmosphere.surface: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.surface"
+    files_to_link:
+      "{{ user.mesh_label }}.ugwp_oro_data.nc": "{{ platform.hrrr_fix }}/{{ user.mesh_label }}.ugwp_oro_data.nc" 
+    namelist:
+      update_values:
+        data_sources:
+          config_use_spechumd: true
+        dimensions:
+          config_nvertlevels: 79
+          config_nsoillevels: 4
+          config_nvegopt: 1
+        vertical_grid:
+          config_ztop: 38000.
+          config_specified_zeta_levels: "{{ user.mpas_app }}/parm/mpas//L80_hfip.txt"
+          config_blend_bdy_terrain: false
+        preproc_stages:
+          config_aerosol_climo: true
+
+forecast:
+  mpas:
+    domain: global
+    length: 120
+    files_to_copy:
+      stream_list.atmosphere.diag_ugwp: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.diag_ugwp"
+      stream_list.atmosphere.diagnostics: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.diagnostics"
+      stream_list.atmosphere.output: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.output"
+      stream_list.atmosphere.surface: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.surface"
+    files_to_link:
+      CCN_ACTIVATE.BIN: !remove
+      "{{ user.mesh_label }}.ugwp_oro_data.nc": "{{ platform.hrrr_fix }}/{{ user.mesh_label }}.ugwp_oro_data.nc" 
+      "NoahmpTable.TBL": "{{ user.mpas_app }}/src/MPAS-Model/NoahmpTable.TBL"
+    namelist:
+      update_values:
+        nhyd_model:
+          config_dt: 24.
+          config_number_of_sub_steps: 6
+          config_apvm_upwinding: 0
+        damping:
+          config_zd: 33000.0
+          config_mpas_cam_coef: 2.
+          config_number_cam_damping_levels: 7
+          config_rayleigh_damp_u: true
+          config_rayleigh_damp_u_timescale_days: 2.5
+        io:
+          config_pio_num_iotasks: 64
+          config_pio_stride: 125
+        limited_area:
+          config_apply_lbcs: false
+        physics:
+          config_frac_seaice: true
+          config_radtlw_interval: 00:15:00
+          config_radtsw_interval: 00:15:00
+          config_gvf_update: true
+          config_convection_scheme: cu_grell_freitas
+          config_tempo_ml_nc_pbl: true
+          config_lsm_scheme: sf_noahmp
+          num_soil_layers: 4
+          config_gf_sub3d: 1
+        physics_lsm_noahmp:
+          config_noahmp_iopt_crs: 2
+          config_noahmp_iopt_stc: 3
+    streams:
+      ugwp_oro_data_in:
+        filename_template: "{{ user.mesh_label }}.ugwp_oro_data.nc"
+        input_interval: initial_only
+        type: input
+        mutable: false
+        io_type: "pnetcdf,cdf5"
+        packages: ugwp_orog_stream
+      diag_ugwp:
+        type: output
+        mutable: true
+        filename_template: "{{ user.mesh_label }}.diag_ugwp.$Y-$M-$D_$h.$m.$s.nc"
+        io_type: "pnetcdf,cdf5"
+        clobber_node: replace_files
+        packages: ugwp_diags_stream
+        output_interval: 06:00:00
+        files:
+          - stream_list.atmosphere.diag_ugwp
+      surface: !remove
+      lbc_in: !remove
+
+post:
+  mpassit:
+    nmldir: '{{ user.mpas_app }}/parm/mpassit/hfip_2025'
+    parmdir: '{{ user.mpas_app }}/parm/mpassit/hfip_2025'
