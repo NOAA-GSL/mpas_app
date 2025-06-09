@@ -1,0 +1,27 @@
+name: CI
+on:
+  pull_request:
+    branches:
+      - '**'
+  push:
+    branches:
+      - '**'
+  workflow_dispatch:
+    branches:
+      - '**'
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Conda
+        run: .github/scripts/install-conda.sh
+      - name: Create Environment
+        run: |
+          source /tmp/conda/etc/profile.d/conda.sh
+          make devenv
+      - name: Format Check
+        run: .github/scripts/format-check.sh
+      - name: Test
+        run: .github/scripts/test.sh
