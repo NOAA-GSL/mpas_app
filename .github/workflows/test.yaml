@@ -19,7 +19,6 @@ jobs:
         run: .github/scripts/install-conda.sh
       - name: Create Environment
         run: |
-          source /tmp/conda/etc/profile.d/conda.sh
           make devenv
       - name: Format Check
         run: .github/scripts/format-check.sh
