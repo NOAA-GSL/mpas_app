@@ -49,14 +49,16 @@ EOF_USAGE
 
 install_miniforge () {
 
+  local hardware installer os version
   set -x
   os=$(uname)
   test $os == Darwin && os=MacOSX
   hardware=$(uname -m)
-  installer=Miniforge3-${os}-${hardware}.sh
-  curl -L -O "https://github.com/conda-forge/miniforge/releases/download/23.3.1-1/${installer}"
-  bash ./${installer} -bfp "${CONDA_BUILD_DIR}"
-  rm ${installer}
+  installer=Miniforge3-$os-$hardware.sh
+  version=25.3.0-3
+  curl -L -O https://github.com/conda-forge/miniforge/releases/download/$version/$installer
+  bash $installer -bfp "$CONDA_BUILD_DIR"
+  rm -v $installer
 }
 
 install_conda_envs () {
