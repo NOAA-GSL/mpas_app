@@ -57,7 +57,7 @@ install_miniforge () {
   installer=Miniforge3-$os-$hardware.sh
   version=25.3.0-3
   curl -L -O https://github.com/conda-forge/miniforge/releases/download/$version/$installer
-  bash $installer -bfp "$CONDA_BUILD_DIR"
+  bash $installer -bfp $CONDA_DIR
   rm -v $installer
   cat <<EOF >$CONDA_DIR/.condarc
 notify_outdated_conda: false
@@ -66,7 +66,7 @@ EOF
 
 install_conda_envs () {
 
-  source ${CONDA_BUILD_DIR}/etc/profile.d/conda.sh
+  source $CONDA_DIR/etc/profile.d/conda.sh
   conda activate
   if ! conda env list | grep -q "^mpas_app\s" ; then
     conda env create -y -n mpas_app --file environment.yml
@@ -161,7 +161,7 @@ usage_error () {
 
 # default settings
 LCL_PID=$$
-CONDA_BUILD_DIR="./conda"
+CONDA_DIR=./conda
 COMPILER=""
 BUILD_JOBS=4
 CONTINUE=false
@@ -193,7 +193,7 @@ while :; do
     --build) BUILD=true ;;
     --exec-dir=?*) EXEC_DIR=${1#*=} ;;
     --exec-dir|--exec-dir=) usage_error "$1 requires argument." ;;
-    --conda-dir=?*) CONDA_BUILD_DIR=${1#*=} ;;
+    --conda-dir=?*) CONDA_DIR=${1#*=} ;;
     --conda-dir|--conda-dir=) usage_error "$1 requires argument." ;;
     --build-jobs=?*) BUILD_JOBS=$((${1#*=})) ;;
     --build-jobs|--build-jobs=) usage_error "$1 requires argument." ;;
@@ -231,7 +231,7 @@ fi
 MACHINE="${PLATFORM}"
 printf "PLATFORM(MACHINE)=${PLATFORM}\n" >&2
 
-if [ ! -d "${CONDA_BUILD_DIR}" ]; then
+if [ ! -d $CONDA_DIR ]; then
   install_miniforge
   install_conda_envs
 fi
@@ -243,9 +243,9 @@ fi
 
 # Conda environment should have linux utilities to perform these tasks on macos.
 MPAS_APP_DIR=$(cd "$(dirname "$(readlink -f -n "${BASH_SOURCE[0]}" )" )" && pwd -P)
-CONDA_BUILD_DIR="$(readlink -f "${CONDA_BUILD_DIR}")"
+CONDA_DIR=$(readlink -f $CONDA_DIR)
 EXEC_DIR=${EXEC_DIR:-${MPAS_APP_DIR}/exec}
-echo ${CONDA_BUILD_DIR} > ${MPAS_APP_DIR}/conda_loc
+echo $CONDA_DIR > $MPAS_APP_DIR/conda_loc
 
 if [ -z "${COMPILER}" ] ; then
   case ${PLATFORM} in
