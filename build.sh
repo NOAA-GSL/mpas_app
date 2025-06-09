@@ -59,6 +59,9 @@ install_miniforge () {
   curl -L -O https://github.com/conda-forge/miniforge/releases/download/$version/$installer
   bash $installer -bfp "$CONDA_BUILD_DIR"
   rm -v $installer
+  cat <<EOF >$CONDA_DIR/.condarc
+notify_outdated_conda: false
+EOF
 }
 
 install_conda_envs () {
