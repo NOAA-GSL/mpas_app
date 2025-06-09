@@ -66,7 +66,7 @@ install_conda_envs () {
   source ${CONDA_BUILD_DIR}/etc/profile.d/conda.sh
   conda activate
   if ! conda env list | grep -q "^mpas_app\s" ; then
-    mamba env create -n mpas_app --file environment.yml
+    mamba env create -y -n mpas_app --file environment.yml
   fi
   APPLICATION=$(echo ${APPLICATION} | tr '[a-z]' '[A-Z]')
   if ! conda env list | grep -q "^ungrib\s" ; then
