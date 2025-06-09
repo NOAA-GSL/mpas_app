@@ -1,7 +1,7 @@
-jq==1.7.*
 make==4.4.*
 mypy==1.15.*
-pytest==8.3.*
 pytest-cov==6.1.*
+pytest-regressions==2.7.*
 pytest-xdist==3.6.*
+pytest==8.3.*
 ruff==0.11.*

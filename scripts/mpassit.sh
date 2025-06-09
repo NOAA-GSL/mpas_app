@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Default settings
 MODULE_FILE="/path/to/default/modulefile"

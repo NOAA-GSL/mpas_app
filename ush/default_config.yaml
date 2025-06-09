@@ -8,7 +8,7 @@ user:
   cycle_frequency: 12
   experiment_dir: ""
   first_cycle: !!timestamp 2023-09-15T00:00:00
-  last_cycle:  !!timestamp 2023-09-15T00:00:00
+  last_cycle: !!timestamp 2023-09-15T00:00:00
   ics:
     external_model: GFS
     offset_hours: 0
@@ -17,9 +17,6 @@ user:
     interval_hours: 6
     offset_hours: 0
   mesh_label: hrrrv5
-  # mpas_app is the path to the clone and is set by experiment_gen.py
-  mpas_app: ""
-  # platform is a user-required setting
   platform: big_computer
   workflow_blocks:
     - cold_start.yaml

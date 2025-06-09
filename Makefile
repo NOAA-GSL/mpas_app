@@ -20,8 +20,14 @@ format:
 lint:
 	ruff check .
 
+regtest:
+	pytest --cov -k "regtest" tests
+
 rmenv:
 	$(if $(ENVPATH),conda env remove -y -n $(ENVNAME))
+
+systest:
+	pytest --cov -k "systest" -n 5 tests
 
 test: lint typecheck unittest
 
@@ -29,4 +35,4 @@ typecheck:
 	mypy --install-types --non-interactive .
 
 unittest:
-	pytest --cov -n 4 tests
+	pytest --cov -k "not regtest and not systest" -n 8 tests
