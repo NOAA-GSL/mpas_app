@@ -29,20 +29,22 @@ create_conda_envs () {
 export_var_defaults () {
 
   export MPAS_APP_DIR=$(dirname $(readlink -f ${BASH_SOURCE[0]}))
+  export MODULE_NAME=
+
+  # Defaults for CLI options:
 
   export ATMOS_ONLY=false
-  export AUTOCLEAN=false
   export BUILD_JOBS=4
   export COMPILER=
   export CONDA_DIR=$MPAS_APP_DIR/conda
   export DEBUG=false
   export EXEC_DIR=$MPAS_APP_DIR/exec
   export GEN_F90=false
-  export MODULE_NAME=
   export OPENMP=false
   export PLATFORM=
   export SINGLE_PRECISION=false
   export TAU=false
+  export TIMER_LIB=
   export USE_PAPI=false
   export VERBOSE=false
 
@@ -92,7 +94,6 @@ install_mpas () {
     make clean CORE=atmosphere
     make clean CORE=init_atmosphere
     opts="-j $BUILD_JOBS"
-    test $AUTOCLEAN == true && opts+=" AUTOCLEAN=true"
     test $DEBUG == true && opts+=" DEBUG=true"
     test $GEN_F90 == true && opts+=" GEN_F90=true"
     test $OPENMP == true && opts+=" OPENMP=true"
@@ -147,91 +148,29 @@ install_upp () {
 }
 
 process_cli_args () {
-  while :; do
+  local long name opts
+  long=atmos-only,build-jobs:,compiler:,conda-dir:,debug,exec-dir:,gen-f90,help,openmp,platform:,single-precision,tau,timer-lib:,use-papi
+  name=$(basename ${BASH_SOURCE[0]})
+  opts=$(getopt -n $name -o c:hp:v -l $long -- "$@") || usage_error
+  eval set -- $opts
+  while true; do
     case $1 in
-      --atmos-only)
-        ATMOS_ONLY=true
-        break
-        ;;
-      --build-jobs=?*)
-        BUILD_JOBS=$((${1#*=}))
-        break
-        ;;
-      --build-jobs|--build-jobs=)
-      usage_error "$1 requires argument"
-      break
-      ;;
-      --compiler=?*|-c=?*)
-        COMPILER=${1#*=}
-        break
-        ;;
-      --compiler|--compiler=|-c|-c=)
-      usage_error "$1 requires argument"
-      break
-      ;;
-      --conda-dir=?*)
-        CONDA_DIR=${1#*=}
-        break
-        ;;
-      --conda-dir|--conda-dir=)
-      usage_error "$1 requires argument"
-      break
-      ;;
-      --debug)
-        DEBUG=true
-        break
-        ;;
-      --exec-dir=?*)
-        EXEC_DIR=${1#*=}
-        break
-        ;;
-      --exec-dir|--exec-dir=)
-      usage_error "$1 requires argument"
-      ;;
-      --help|-h)
-        usage
-        exit 0
-        ;;
-      --openmp)
-        OPENMP=true
-        break
-        ;;
-      --platform=?*|-p=?*)
-        PLATFORM=${1#*=}
-        break
-        ;;
-      --platform|--platform=|-p|-p=)
-      usage_error "$1 requires argument"
-      ;;
-      --single-precision)
-        SINGLE_PRECISION=true
-        break
-        ;;
-      --tau)
-        TAU=true
-        break
-        ;;
-      --timer-lib=?*)
-        TIMER_LIB=${1#*=}
-        break
-        ;;
-      --timer-lib|--timer-lib=)
-      usage_error "$1 requires argument"
-      ;;
-      --use-papi)
-        USE_PAPI=true
-        break
-        ;;
-      --verbose=?*|--verbose=)
-      usage_error "$1 argument ignored"
-      ;;
-      --verbose|-v)
-        VERBOSE=true
-        break
-        ;;
-      *)
-        usage_error "Unknown option: $1"
-        ;;
+      --help|-h)          usage && exit 0        ;;
+      --atmos-only)       ATMOS_ONLY=true        ;;
+      --build-jobs)       BUILD_JOBS=$2 && shift ;;
+      --compiler|-c)      COMPILER=$2 && shift   ;;
+      --conda-dir)        CONDA_DIR=$2 && shift  ;;
+      --debug)            DEBUG=true             ;;
+      --exec-dir)         EXEC_DIR=$2 && shift   ;;
+      --gen-f90)          GEN_F90=true           ;;
+      --openmp)           OPENMP=true            ;;
+      --platform|-p)      PLATFORM=$2 && shift   ;;
+      --single-precision) SINGLE_PRECISION=true  ;;
+      --tau)              TAU=true               ;;
+      --timer-lib)        TIMER_LIB=$2 && shift  ;;
+      --use-papi)         USE_PAPI=true          ;;
+      --verbose|-v)       VERBOSE=true           ;;
+      --)                 break                  ;;
     esac
     shift
   done
@@ -242,18 +181,17 @@ show_settings () {
   Settings:
 
     ATMOS_ONLY=$ATMOS_ONLY
-    AUTOCLEAN=$AUTOCLEAN
     BUILD_JOBS=$BUILD_JOBS
     COMPILER=$COMPILER
     CONDA_DIR=$CONDA_DIR
     DEBUG=$DEBUG
     EXEC_DIR=$EXEC_DIR
     GEN_F90=$GEN_F90
-    MPAS_APP_DIR=$MPAS_APP_DIR
     OPENMP=$OPENMP
     PLATFORM=$PLATFORM
     SINGLE_PRECISION=$SINGLE_PRECISION
     TAU=$TAU
+    TIMER_LIB=$TIMER_LIB
     USE_PAPI=$USE_PAPI
     VERBOSE=$VERBOSE
 
@@ -262,26 +200,26 @@ EOF_SETTINGS
 
 usage () {
   cat << EOF
-Usage: $0 --platform=PLATFORM [OPTIONS]
+Usage: $0 --platform PLATFORM [OPTIONS]
 
 OPTIONS
-  -c, --compiler=COMPILER (choices: gcc, gnu, intel)
+  -c, --compiler COMPILER (choices: gcc, gnu, intel)
       compiler to use (default: depends on platform)
   -h, --help
       show this help guide
-  -p, --platform=PLATFORM (choices: hera, hercules, jet, ursa)
+  -p, --platform PLATFORM (choices: hera, hercules, jet, ursa)
       system where build is being performed
   -v, --verbose
       build with verbose output
   --atmos-only
       do not built init_atmosphere core, only atmosphere
-  --build-jobs=BUILD_JOBS
+  --build-jobs BUILD_JOBS
       number of build jobs (default: 4)
-  --conda-dir=CONDA_DIR
+  --conda-dir CONDA_DIR
       directory to install conda info (default: conda/ under MPAS App)
   --debug
       build MPAS in debug mode
-  --exec-dir=EXEC_DIR
+  --exec-dir EXEC_DIR
       directory to install executables into (default: exec/ under MPAS App)
   --openmp
       build with OpenMP support
@@ -289,7 +227,7 @@ OPTIONS
       build with single-precision reals, not default double-precision
   --tau
       builds MPAS with TAU profiling hooks
-  --timer-lib=TIMER_LIB
+  --timer-lib TIMER_LIB
       timer library interface to use for profiling MPAS (choices: gptl, native, tau)
   --use-papi
       build MPAS with PAPI timers
@@ -297,7 +235,7 @@ EOF
 }
 
 usage_error () {
-  echo "ERROR: $1"
+  test -n "$1" && echo "ERROR: $1"
   usage
   exit 1
 }
