@@ -1,19 +1,6 @@
 #!/bin/bash -e
 
-# Main function:
-
-main () {
-  echo "=> Building"
-  prepare_shell $@
-  prepare_conda
-  install_mpas init_atmosphere
-  install_mpas atmosphere
-  install_mpassit
-  install_upp
-  echo "=> Ready"
-}
-
-# Support functions:
+# Functions:
 
 create_conda_envs () {
   . $CONDA_DIR/etc/profile.d/conda.sh
@@ -294,6 +281,13 @@ validate_and_update_vars () {
   test $VERBOSE == true && show_settings || true
 }
 
-# Invocation of main function:
+# Top-level logic:
 
-main $@
+echo "=> Building"
+prepare_shell $@
+prepare_conda
+install_mpas init_atmosphere
+install_mpas atmosphere
+install_mpassit
+install_upp
+echo "=> Ready"
