@@ -77,7 +77,6 @@ install_mpas () {
   echo "=> Building MPAS $CORE"
   (
     cd $MPAS_APP_DIR/src/MPAS-Model
-    test $COMPILER == gnu && build_target=gfortran
     source $MPAS_APP_DIR/etc/lmod-setup.sh $PLATFORM
     module purge
     module use $MPAS_APP_DIR/modulefiles
@@ -94,7 +93,12 @@ install_mpas () {
     test $TAU == true && opts+=" TAU=true"
     test $USE_PAPI == true && opts+=" USE_PAPI=true"
     test $VERBOSE == true && opts+=" VERBOSE=1"
-    make ${build_target:-intel-mpi} CORE=${PREFIX}atmosphere $opts
+    case $COMPILER in
+      gnu)   build_target=gfortran  && break ;;
+      intel) build_target=intel-mpi && break ;;
+      *)     fail "Compiler should be one of: gnu, intel"
+    esac
+    make $build_target CORE=$CORE $opts
     mkdir -pv $EXEC_DIR
     cp -v ${CORE}_model $EXEC_DIR
     test $CORE == atmosphere && ./build_tables_tempo || true
@@ -204,7 +208,7 @@ usage () {
 Usage: $0 --platform PLATFORM [OPTIONS]
 
 OPTIONS
-  -c, --compiler COMPILER (choices: gcc, gnu, intel)
+  -c, --compiler COMPILER (choices: gnu, intel)
       compiler to use (default: depends on platform)
   -h, --help
       show this help guide
@@ -257,6 +261,7 @@ validate_and_update_vars () {
     case $PLATFORM in
       hera|hercules|jet)
         COMPILER=intel
+        break
         ;;
       *)
         COMPILER=intel
@@ -264,7 +269,6 @@ validate_and_update_vars () {
         ;;
     esac
   fi
-  test $COMPILER == gcc && COMPILER=gnu
 
   # Validate/update module-file settings:
 
