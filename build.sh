@@ -5,11 +5,11 @@ create_conda_envs () {
   conda activate
   if ! conda env list | grep -q "^mpas_app\s"; then
     echo "=> Creating mpas_app conda environment"
-    conda env create -y -n mpas_app --file environment.yml
+    mamba env create -y -n mpas_app --file environment.yml
   fi
   if ! conda env list | grep -q "^ungrib\s"; then
     echo "=> Creating ungrib conda environment"
-    conda create -y -n ungrib -c maddenp ungrib
+    mamba create -y -n ungrib -c maddenp ungrib
   fi
 }
 
@@ -22,10 +22,8 @@ install_conda () {
     hardware=$(uname -m)
     installer=Miniforge3-$os-$hardware.sh
     version=25.3.0-3
-    set -x
     curl -sSLO https://github.com/conda-forge/miniforge/releases/download/$version/$installer
     bash $installer -bfp $CONDA_DIR
-    set +x
     rm -v $installer
     cat <<EOF >$CONDA_DIR/.condarc
 channels: [conda-forge]
@@ -91,7 +89,7 @@ install_mpassit () {
 }
 
 install_upp () {
-  test $PLATFORM != ursa && return
+  test $PLATFORM == ursa && return
   echo "=> Building UPP"
   (
     . $MPAS_APP_DIR/etc/lmod-setup.sh $PLATFORM
@@ -283,9 +281,9 @@ create_conda_envs
 
 # Build components:
 
-# install_mpas_init
-install_mpas_model
-# install_mpassit
-# install_upp
+install_mpas init
+install_mpas model
+install_mpassit
+install_upp
 
 echo "=> Ready"
