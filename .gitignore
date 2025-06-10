@@ -1,3 +1,8 @@
-.coverage
+/.coverage
+/build_upp/
+/conda/
+/conda_loc
+/exec/
+/include/
+/lib/
 __pycache__
-conda_loc
