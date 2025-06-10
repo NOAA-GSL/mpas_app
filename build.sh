@@ -94,11 +94,11 @@ install_mpas () {
     test $USE_PAPI == true && opts+=" USE_PAPI=true"
     test $VERBOSE == true && opts+=" VERBOSE=1"
     case $COMPILER in
-      gnu)   build_target=gfortran  && break ;;
-      intel) build_target=intel-mpi && break ;;
+      gnu)   target=gfortran  && break ;;
+      intel) target=intel-mpi && break ;;
       *)     fail "Compiler should be one of: gnu, intel"
     esac
-    make $build_target CORE=$CORE $opts
+    make $target CORE=$CORE $opts
     mkdir -pv $EXEC_DIR
     cp -v ${CORE}_model $EXEC_DIR
     test $CORE == atmosphere && ./build_tables_tempo || true
