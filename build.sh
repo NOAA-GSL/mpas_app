@@ -1,17 +1,19 @@
 #!/bin/bash -e
 
+# Main function:
+
 main () {
-  export_var_defaults
-  process_cli_args $@
-  validate_and_update_vars
-  install_conda
-  create_conda_envs
-  install_mpas init
-  install_mpas model
+  echo "=> Building"
+  prepare_shell $@
+  prepare_conda
+  install_mpas init_atmosphere
+  install_mpas atmosphere
   install_mpassit
   install_upp
   echo "=> Ready"
 }
+
+# Support functions:
 
 create_conda_envs () {
   . $CONDA_DIR/etc/profile.d/conda.sh
@@ -50,6 +52,11 @@ export_var_defaults () {
 
 }
 
+fail () {
+  echo $1
+  exit 1
+}
+
 install_conda () {
   test -d $CONDA_DIR && return
   echo "=> Installing conda"
@@ -71,18 +78,16 @@ EOF
 }
 
 install_mpas () {
-  local component opts PREFIX
-  component="${1:-}"
-  if [[ $component == init ]]; then
+  local CORE errmsg
+  errmsg="BUG: ${FUNCNAME[0]} takes 'init_atmosphere' or 'atmosphere'"
+  test $# -eq 1 || fail "$errmsg"
+  export CORE="${1:-}"
+  if [[ $CORE == init_atmosphere ]]; then
     test $ATMOS_ONLY == true && return
-    export PREFIX=init_
-  elif [[ $component == model ]]; then
-    unset PREFIX
-  else
-    echo "Call ${FUNCNAME[0]} with either 'init' or 'model'"
-    exit 1
+  elif [[ $CORE != atmosphere ]]; then
+    fail "$errmsg"
   fi
-  echo "=> Building MPAS ${PREFIX}atmosphere"
+  echo "=> Building MPAS $CORE"
   (
     cd $MPAS_APP_DIR/src/MPAS-Model
     test $COMPILER == gnu && build_target=gfortran
@@ -104,10 +109,8 @@ install_mpas () {
     test $VERBOSE == true && opts+=" VERBOSE=1"
     make ${build_target:-intel-mpi} CORE=${PREFIX}atmosphere $opts
     mkdir -pv $EXEC_DIR
-    cp -v ${PREFIX}atmosphere_model $EXEC_DIR
-    if [[ $component == model ]]; then
-      ./build_tables_tempo
-    fi
+    cp -v ${CORE}_model $EXEC_DIR
+    test $CORE == atmosphere && ./build_tables_tempo || true
   )
 }
 
@@ -145,6 +148,17 @@ install_upp () {
     make -j $BUILD_JOBS
     make install
   )
+}
+
+prepare_conda () {
+  install_conda
+  create_conda_envs
+}
+
+prepare_shell () {
+  export_var_defaults
+  process_cli_args $@
+  validate_and_update_vars
 }
 
 process_cli_args () {
@@ -247,7 +261,7 @@ validate_and_update_vars () {
   # Validate/update platform settings:
 
   PLATFORM=$(echo $PLATFORM | tr '[A-Z]' '[a-z]')
-  test -z "$PLATFORM" && usage_error "Please set PLATFORM"
+  test -z "$PLATFORM" && usage_error "Please specify platform"
 
   # Validate/update compiler settings:
 
@@ -279,5 +293,7 @@ validate_and_update_vars () {
 
   test $VERBOSE == true && show_settings || true
 }
+
+# Invocation of main function:
 
 main $@
