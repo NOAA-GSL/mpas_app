@@ -3,7 +3,7 @@
 # Functions:
 
 create_conda_envs () {
-  . $CONDA_DIR/etc/profile.d/conda.sh
+  source $CONDA_DIR/etc/profile.d/conda.sh
   conda activate
   if ! conda env list | grep -q "^mpas_app\s"; then
     echo "=> Creating mpas_app conda environment"
@@ -78,7 +78,7 @@ install_mpas () {
   (
     cd $MPAS_APP_DIR/src/MPAS-Model
     test $COMPILER == gnu && build_target=gfortran
-    . $MPAS_APP_DIR/etc/lmod-setup.sh $PLATFORM
+    source $MPAS_APP_DIR/etc/lmod-setup.sh $PLATFORM
     module purge
     module use $MPAS_APP_DIR/modulefiles
     module load $MODULE_NAME
@@ -118,7 +118,7 @@ install_upp () {
   test $PLATFORM == ursa && return
   echo "=> Building UPP"
   (
-    . $MPAS_APP_DIR/etc/lmod-setup.sh $PLATFORM
+    source $MPAS_APP_DIR/etc/lmod-setup.sh $PLATFORM
     module purge
     module use $MPAS_APP_DIR/src/UPP/modulefiles
     module load $PLATFORM
