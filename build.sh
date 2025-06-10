@@ -22,8 +22,10 @@ install_conda () {
     hardware=$(uname -m)
     installer=Miniforge3-$os-$hardware.sh
     version=25.3.0-3
+    set -x
     curl -sSLO https://github.com/conda-forge/miniforge/releases/download/$version/$installer
     bash $installer -bfp $CONDA_DIR
+    set +x
     rm -v $installer
     cat <<EOF >$CONDA_DIR/.condarc
 channels: [conda-forge]
@@ -33,9 +35,19 @@ EOF
   echo $CONDA_DIR >$MPAS_APP_DIR/conda_loc
 }
 
-install_mpas_init () {
-  test $ATMOS_ONLY == true && return
-  echo "=> Building MPAS init_atmosphere"
+install_mpas () {
+  local component opts PREFIX
+  component="${1:-}"
+  if [[ $component == init ]]; then
+    test $ATMOS_ONLY == true && return
+    export PREFIX=init_
+  elif [[ $component == model ]]; then
+    unset PREFIX
+  else
+    echo "Call ${FUNCNAME[0]} with either 'init' or 'model'"
+    exit 1
+  fi
+  echo "=> Building MPAS ${PREFIX}atmosphere"
   (
     cd $MPAS_APP_DIR/src/MPAS-Model
     test $COMPILER == gnu && build_target=gfortran
@@ -46,28 +58,22 @@ install_mpas_init () {
     module list
     make clean CORE=atmosphere
     make clean CORE=init_atmosphere
-    make ${build_target:-intel-mpi} CORE=init_atmosphere $(mpas_make_options)
+    opts="-j $BUILD_JOBS"
+    test $AUTOCLEAN == true && opts+=" AUTOCLEAN=true"
+    test $DEBUG == true && opts+=" DEBUG=true"
+    test $GEN_F90 == true && opts+=" GEN_F90=true"
+    test $OPENMP == true && opts+=" OPENMP=true"
+    test $SINGLE_PRECISION == true && opts+=" PRECISION=single"
+    test -n "$TIMER_LIB" && opts+=" TIMER_LIB=$TIMER_LIB"
+    test $TAU == true && opts+=" TAU=true"
+    test $USE_PAPI == true && opts+=" USE_PAPI=true"
+    test $VERBOSE == true && opts+=" VERBOSE=1"
+    make ${build_target:-intel-mpi} CORE=${PREFIX}atmosphere $opts
     mkdir -pv $EXEC_DIR
-    cp -v init_atmosphere_model $EXEC_DIR
-  )
-}
-
-install_mpas_model () {
-  echo "=> Building MPAS atmosphere"
-  (
-    cd $MPAS_APP_DIR/src/MPAS-Model
-    test $COMPILER == gnu && build_target=gfortran
-    . $MPAS_APP_DIR/etc/lmod-setup.sh $PLATFORM
-    module purge
-    module use $MPAS_APP_DIR/modulefiles
-    module load $MODULE_NAME
-    module list
-    make clean CORE=atmosphere
-    make clean CORE=init_atmosphere
-    make ${build_target:-intel-mpi} CORE=atmosphere $(mpas_make_options)
-    mkdir -pv $EXEC_DIR
-    cp -v atmosphere_model $EXEC_DIR
-    ./build_tables_tempo
+    cp -v ${PREFIX}atmosphere_model $EXEC_DIR
+    if [[ $component == model ]]; then
+      ./build_tables_tempo
+    fi
   )
 }
 
@@ -105,20 +111,6 @@ install_upp () {
     make -j $BUILD_JOBS
     make install
   )
-}
-
-mpas_make_options () {
-  opts="-j $BUILD_JOBS"
-  test $AUTOCLEAN == true && opts+=" AUTOCLEAN=true"
-  test $DEBUG == true && opts+=" DEBUG=true"
-  test $GEN_F90 == true && opts+=" GEN_F90=true"
-  test $OPENMP == true && opts+=" OPENMP=true"
-  test $SINGLE_PRECISION == true && opts+=" PRECISION=single"
-  test -n "$TIMER_LIB" && opts+=" TIMER_LIB=$TIMER_LIB"
-  test $TAU == true && opts+=" TAU=true"
-  test $USE_PAPI == true && opts+=" USE_PAPI=true"
-  test $VERBOSE == true && opts+=" VERBOSE=1"
-  echo $opts
 }
 
 show_settings () {
