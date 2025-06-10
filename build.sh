@@ -1,14 +1,15 @@
 #!/bin/bash -e
 
 create_conda_envs () {
-  echo "=> Creating conda environments"
   . $CONDA_DIR/etc/profile.d/conda.sh
   conda activate
   if ! conda env list | grep -q "^mpas_app\s"; then
-    conda env create -y -q -n mpas_app --file environment.yml
+    echo "=> Creating mpas_app conda environment"
+    conda env create -y -n mpas_app --file environment.yml
   fi
   if ! conda env list | grep -q "^ungrib\s"; then
-    conda create -y -q -n ungrib -c maddenp ungrib
+    echo "=> Creating ungrib conda environment"
+    conda create -y -n ungrib -c maddenp ungrib
   fi
 }
 
@@ -33,7 +34,7 @@ EOF
 }
 
 install_mpas_init () {
-  test $ATMOS_ONLY == false && return
+  test $ATMOS_ONLY == true && return
   echo "=> Building MPAS init_atmosphere"
   (
     cd $MPAS_APP_DIR/src/MPAS-Model
@@ -41,7 +42,7 @@ install_mpas_init () {
     . $MPAS_APP_DIR/etc/lmod-setup.sh $PLATFORM
     module purge
     module use $MPAS_APP_DIR/modulefiles
-    module load $MODULE_FILE
+    module load $MODULE_NAME
     module list
     make clean CORE=atmosphere
     make clean CORE=init_atmosphere
@@ -59,7 +60,7 @@ install_mpas_model () {
     . $MPAS_APP_DIR/etc/lmod-setup.sh $PLATFORM
     module purge
     module use $MPAS_APP_DIR/modulefiles
-    module load $MODULE_FILE
+    module load $MODULE_NAME
     module list
     make clean CORE=atmosphere
     make clean CORE=init_atmosphere
@@ -140,7 +141,7 @@ show_settings () {
     USE_PAPI=$USE_PAPI
     VERBOSE=$VERBOSE
 
-  EOF_SETTINGS
+EOF_SETTINGS
 }
 
 usage () {
@@ -152,10 +153,10 @@ OPTIONS
       show this help guide
   -p, --platform=PLATFORM
       name of machine you are building on
-      (e.g. hera | jet | hercules | ursa)
+      (e.g. hera | hercules | jet | ursa)
   -c, --compiler=COMPILER
       compiler to use; default depends on platform
-      (e.g. intel | gnu | gcc)
+      (e.g. gcc | gnu | intel)
   --continue
       continue with existing build
   --exec-dir=EXEC_DIR
@@ -271,17 +272,12 @@ test $COMPILER == gcc && COMPILER=gnu
 
 # Validate/update module-file settings:
 
-MODULE_FILE="build_$PLATFORM_$COMPILER"
-test $PLATFORM == ursa && MODULE_FILE=${MODULE_FILE}_ifort
-if [[ ! -f $MPAS_APP_DIR/modulefiles/$MODULE_FILE.lua ]]; then
-  cat <<EOF
-ERROR: Module file does not exist for platform/compiler
-  MODULE_FILE=$MODULE_FILE
-  PLATFORM=$PLATFORM
-  COMPILER=$COMPILER
-
-EOF
-  usage_error "Please make sure PLATFORM and COMPILER are set correctly"
+export MODULE_NAME="build_${PLATFORM}_$COMPILER"
+test $PLATFORM == ursa && MODULE_NAME+=_ifort
+module_path=$MPAS_APP_DIR/modulefiles/$MODULE_NAME.lua
+if [[ ! -f $module_path ]]; then
+  echo "ERROR: Module file '$module_path' does not exist for platform '$PLATFORM' and compiler '$COMPILER'"
+  exit 1
 fi
 
 # Optionally show settings:
@@ -295,7 +291,9 @@ create_conda_envs
 
 # Build components:
 
-install_mpas_init
+# install_mpas_init
 install_mpas_model
-install_mpassit
-install_upp
+# install_mpassit
+# install_upp
+
+echo "=> Ready"
