@@ -94,9 +94,9 @@ install_mpas () {
     test $USE_PAPI == true && opts+=" USE_PAPI=true"
     test $VERBOSE == true && opts+=" VERBOSE=1"
     case $COMPILER in
-      gnu)   target=gfortran  && break ;;
-      intel) target=intel-mpi && break ;;
-      *)     fail "Compiler should be one of: gnu, intel"
+      gnu)   target=gfortran                              ;;
+      intel) target=intel-mpi                             ;;
+      *)     fail "Compiler should be one of: gnu, intel" ;;
     esac
     make $target CORE=$CORE $opts
     mkdir -pv $EXEC_DIR
@@ -261,7 +261,6 @@ validate_and_update_vars () {
     case $PLATFORM in
       hera|hercules|jet)
         COMPILER=intel
-        break
         ;;
       *)
         COMPILER=intel
