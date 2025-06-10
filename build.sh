@@ -1,5 +1,18 @@
 #!/bin/bash -e
 
+main () {
+  export_var_defaults
+  process_cli_args $@
+  validate_and_update_vars
+  install_conda
+  create_conda_envs
+  install_mpas init
+  install_mpas model
+  install_mpassit
+  install_upp
+  echo "=> Ready"
+}
+
 create_conda_envs () {
   . $CONDA_DIR/etc/profile.d/conda.sh
   conda activate
@@ -11,6 +24,31 @@ create_conda_envs () {
     echo "=> Creating ungrib conda environment"
     mamba create -y -n ungrib -c maddenp ungrib
   fi
+}
+
+export_var_defaults () {
+
+  # Defaults for vars maybe overriden via CLI:
+
+  export ATMOS_ONLY=false
+  export AUTOCLEAN=false
+  export BUILD_JOBS=4
+  export COMPILER=
+  export CONDA_DIR=$(readlink -f ./conda)
+  export DEBUG=false
+  export GEN_F90=false
+  export MODULE_NAME=
+  export OPENMP=false
+  export PLATFORM=
+  export SINGLE_PRECISION=false
+  export TAU=false
+  export USE_PAPI=false
+  export VERBOSE=false
+
+  # Derived vars:
+
+  export MPAS_APP_DIR=$(dirname $(readlink -f ${BASH_SOURCE[0]}))
+  export EXEC_DIR=${EXEC_DIR:-$MPAS_APP_DIR/exec}
 }
 
 install_conda () {
@@ -111,6 +149,41 @@ install_upp () {
   )
 }
 
+process_cli_args () {
+  while :; do
+    case $1 in
+      --help|-h) usage; exit 0 ;;
+      --platform=?*|-p=?*) PLATFORM=${1#*=} ;;
+      --platform|--platform=|-p|-p=) usage_error "$1 requires argument." ;;
+      --compiler=?*|-c=?*) COMPILER=${1#*=} ;;
+      --compiler|--compiler=|-c|-c=) usage_error "$1 requires argument." ;;
+      --build) BUILD=true ;;
+      --exec-dir=?*) EXEC_DIR=${1#*=} ;;
+      --exec-dir|--exec-dir=) usage_error "$1 requires argument." ;;
+      --conda-dir=?*) CONDA_DIR=${1#*=} ;;
+      --conda-dir|--conda-dir=) usage_error "$1 requires argument." ;;
+      --build-jobs=?*) BUILD_JOBS=$((${1#*=})) ;;
+      --build-jobs|--build-jobs=) usage_error "$1 requires argument." ;;
+      --verbose|-v) VERBOSE=true ;;
+      --verbose=?*|--verbose=) usage_error "$1 argument ignored." ;;
+      --atmos-only ) ATMOS_ONLY=true ;;
+      --debug) DEBUG=true ;;
+      --use-papi) USE_PAPI=true ;;
+      --tau ) TAU=true ;;
+      --autoclean ) AUTOCLEAN=true ;;
+      --gen-f90 ) GEN_F90=true ;;
+      --timer-lib=?*) TIMER_LIB=${1#*=} ;;
+      --timer-lib| --timer-lib= ) usage_error "$1 requires argument." ;;
+      --openmp ) OPENMP=true ;;
+      --single-precision ) SINGLE_PRECISION=true ;;
+     # unknown
+      -?*|?*) usage_error "Unknown option $1" ;;
+      *) break
+    esac
+    shift
+  done
+}
+
 show_settings () {
   cat << EOF_SETTINGS
   Settings:
@@ -184,106 +257,44 @@ usage_error () {
   exit 1
 }
 
-# Initial/default settings:
+validate_and_update_vars () {
 
-export ATMOS_ONLY=false
-export AUTOCLEAN=false
-export BUILD_JOBS=4
-export COMPILER=""
-export CONDA_DIR=$(readlink -f ./conda)
-export DEBUG=false
-export GEN_F90=false
-export OPENMP=false
-export SINGLE_PRECISION=false
-export TAU=false
-export USE_PAPI=false
-export VERBOSE=false
+  local module_path
 
-# Derived settings:
+  # Validate/update platform settings:
 
-export MPAS_APP_DIR=$(dirname $(readlink -f ${BASH_SOURCE[0]}))
-export EXEC_DIR=${EXEC_DIR:-$MPAS_APP_DIR/exec}
+  PLATFORM=$(echo $PLATFORM | tr '[A-Z]' '[a-z]')
+  test -z "$PLATFORM" && usage_error "Please set PLATFORM"
 
-# Process optional arguments:
+  # Validate/update compiler settings:
 
-while :; do
-  case $1 in
-    --help|-h) usage; exit 0 ;;
-    --platform=?*|-p=?*) PLATFORM=${1#*=} ;;
-    --platform|--platform=|-p|-p=) usage_error "$1 requires argument." ;;
-    --compiler=?*|-c=?*) COMPILER=${1#*=} ;;
-    --compiler|--compiler=|-c|-c=) usage_error "$1 requires argument." ;;
-    --build) BUILD=true ;;
-    --exec-dir=?*) EXEC_DIR=${1#*=} ;;
-    --exec-dir|--exec-dir=) usage_error "$1 requires argument." ;;
-    --conda-dir=?*) CONDA_DIR=${1#*=} ;;
-    --conda-dir|--conda-dir=) usage_error "$1 requires argument." ;;
-    --build-jobs=?*) BUILD_JOBS=$((${1#*=})) ;;
-    --build-jobs|--build-jobs=) usage_error "$1 requires argument." ;;
-    --verbose|-v) VERBOSE=true ;;
-    --verbose=?*|--verbose=) usage_error "$1 argument ignored." ;;
-    --atmos-only ) ATMOS_ONLY=true ;;
-    --debug) DEBUG=true ;;
-    --use-papi) USE_PAPI=true ;;
-    --tau ) TAU=true ;;
-    --autoclean ) AUTOCLEAN=true ;;
-    --gen-f90 ) GEN_F90=true ;;
-    --timer-lib=?*) TIMER_LIB=${1#*=} ;;
-    --timer-lib| --timer-lib= ) usage_error "$1 requires argument." ;;
-    --openmp ) OPENMP=true ;;
-    --single-precision ) SINGLE_PRECISION=true ;;
-   # unknown
-    -?*|?*) usage_error "Unknown option $1" ;;
-    *) break
-  esac
-  shift
-done
+  COMPILER=$(echo $COMPILER | tr '[A-Z]' '[a-z]')
+  if [[ -z "$COMPILER" ]]; then
+    case $PLATFORM in
+      hera|hercules|jet)
+        COMPILER=intel
+        ;;
+      *)
+        COMPILER=intel
+        echo WARNING: Setting default COMPILER=intel for new platform $PLATFORM
+        ;;
+    esac
+  fi
+  test $COMPILER == gcc && COMPILER=gnu
 
-# Validate/update platform settings:
+  # Validate/update module-file settings:
 
-PLATFORM=$(echo $PLATFORM | tr '[A-Z]' '[a-z]')
-test -z "$PLATFORM" && usage_error "ERROR: Please set PLATFORM."
+  MODULE_NAME="build_${PLATFORM}_$COMPILER"
+  test $PLATFORM == ursa && MODULE_NAME+=_ifort
+  module_path=$MPAS_APP_DIR/modulefiles/$MODULE_NAME.lua
+  if [[ ! -f $module_path ]]; then
+    echo "ERROR: Module file '$module_path' not found for platform '$PLATFORM' and compiler '$COMPILER'"
+    exit 1
+  fi
 
-# Validate/update compiler settings:
+  # Optionally show settings:
 
-COMPILER=$(echo $COMPILER | tr '[A-Z]' '[a-z]')
-if [[ -z "$COMPILER" ]]; then
-  case $PLATFORM in
-    hera|hercules|jet)
-      COMPILER=intel
-      ;;
-    *)
-      COMPILER=intel
-      echo WARNING: Setting default COMPILER=intel for new platform $PLATFORM
-      ;;
-  esac
-fi
-test $COMPILER == gcc && COMPILER=gnu
+  test $VERBOSE == true && show_settings || true
+}
 
-# Validate/update module-file settings:
-
-export MODULE_NAME="build_${PLATFORM}_$COMPILER"
-test $PLATFORM == ursa && MODULE_NAME+=_ifort
-module_path=$MPAS_APP_DIR/modulefiles/$MODULE_NAME.lua
-if [[ ! -f $module_path ]]; then
-  echo "ERROR: Module file '$module_path' does not exist for platform '$PLATFORM' and compiler '$COMPILER'"
-  exit 1
-fi
-
-# Optionally show settings:
-
-test $VERBOSE == true && show_settings
-
-# Install conda and environments:
-
-install_conda
-create_conda_envs
-
-# Build components:
-
-install_mpas init
-install_mpas model
-install_mpassit
-install_upp
-
-echo "=> Ready"
+main $@
