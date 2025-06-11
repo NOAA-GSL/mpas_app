@@ -182,7 +182,7 @@ process_cli_args () {
 }
 
 show_settings () {
-  cat << EOF_SETTINGS
+  cat << EOF
   Settings:
 
     ATMOS_ONLY=$ATMOS_ONLY
@@ -200,7 +200,7 @@ show_settings () {
     USE_PAPI=$USE_PAPI
     VERBOSE=$VERBOSE
 
-EOF_SETTINGS
+EOF
 }
 
 usage () {
