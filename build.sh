@@ -148,11 +148,11 @@ prepare_conda () {
 
 prepare_shell () {
   export_var_defaults
-  process_cli_args $@
+  parse_cli_args $@
   validate_and_update_vars
 }
 
-process_cli_args () {
+parse_cli_args () {
   local long name opts
   long=atmos-only,build-jobs:,compiler:,conda-dir:,debug,exec-dir:,gen-f90,help,openmp,platform:,single-precision,tau,timer-lib:,use-papi
   name=$(basename ${BASH_SOURCE[0]})
@@ -217,7 +217,7 @@ OPTIONS
   -v, --verbose
       build with verbose output
   --atmos-only
-      do not built init_atmosphere core, only atmosphere
+      do not build init_atmosphere core, only atmosphere
   --build-jobs BUILD_JOBS
       number of build jobs (default: 4)
   --conda-dir CONDA_DIR
