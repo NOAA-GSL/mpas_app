@@ -39,6 +39,8 @@ def test_validate__user_first_and_last_cycle(config):
     [
         (["cycle_frequency"], MSG.gt0, 0),
         (["cycle_frequency"], MSG.int, None),
+        (["driver_validation_blocks"], MSG.list, None),
+        (["driver_validation_blocks"], MSG.str, [None]),
         (["first_cycle"], MSG.dt, None),
         (["ics", "external_model"], MSG.model, "FOO"),
         (["ics", "offset_hours"], MSG.ge0, -1),
@@ -73,6 +75,7 @@ def test_validate__user_fail_values_bad_experiment_dir(config):
     "keys",
     [
         ["cycle_frequency"],
+        ["driver_validation_blocks"],
         ["experiment_dir"],
         ["first_cycle"],
         ["ics", "external_model"],
@@ -119,6 +122,7 @@ def config(tmp_path):
     return {
         "user": {
             "cycle_frequency": 12,
+            "driver_validation_blocks": ["forecast.mpas", "post.upp"],
             "experiment_dir": tmp_path,
             "first_cycle": datetime(2025, 4, 30, 12, tzinfo=timezone.utc),
             "ics": {"external_model": "GFS", "offset_hours": 0},

@@ -5,8 +5,10 @@ Creates the experiment directory and populates it with necessary configuration a
 """
 
 import argparse
+import inspect
 import logging
 import sys
+from datetime import timedelta
 from pathlib import Path
 from shutil import copy
 from subprocess import STDOUT, CalledProcessError, check_output
@@ -14,6 +16,10 @@ from subprocess import STDOUT, CalledProcessError, check_output
 from uwtools.api import rocoto
 from uwtools.api.config import YAMLConfig, get_yaml_config, realize
 from uwtools.api.logging import use_uwtools_logger
+from uwtools.api.mpas import MPAS
+from uwtools.api.mpas_init import MPASInit
+from uwtools.api.ungrib import Ungrib
+from uwtools.api.upp import UPP
 
 sys.path.append(str(Path(__file__).parent.parent))
 
@@ -49,6 +55,7 @@ def generate_workflow_files(
     for block in workflow_blocks:
         workflow_config.update_from(get_yaml_config(block))
     workflow_config.update_from(experiment_config)
+    validate_driver_blocks(workflow_config)
     realize(
         input_config=workflow_config,
         output_file=experiment_file,
@@ -157,6 +164,30 @@ def stage_grid_files(
         if not part_file.is_file():
             logging.info("Creating grid file for %s procs", nprocs)
             create_grid_files(experiment_dir, mesh_file_path, nprocs)
+
+
+def validate_driver_blocks(workflow_config: YAMLConfig) -> None:
+    """
+    Validate driver configuration blocks in workflow_config.
+    """
+    driver_classes = {
+        "mpas": MPAS,
+        "mpas_init": MPASInit,
+        "ungrib": Ungrib,
+        "upp": UPP,
+    }
+    for block in workflow_config["user"]["driver_validation_blocks"]:
+        section, driver = block.rsplit(".", 1)
+        driver_class = driver_classes[driver]
+        kwargs = {
+            "config": workflow_config,
+            "cycle": workflow_config["user"]["first_cycle"],
+            "key_path": section.split("."),
+        }
+        if "leadtime" in inspect.signature(driver_class).parameters:
+            kwargs["leadtime"] = timedelta(hours=0)
+        driver = driver_class(**kwargs)
+        driver.validate()
 
 
 if __name__ == "__main__":

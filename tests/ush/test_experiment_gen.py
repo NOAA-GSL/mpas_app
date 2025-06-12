@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timezone
 from pathlib import Path
 from subprocess import CalledProcessError
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from pytest import fixture, raises
 from uwtools.api.config import YAMLConfig, get_yaml_config
@@ -17,6 +17,7 @@ def test_config(tmp_path):
         "create_ics": {"mpas_init": {"execution": {"batchargs": {"cores": 32}}}},
         "forecast": {"mpas": {"execution": {"batchargs": {"nodes": 2, "tasks_per_node": 32}}}},
         "user": {
+            "first_cycle": "2023-09-15T00:00:00",
             "platform": "jet",
             "ics": {"external_model": "GFS"},
             "lbcs": {"external_model": "GFS"},
@@ -29,6 +30,7 @@ def validated_config(tmp_path):
     return validation.Config(
         user=validation.User(
             mesh_label="testmesh",
+            driver_validation_blocks=["section1.driver_a", "section2.driver_b"],
             experiment_dir=tmp_path,
             workflow_blocks=["block1.yaml"],
             cycle_frequency=6,
@@ -79,6 +81,42 @@ def test_create_grid_files_failure(tmp_path, caplog):
         assert "Failed with status: 1" in caplog.text
 
 
+def test_validate_driver_blocks(test_config):
+    test_config["user"]["driver_validation_blocks"] = [
+        "some.section.mpas",
+        "another.section.ungrib",
+    ]
+    instance_a = MagicMock()
+    instance_b = MagicMock()
+    with (
+        patch.object(experiment_gen, "MPAS", return_value=instance_a) as mpas,
+        patch.object(experiment_gen, "Ungrib", return_value=instance_b) as ungrib,
+        patch.object(experiment_gen.inspect, "signature") as signature,
+    ):
+        signature.return_value.parameters = {}
+        experiment_gen.validate_driver_blocks(test_config)
+        mpas.assert_called_once()
+        ungrib.assert_called_once()
+        instance_a.validate.assert_called_once()
+        instance_b.validate.assert_called_once()
+
+
+def test_validate_driver_blocks_leadtime(test_config):
+    test_config["user"]["driver_validation_blocks"] = [
+        "some.post.upp",
+    ]
+    instance_upp = MagicMock()
+    with (
+        patch.object(experiment_gen, "UPP", return_value=instance_upp) as upp,
+        patch.object(experiment_gen.inspect, "signature") as signature,
+    ):
+        signature.return_value.parameters = {"leadtime": MagicMock()}
+        experiment_gen.validate_driver_blocks(test_config)
+        upp.assert_called_once()
+        instance_upp.validate.assert_called_once()
+        assert "leadtime" in upp.call_args.kwargs
+
+
 def test_generate_workflow_files(tmp_path, test_config, validated_config):
     experiment_file = tmp_path / "experiment.yaml"
     mpas_app = tmp_path / "mpas_app"
@@ -86,6 +124,7 @@ def test_generate_workflow_files(tmp_path, test_config, validated_config):
         patch.object(
             experiment_gen, "get_yaml_config", return_value=YAMLConfig(test_config)
         ) as get_yaml_config,
+        patch.object(experiment_gen, "validate_driver_blocks"),
         patch.object(experiment_gen, "realize") as realize,
         patch.object(experiment_gen.rocoto, "realize", return_value=True) as rocoto_realize,
         patch("sys.exit") as sysexit,
@@ -104,6 +143,7 @@ def test_generate_workflow_files_failure(tmp_path, test_config, validated_config
     mpas_app = tmp_path / "mpas_app"
     with (
         patch.object(experiment_gen, "get_yaml_config", return_value=YAMLConfig(test_config)),
+        patch.object(experiment_gen, "validate_driver_blocks"),
         patch.object(experiment_gen, "realize"),
         patch.object(experiment_gen.rocoto, "realize", return_value=False),
         patch("sys.exit") as sysexit,
@@ -123,6 +163,7 @@ def test_main(validated_config, test_config, tmp_path):
             "prepare_configs",
             return_value=(experiment_config, Path("/some/mpas_app")),
         ),
+        patch.object(experiment_gen, "validate_driver_blocks"),
         patch.object(experiment_gen, "validate", return_value=validated_config),
         patch.object(
             experiment_gen,

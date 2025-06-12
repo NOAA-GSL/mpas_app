@@ -26,6 +26,7 @@ class LBCs(BaseModel):
 
 class User(BaseModel):
     cycle_frequency: PositiveInt
+    driver_validation_blocks: list[str]
     experiment_dir: Path
     first_cycle: datetime
     ics: ICs
