@@ -4,8 +4,9 @@ from datetime import datetime  # noqa: TC003
 from pathlib import Path  # noqa: TC003
 from typing import Literal
 
-from pydantic import BaseModel, NonNegativeInt, PositiveInt, model_validator
+from pydantic import BaseModel, Field, NonNegativeInt, PositiveInt, model_validator
 
+Driver = {"mpas", "mpas_init", "ungrib", "upp"}
 Model = Literal["GFS", "RAP"]
 
 
@@ -26,7 +27,7 @@ class LBCs(BaseModel):
 
 class User(BaseModel):
     cycle_frequency: PositiveInt
-    driver_validation_blocks: list[str]
+    driver_validation_blocks: list[str] | None = Field(default=None)
     experiment_dir: Path
     first_cycle: datetime
     ics: ICs
@@ -41,6 +42,18 @@ class User(BaseModel):
         if self.last_cycle < self.first_cycle:
             msg = "last_cycle cannot precede first_cycle"
             raise ValueError(msg)
+        return self
+
+    @model_validator(mode="after")
+    def validate_driver_blocks(self):
+        for path in self.driver_validation_blocks or []:
+            driver = path.rsplit(".", 1)[-1]
+            if driver not in Driver:
+                msg = (
+                    f"Invalid driver in 'driver_validation_blocks': '{driver}'. "
+                    f"Allowed drivers are: {Driver}."
+                )
+                raise ValueError(msg)
         return self
 
 

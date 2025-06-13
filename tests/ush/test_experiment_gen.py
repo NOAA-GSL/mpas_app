@@ -30,7 +30,7 @@ def validated_config(tmp_path):
     return validation.Config(
         user=validation.User(
             mesh_label="testmesh",
-            driver_validation_blocks=["section1.driver_a", "section2.driver_b"],
+            driver_validation_blocks=["section1.mpas", "section2.upp"],
             experiment_dir=tmp_path,
             workflow_blocks=["block1.yaml"],
             cycle_frequency=6,
@@ -83,27 +83,27 @@ def test_create_grid_files_failure(tmp_path, caplog):
 
 def test_validate_driver_blocks(test_config):
     test_config["user"]["driver_validation_blocks"] = [
-        "some.section.mpas",
-        "another.section.ungrib",
+        "forecast.mpas",
+        "prepare_grib_ics.ungrib",
     ]
-    instance_a = MagicMock()
-    instance_b = MagicMock()
+    instance_mpas = MagicMock()
+    instance_ungrib = MagicMock()
     with (
-        patch.object(experiment_gen, "MPAS", return_value=instance_a) as mpas,
-        patch.object(experiment_gen, "Ungrib", return_value=instance_b) as ungrib,
+        patch.object(experiment_gen, "MPAS", return_value=instance_mpas) as mpas,
+        patch.object(experiment_gen, "Ungrib", return_value=instance_ungrib) as ungrib,
         patch.object(experiment_gen.inspect, "signature") as signature,
     ):
         signature.return_value.parameters = {}
         experiment_gen.validate_driver_blocks(test_config)
         mpas.assert_called_once()
         ungrib.assert_called_once()
-        instance_a.validate.assert_called_once()
-        instance_b.validate.assert_called_once()
+        instance_mpas.validate.assert_called_once()
+        instance_ungrib.validate.assert_called_once()
 
 
 def test_validate_driver_blocks_leadtime(test_config):
     test_config["user"]["driver_validation_blocks"] = [
-        "some.post.upp",
+        "post.upp",
     ]
     instance_upp = MagicMock()
     with (

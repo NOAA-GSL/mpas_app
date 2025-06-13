@@ -22,6 +22,21 @@ MSG = SimpleNamespace(
 # Tests
 
 
+def test_validate__user_driver_validation_blocks(config):
+    keys = ["user", "driver_validation_blocks"]
+    # Fine: one of four supported drivers.
+    valid_blocks = ["some.ungrib", "some.mpas_init", "some.mpas", "some.upp"]
+    validation.validate(with_set(config, valid_blocks, *keys))
+    # Fine: no driver_validation_blocks specified.
+    config_without_blocks = with_del(config, *keys)
+    validation.validate(config_without_blocks)
+    # Wrong: unsupported driver.
+    invalid_blocks = ["some.mpas", "some.wrong.driver"]
+    with raises(ValidationError) as e:
+        validation.validate(with_set(config, invalid_blocks, *keys))
+    assert "Invalid driver in 'driver_validation_blocks'" in str(e.value)
+
+
 def test_validate__user_first_and_last_cycle(config):
     keys = ["user", "last_cycle"]
     # Fine: last_cycle coincides with first_cycle.
@@ -39,7 +54,7 @@ def test_validate__user_first_and_last_cycle(config):
     [
         (["cycle_frequency"], MSG.gt0, 0),
         (["cycle_frequency"], MSG.int, None),
-        (["driver_validation_blocks"], MSG.list, None),
+        (["driver_validation_blocks"], MSG.list, "FOO"),
         (["driver_validation_blocks"], MSG.str, [None]),
         (["first_cycle"], MSG.dt, None),
         (["ics", "external_model"], MSG.model, "FOO"),
@@ -75,7 +90,6 @@ def test_validate__user_fail_values_bad_experiment_dir(config):
     "keys",
     [
         ["cycle_frequency"],
-        ["driver_validation_blocks"],
         ["experiment_dir"],
         ["first_cycle"],
         ["ics", "external_model"],
