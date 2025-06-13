@@ -163,7 +163,6 @@ def test_main(validated_config, test_config, tmp_path):
             "prepare_configs",
             return_value=(experiment_config, Path("/some/mpas_app")),
         ),
-        patch.object(experiment_gen, "validate_driver_blocks"),
         patch.object(experiment_gen, "validate", return_value=validated_config),
         patch.object(
             experiment_gen,
