@@ -168,7 +168,7 @@ def stage_grid_files(
 
 def validate_driver_blocks(workflow_config: YAMLConfig) -> None:
     """
-    Validate driver configuration blocks in workflow_config.
+    Validate driver configuration blocks in workflow config.
     """
     driver_classes = {
         "mpas": MPAS,

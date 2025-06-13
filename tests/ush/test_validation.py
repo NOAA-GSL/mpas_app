@@ -28,13 +28,13 @@ def test_validate__user_driver_validation_blocks(config):
     valid_blocks = ["some.ungrib", "some.mpas_init", "some.mpas", "some.upp"]
     validation.validate(with_set(config, valid_blocks, *keys))
     # Fine: no driver_validation_blocks specified.
-    config_without_blocks = with_del(config, *keys)
-    validation.validate(config_without_blocks)
+    config_without_block = with_del(config, *keys)
+    validation.validate(config_without_block)
     # Wrong: unsupported driver.
-    invalid_blocks = ["some.mpas", "some.wrong.driver"]
+    unsupported_drivers = ["some.hooligan", "some.wrong.driver"]
     with raises(ValidationError) as e:
-        validation.validate(with_set(config, invalid_blocks, *keys))
-    assert "Invalid driver in 'driver_validation_blocks'" in str(e.value)
+        validation.validate(with_set(config, unsupported_drivers, *keys))
+    assert "Unsupported driver in 'driver_validation_blocks'" in str(e.value)
 
 
 def test_validate__user_first_and_last_cycle(config):

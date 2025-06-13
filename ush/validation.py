@@ -50,8 +50,8 @@ class User(BaseModel):
             driver = path.rsplit(".", 1)[-1]
             if driver not in Driver:
                 msg = (
-                    f"Invalid driver in 'driver_validation_blocks': '{driver}'. "
-                    f"Allowed drivers are: {Driver}."
+                    f"Unsupported driver in 'driver_validation_blocks': '{driver}'. "
+                    f"Supported drivers are: {Driver}."
                 )
                 raise ValueError(msg)
         return self

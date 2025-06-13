@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timezone
 from pathlib import Path
 from subprocess import CalledProcessError
-from unittest.mock import MagicMock, patch
+from unittest.mock import Mock, patch
 
 from pytest import fixture, raises
 from uwtools.api.config import YAMLConfig, get_yaml_config
@@ -30,7 +30,7 @@ def validated_config(tmp_path):
     return validation.Config(
         user=validation.User(
             mesh_label="testmesh",
-            driver_validation_blocks=["section1.mpas", "section2.upp"],
+            driver_validation_blocks=["some.mpas", "some.upp"],
             experiment_dir=tmp_path,
             workflow_blocks=["block1.yaml"],
             cycle_frequency=6,
@@ -83,11 +83,11 @@ def test_create_grid_files_failure(tmp_path, caplog):
 
 def test_validate_driver_blocks(test_config):
     test_config["user"]["driver_validation_blocks"] = [
-        "forecast.mpas",
-        "prepare_grib_ics.ungrib",
+        "some.mpas",
+        "some.ungrib",
     ]
-    instance_mpas = MagicMock()
-    instance_ungrib = MagicMock()
+    instance_mpas = Mock()
+    instance_ungrib = Mock()
     with (
         patch.object(experiment_gen, "MPAS", return_value=instance_mpas) as mpas,
         patch.object(experiment_gen, "Ungrib", return_value=instance_ungrib) as ungrib,
@@ -103,14 +103,14 @@ def test_validate_driver_blocks(test_config):
 
 def test_validate_driver_blocks_leadtime(test_config):
     test_config["user"]["driver_validation_blocks"] = [
-        "post.upp",
+        "some.upp",
     ]
-    instance_upp = MagicMock()
+    instance_upp = Mock()
     with (
         patch.object(experiment_gen, "UPP", return_value=instance_upp) as upp,
         patch.object(experiment_gen.inspect, "signature") as signature,
     ):
-        signature.return_value.parameters = {"leadtime": MagicMock()}
+        signature.return_value.parameters = {"leadtime": Mock()}
         experiment_gen.validate_driver_blocks(test_config)
         upp.assert_called_once()
         instance_upp.validate.assert_called_once()
