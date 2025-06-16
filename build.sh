@@ -150,6 +150,7 @@ prepare_shell () {
   export_var_defaults
   parse_cli_args $@
   validate_and_update_vars
+  show_settings
 }
 
 parse_cli_args () {
@@ -225,17 +226,17 @@ OPTIONS
   --debug
       build MPAS in debug mode
   --exec-dir EXEC_DIR
-      directory to install executables into (default: exec/ under MPAS App)
+      install executables here (default: exec/ under MPAS App)
   --openmp
       build with OpenMP support
   --single-precision
-      build with single-precision reals, not default double-precision
+      build with single-precision reals (default: double-precision)
   --tau
-      builds MPAS with TAU profiling hooks
+      build with TAU profiling hooks
   --timer-lib TIMER_LIB
-      timer library interface to use for profiling MPAS (choices: gptl, native, tau)
+      timer library interface to use for profiling (choices: gptl, native, tau)
   --use-papi
-      build MPAS with PAPI timers
+      build with PAPI timers
 EOF
 }
 
@@ -278,10 +279,6 @@ validate_and_update_vars () {
     echo "ERROR: Module file '$module_path' not found for platform '$PLATFORM' and compiler '$COMPILER'"
     exit 1
   fi
-
-  # Optionally show settings:
-
-  test $VERBOSE == true && show_settings || true
 }
 
 # Top-level logic:
