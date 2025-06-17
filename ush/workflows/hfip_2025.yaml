@@ -111,3 +111,7 @@ post:
   mpassit:
     nmldir: '{{ user.mpas_app }}/parm/mpassit/hfip_2025'
     parmdir: '{{ user.mpas_app }}/parm/mpassit/hfip_2025'
+  upp:
+    control_file: "{{ user.mpas_app }}/parm/upp/postxconfig-NT-hfip_mpas.txt"
+    files_to_copy:
+      postxconfig-NT.txt: "{{ user.mpas_app }}/parm/upp/postxconfig-NT-hfip_mpas.txt"
