@@ -223,6 +223,12 @@ def test_validate_driver_blocks(test_config):
         ungrib_config.validate.assert_called_once()
 
 
+def test_validate_driver_blocks_failure(test_config):
+    test_config["user"]["driver_validation_blocks"] = ["forecast.mpas"]
+    with raises(KeyError):
+        experiment_gen.validate_driver_blocks(YAMLConfig(test_config["forecast"]))
+
+
 def test_validate_driver_blocks_leadtime(test_config):
     test_config["user"]["driver_validation_blocks"] = [
         "some.upp",
