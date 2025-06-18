@@ -46,7 +46,7 @@ class User(BaseModel):
 
     @model_validator(mode="after")
     def validate_driver_blocks(self):
-        valid_drivers = set(yaml_keys_to_classes().keys())
+        valid_drivers = yaml_keys_to_classes().keys()
         for key_path in self.driver_validation_blocks or []:
             driver = key_path.rsplit(".", 1)[-1]
             if driver not in valid_drivers:

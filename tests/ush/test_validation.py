@@ -24,13 +24,13 @@ MSG = SimpleNamespace(
 
 def test_validate__user_driver_validation_blocks(config):
     keys = ["user", "driver_validation_blocks"]
-    # Fine: one of four supported drivers.
+    # Fine: one of the uwtools drivers
     valid_blocks = ["some.ungrib", "some.mpas_init", "some.mpas", "some.upp"]
     validation.validate(with_set(config, valid_blocks, *keys))
-    # Fine: no driver_validation_blocks specified.
+    # Fine: no driver_validation_blocks specified
     config_without_block = with_del(config, *keys)
     validation.validate(config_without_block)
-    # Wrong: unsupported driver.
+    # Wrong: unsupported driver
     unsupported_drivers = ["some.typo", "some.wrong.driver"]
     with raises(ValidationError) as e:
         validation.validate(with_set(config, unsupported_drivers, *keys))
