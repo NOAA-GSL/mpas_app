@@ -1,354 +1,293 @@
 #!/bin/bash -e
 
-#usage instructions
-usage () {
-cat << EOF_USAGE
-Usage: $0 --platform=PLATFORM [OPTIONS] 
+# Functions:
 
-OPTIONS
-  -h, --help
-      show this help guide
-  -p, --platform=PLATFORM
-      name of machine you are building on
-      (e.g. hera | jet | hercules | ursa)
-  -c, --compiler=COMPILER
-      compiler to use; default depends on platform
-      (e.g. intel | gnu | gcc)
-  --continue
-      continue with existing build
-  --clean
-      does a "make clean"
-  --exec-dir=EXEC_DIR
-      installation binary directory name ("exec" by default; any name is available)
-  --conda-dir=CONDA_DIR
-      installation location for miniconda (SRW clone conda subdirectory by default)
-  --build-jobs=BUILD_JOBS
-      number of build jobs; defaults to 4
-  -v, --verbose
-      build with verbose output
-  --atmos-only
-      build the MPAS atmosphere core only, this option assumes you have already built the init_atmosphere_model to create the necessary initial conditions and executables.
-  --debug
-      build MPAS with debug mode
-  --use-papi
-      builds version of MPAS using PAPI for timers
-  --tau
-      builds version of MPAS using TAU hooks for profiling
-  --autoclean
-      forces a clean of MPAS infrastructure prior to build new core
-  --gen-f90
-      generates intermediate .f90 files through CPP, and builds with them
-  --timer-lib=TIMER_LIB
-      selects the timer library interface to be used for profiling the model, options are native, gptl, and tau
-  --openmp
-      builds and links with OpenMP flags
-  --single-precision
-      builds with default single-precision real kind.  Default is to use double-precision
-EOF_USAGE
-}
-
-install_miniforge () {
-
-  set -x
-  os=$(uname)
-  test $os == Darwin && os=MacOSX
-  hardware=$(uname -m)
-  installer=Miniforge3-${os}-${hardware}.sh
-  curl -L -O "https://github.com/conda-forge/miniforge/releases/download/23.3.1-1/${installer}"
-  bash ./${installer} -bfp "${CONDA_BUILD_DIR}"
-  rm ${installer}
-}
-
-install_conda_envs () {
-
-  source ${CONDA_BUILD_DIR}/etc/profile.d/conda.sh
+create_conda_envs () {
+  source $CONDA_DIR/etc/profile.d/conda.sh
   conda activate
-  if ! conda env list | grep -q "^mpas_app\s" ; then
-    mamba env create -n mpas_app --file environment.yml
+  if ! conda env list | grep -q "^mpas_app\s"; then
+    echo "=> Creating mpas_app conda environment"
+    mamba env create -y -n mpas_app --file environment.yml
   fi
-  APPLICATION=$(echo ${APPLICATION} | tr '[a-z]' '[A-Z]')
-  if ! conda env list | grep -q "^ungrib\s" ; then
+  if ! conda env list | grep -q "^ungrib\s"; then
+    echo "=> Creating ungrib conda environment"
     mamba create -y -n ungrib -c maddenp ungrib
   fi
 }
 
-install_mpas_init () {
+export_var_defaults () {
 
-  pushd ${MPAS_APP_DIR}/src/MPAS-Model
-  make clean CORE=atmosphere
-  make clean CORE=init_atmosphere
-  if [[ ${COMPILER} = "gnu" ]]; then
-    build_target="gfortran"
-  fi
-  make ${build_target:-intel-mpi} CORE=init_atmosphere ${MPAS_MAKE_OPTIONS}
-  cp -v init_atmosphere_model ${EXEC_DIR}
-  make clean CORE=init_atmosphere
-  popd
+  export MPAS_APP_DIR=$(dirname $(readlink -f ${BASH_SOURCE[0]}))
+  export MODULE_NAME=
+
+  # Defaults for CLI options:
+
+  export ATMOS_ONLY=false
+  export BUILD_JOBS=4
+  export COMPILER=
+  export CONDA_DIR=$MPAS_APP_DIR/conda
+  export DEBUG=false
+  export EXEC_DIR=$MPAS_APP_DIR/exec
+  export GEN_F90=false
+  export OPENMP=false
+  export PLATFORM=
+  export SINGLE_PRECISION=false
+  export TAU=false
+  export TIMER_LIB=
+  export USE_PAPI=false
+  export VERBOSE=false
+
 }
 
-install_mpas_model () {
-
-  pushd ${MPAS_APP_DIR}/src/MPAS-Model
-  make clean CORE=atmosphere
-  if [[ ${COMPILER} = "gnu" ]]; then
-    build_target="gfortran"
-  fi
-  make ${build_target:-intel-mpi} CORE=atmosphere ${MPAS_MAKE_OPTIONS}
-  cp -v atmosphere_model ${EXEC_DIR}
-  ./build_tables_tempo
-  popd
-}
-
-install_mpassit () {
-  module purge
-  pushd ${MPAS_APP_DIR}/src/MPASSIT
-  compiler=intel
-  if [[ $PLATFORM == ursa ]] ; then
-    compiler=intel-llvm
-  fi
-  ./build.sh $PLATFORM $compiler
-  cp -v bin/mpassit ${EXEC_DIR}
-  popd
-}
-
-install_upp () {
-  module purge
-  module use $MPAS_APP_DIR/src/UPP/modulefiles
-  module load $PLATFORM
-  d=$MPAS_APP_DIR/build_upp
-  mkdir -pv $d
-  pushd $d
-  args=(
-    -DCMAKE_INSTALL_PREFIX=$MPAS_APP_DIR
-    -DCMAKE_INSTALL_BINDIR="exec"
-    -DBUILD_WITH_WRFIO=ON
-    $MPAS_APP_DIR/src/UPP/
-  )
-  cmake ${args[*]} 
-  make -j 8
-  make install
-  popd
-}
-
-# print settings
-settings () {
-cat << EOF_SETTINGS
-Settings:
-
-  MPAS_APP_DIR=${MPAS_APP_DIR}
-  EXEC_DIR=${EXEC_DIR}
-  PLATFORM=${PLATFORM}
-  COMPILER=${COMPILER}
-  CONTINUE=${CONTINUE}
-  BUILD_JOBS=${BUILD_JOBS}
-  VERBOSE=${VERBOSE}
-  
-EOF_SETTINGS
-}
-
-# print usage error and exit
-usage_error () {
-  printf "ERROR: $1\n" >&2
-  usage >&2
+fail () {
+  echo $1
   exit 1
 }
 
+install_conda () {
+  test -d $CONDA_DIR && return
+  echo "=> Installing conda"
+  (
+    os=$(uname)
+    test $os == Darwin && os=MacOSX
+    hardware=$(uname -m)
+    installer=Miniforge3-$os-$hardware.sh
+    version=25.3.0-3
+    curl -sSLO https://github.com/conda-forge/miniforge/releases/download/$version/$installer
+    bash $installer -bfp $CONDA_DIR
+    rm -v $installer
+    cat <<EOF >$CONDA_DIR/.condarc
+channels: [conda-forge]
+notify_outdated_conda: false
+EOF
+  )
+  echo $CONDA_DIR >$MPAS_APP_DIR/conda_loc
+}
 
-# default settings
-LCL_PID=$$
-CONDA_BUILD_DIR="./conda"
-COMPILER=""
-BUILD_JOBS=4
-CONTINUE=false
-VERBOSE=false
-ATMOS_ONLY=false
-DEBUG=false
-USE_PAPI=false
-TAU=false
-AUTOCLEAN=false
-GEN_F90=false
-OPENMP=false
-SINGLE_PRECISION=false
+install_mpas () {
+  local CORE errmsg
+  errmsg="BUG: ${FUNCNAME[0]} takes 'init_atmosphere' or 'atmosphere'"
+  test $# -eq 1 || fail "$errmsg"
+  export CORE="${1:-}"
+  if [[ $CORE == init_atmosphere ]]; then
+    test $ATMOS_ONLY == true && return
+  elif [[ $CORE != atmosphere ]]; then
+    fail "$errmsg"
+  fi
+  echo "=> Building MPAS $CORE"
+  (
+    cd $MPAS_APP_DIR/src/MPAS-Model
+    source $MPAS_APP_DIR/etc/lmod-setup.sh $PLATFORM
+    module purge
+    module use $MPAS_APP_DIR/modulefiles
+    module load $MODULE_NAME
+    module list
+    make clean CORE=atmosphere
+    make clean CORE=init_atmosphere
+    opts="-j $BUILD_JOBS"
+    test $DEBUG == true && opts+=" DEBUG=true"
+    test $GEN_F90 == true && opts+=" GEN_F90=true"
+    test $OPENMP == true && opts+=" OPENMP=true"
+    test $SINGLE_PRECISION == true && opts+=" PRECISION=single"
+    test -n "$TIMER_LIB" && opts+=" TIMER_LIB=$TIMER_LIB"
+    test $TAU == true && opts+=" TAU=true"
+    test $USE_PAPI == true && opts+=" USE_PAPI=true"
+    test $VERBOSE == true && opts+=" VERBOSE=1"
+    case $COMPILER in
+      gnu)   target=gfortran                              ;;
+      intel) target=intel-mpi                             ;;
+      *)     fail "Compiler should be one of: gnu, intel" ;;
+    esac
+    make $target CORE=$CORE $opts
+    mkdir -pv $EXEC_DIR
+    cp -v ${CORE}_model $EXEC_DIR
+    test $CORE == atmosphere && ./build_tables_tempo || true
+  )
+}
 
-# Make options
-CLEAN=false
+install_mpassit () {
+  echo "=> Building MPASSIT"
+  (
+    cd $MPAS_APP_DIR/src/MPASSIT
+    module purge
+    compiler=intel
+    test $PLATFORM == ursa && compiler=intel-llvm
+    ./build.sh $PLATFORM $compiler
+    mkdir -pv $EXEC_DIR
+    cp -v bin/mpassit $EXEC_DIR
+  )
+}
 
+install_upp () {
+  test $PLATFORM == ursa && return
+  echo "=> Building UPP"
+  (
+    source $MPAS_APP_DIR/etc/lmod-setup.sh $PLATFORM
+    module purge
+    module use $MPAS_APP_DIR/src/UPP/modulefiles
+    module load $PLATFORM
+    d=$MPAS_APP_DIR/build_upp
+    mkdir -pv $d
+    cd $d
+    args=(
+      -DCMAKE_INSTALL_PREFIX=$MPAS_APP_DIR
+      -DCMAKE_INSTALL_BINDIR=exec
+      -DBUILD_WITH_WRFIO=ON
+      $MPAS_APP_DIR/src/UPP/
+    )
+    cmake ${args[*]}
+    make -j $BUILD_JOBS
+    make install
+  )
+}
 
-# process optional arguments
-while :; do
-  case $1 in
-    --help|-h) usage; exit 0 ;;
-    --platform=?*|-p=?*) PLATFORM=${1#*=} ;;
-    --platform|--platform=|-p|-p=) usage_error "$1 requires argument." ;;
-    --compiler=?*|-c=?*) COMPILER=${1#*=} ;;
-    --compiler|--compiler=|-c|-c=) usage_error "$1 requires argument." ;;
-    --continue) CONTINUE=true ;;
-    --continue=?*|--continue=) usage_error "$1 argument ignored." ;;
-    --clean) CLEAN=true ;;
-    --build) BUILD=true ;;
-    --exec-dir=?*) EXEC_DIR=${1#*=} ;;
-    --exec-dir|--exec-dir=) usage_error "$1 requires argument." ;;
-    --conda-dir=?*) CONDA_BUILD_DIR=${1#*=} ;;
-    --conda-dir|--conda-dir=) usage_error "$1 requires argument." ;;
-    --build-jobs=?*) BUILD_JOBS=$((${1#*=})) ;;
-    --build-jobs|--build-jobs=) usage_error "$1 requires argument." ;;
-    --verbose|-v) VERBOSE=true ;;
-    --verbose=?*|--verbose=) usage_error "$1 argument ignored." ;;
-    --atmos-only ) ATMOS_ONLY=true ;;
-    --debug) DEBUG=true ;;
-    --use-papi) USE_PAPI=true ;;
-    --tau ) TAU=true ;;
-    --autoclean ) AUTOCLEAN=true ;;
-    --gen-f90 ) GEN_F90=true ;;
-    --timer-lib=?*) TIMER_LIB=${1#*=} ;;
-    --timer-lib| --timer-lib= ) usage_error "$1 requires argument." ;;
-    --openmp ) OPENMP=true ;;
-    --single-precision ) SINGLE_PRECISION=true ;;
-   # unknown
-    -?*|?*) usage_error "Unknown option $1" ;;
-    *) break
-  esac
-  shift
-done
+prepare_conda () {
+  install_conda
+  create_conda_envs
+}
 
-# Ensure uppercase / lowercase ============================================
-PLATFORM=$(echo ${PLATFORM} | tr '[A-Z]' '[a-z]')
-COMPILER=$(echo ${COMPILER} | tr '[A-Z]' '[a-z]')
+prepare_shell () {
+  export_var_defaults
+  parse_cli_args $@
+  validate_and_update_vars
+  show_settings
+}
 
-# check if PLATFORM is set
-if [ -z $PLATFORM ] ; then
-  printf "\nERROR: Please set PLATFORM.\n\n"
+parse_cli_args () {
+  local long name opts
+  long=atmos-only,build-jobs:,compiler:,conda-dir:,debug,exec-dir:,gen-f90,help,openmp,platform:,single-precision,tau,timer-lib:,use-papi
+  name=$(basename ${BASH_SOURCE[0]})
+  opts=$(getopt -n $name -o c:hp:v -l $long -- "$@") || usage_error
+  eval set -- $opts
+  while true; do
+    case $1 in
+      --help|-h)          usage && exit 0        ;;
+      --atmos-only)       ATMOS_ONLY=true        ;;
+      --build-jobs)       BUILD_JOBS=$2 && shift ;;
+      --compiler|-c)      COMPILER=$2 && shift   ;;
+      --conda-dir)        CONDA_DIR=$2 && shift  ;;
+      --debug)            DEBUG=true             ;;
+      --exec-dir)         EXEC_DIR=$2 && shift   ;;
+      --gen-f90)          GEN_F90=true           ;;
+      --openmp)           OPENMP=true            ;;
+      --platform|-p)      PLATFORM=$2 && shift   ;;
+      --single-precision) SINGLE_PRECISION=true  ;;
+      --tau)              TAU=true               ;;
+      --timer-lib)        TIMER_LIB=$2 && shift  ;;
+      --use-papi)         USE_PAPI=true          ;;
+      --verbose|-v)       VERBOSE=true           ;;
+      --)                 break                  ;;
+    esac
+    shift
+  done
+}
+
+show_settings () {
+  cat << EOF
+  Settings:
+
+    ATMOS_ONLY=$ATMOS_ONLY
+    BUILD_JOBS=$BUILD_JOBS
+    COMPILER=$COMPILER
+    CONDA_DIR=$CONDA_DIR
+    DEBUG=$DEBUG
+    EXEC_DIR=$EXEC_DIR
+    GEN_F90=$GEN_F90
+    OPENMP=$OPENMP
+    PLATFORM=$PLATFORM
+    SINGLE_PRECISION=$SINGLE_PRECISION
+    TAU=$TAU
+    TIMER_LIB=$TIMER_LIB
+    USE_PAPI=$USE_PAPI
+    VERBOSE=$VERBOSE
+
+EOF
+}
+
+usage () {
+  cat << EOF
+Usage: $0 --platform PLATFORM [OPTIONS]
+
+OPTIONS
+  -c, --compiler COMPILER (choices: gnu, intel)
+      compiler to use (default: depends on platform)
+  -h, --help
+      show this help guide
+  -p, --platform PLATFORM (choices: hera, hercules, jet, ursa)
+      system where build is being performed
+  -v, --verbose
+      build with verbose output
+  --atmos-only
+      do not build init_atmosphere core, only atmosphere
+  --build-jobs BUILD_JOBS
+      number of build jobs (default: 4)
+  --conda-dir CONDA_DIR
+      directory to install conda info (default: conda/ under MPAS App)
+  --debug
+      build MPAS in debug mode
+  --exec-dir EXEC_DIR
+      install executables here (default: exec/ under MPAS App)
+  --openmp
+      build with OpenMP support
+  --single-precision
+      build with single-precision reals (default: double-precision)
+  --tau
+      build with TAU profiling hooks
+  --timer-lib TIMER_LIB
+      timer library interface to use for profiling (choices: gptl, native, tau)
+  --use-papi
+      build with PAPI timers
+EOF
+}
+
+usage_error () {
+  test -n "$1" && echo "ERROR: $1"
   usage
-  exit 0
-fi
+  exit 1
+}
 
-# set PLATFORM (MACHINE)
-MACHINE="${PLATFORM}"
-printf "PLATFORM(MACHINE)=${PLATFORM}\n" >&2
+validate_and_update_vars () {
 
-if [ ! -d "${CONDA_BUILD_DIR}" ]; then
-  install_miniforge
-  install_conda_envs
-fi
+  local module_path
 
-# check if COMPILER is set to gcc and reset as gnu
-if [ "${COMPILER}" = "gcc" ]; then
-  export COMPILER="gnu"
-fi
+  # Validate/update platform settings:
 
-# Conda environment should have linux utilities to perform these tasks on macos.
-MPAS_APP_DIR=$(cd "$(dirname "$(readlink -f -n "${BASH_SOURCE[0]}" )" )" && pwd -P)
-CONDA_BUILD_DIR="$(readlink -f "${CONDA_BUILD_DIR}")"
-EXEC_DIR=${EXEC_DIR:-${MPAS_APP_DIR}/exec}
-echo ${CONDA_BUILD_DIR} > ${MPAS_APP_DIR}/conda_loc
+  PLATFORM=$(echo $PLATFORM | tr '[A-Z]' '[a-z]')
+  test -z "$PLATFORM" && usage_error "Please specify platform"
 
-if [ -z "${COMPILER}" ] ; then
-  case ${PLATFORM} in
-    jet|hera|hercules) COMPILER=intel ;;
-    *)
-    COMPILER=intel
-printf "WARNING: Setting default COMPILER=intel for new platform ${PLATFORM}\n" >&2;
-    ;;
-  esac
-fi
+  # Validate/update compiler settings:
 
-printf "COMPILER=${COMPILER}\n" >&2
+  COMPILER=$(echo $COMPILER | tr '[A-Z]' '[a-z]')
+  if [[ -z "$COMPILER" ]]; then
+    case $PLATFORM in
+      hera|hercules|jet)
+        COMPILER=intel
+        ;;
+      *)
+        COMPILER=intel
+        echo WARNING: Setting default COMPILER=intel for new platform $PLATFORM
+        ;;
+    esac
+  fi
 
-# print settings
-if [ "${VERBOSE}" = true ] ; then
-  settings
-fi
+  # Validate/update module-file settings:
 
-# set MODULE_FILE for this platform/compiler combination
-MODULE_FILE="build_${PLATFORM}_${COMPILER}"
-if [[ "$PLATFORM" == "ursa" ]] ; then
-  MODULE_FILE="${MODULE_FILE}_ifort"
-fi
-if [ ! -f "${MPAS_APP_DIR}/modulefiles/${MODULE_FILE}.lua" ]; then
-  printf "ERROR: module file does not exist for platform/compiler\n" >&2
-  printf "  MODULE_FILE=${MODULE_FILE}\n" >&2
-  printf "  PLATFORM=${PLATFORM}\n" >&2
-  printf "  COMPILER=${COMPILER}\n\n" >&2
-  printf "Please make sure PLATFORM and COMPILER are set correctly\n" >&2
-  usage >&2
-  exit 64
-fi
+  MODULE_NAME="build_${PLATFORM}_$COMPILER"
+  test $PLATFORM == ursa && MODULE_NAME+=_ifort
+  module_path=$MPAS_APP_DIR/modulefiles/$MODULE_NAME.lua
+  if [[ ! -f $module_path ]]; then
+    echo "ERROR: Module file '$module_path' not found for platform '$PLATFORM' and compiler '$COMPILER'"
+    exit 1
+  fi
+}
 
-printf "MODULE_FILE=${MODULE_FILE}\n" >&2
+# Top-level logic:
 
-# make settings
-MAKE_SETTINGS="-j ${BUILD_JOBS}"
-if [ "${VERBOSE}" = true ]; then
-  MAKE_SETTINGS="${MAKE_SETTINGS} VERBOSE=1"
-fi
-
-# Before we go on load modules, we first need to activate Lmod for some systems
-source ${MPAS_APP_DIR}/etc/lmod-setup.sh $MACHINE
-
-# source the module file for this platform/compiler combination, then build the code
-printf "... Load MODULE_FILE ...\n"
-module use ${MPAS_APP_DIR}/modulefiles
-module load ${MODULE_FILE}
-module list
-
-# build MPAS
-printf "...Building MPAS-Model..."
-
-# process MPAS flags
-MPAS_MAKE_OPTIONS="${MAKE_SETTINGS}"
-
-if [ "${DEBUG}" = true ]; then
-  MPAS_MAKE_OPTIONS="${MAKE_OPTIONS} DEBUG=true"
-fi
-
-if [ "${USE_PAPI}" = true ]; then
-  MPAS_MAKE_OPTIONS="${MAKE_OPTIONS} USE_PAPI=true"
-fi
-
-if [ "${TAU}" = true ]; then
-  MPAS_MAKE_OPTIONS="${MAKE_OPTIONS} TAU=true"
-fi
-
-if [ "${AUTOCLEAN}" = true ]; then
-  MPAS_MAKE_OPTIONS="${MAKE_OPTIONS} AUTOCLEAN=true"
-fi
-
-if [ "${GEN_F90}" = true ]; then
-  MPAS_MAKE_OPTIONS="${MAKE_OPTIONS} GEN_F90=true"
-fi
-
-if [ ! -z "${TIMER_LIB}" ]; then
-  MPAS_MAKE_OPTIONS="${MAKE_OPTIONS} TIMER_LIB={$TIMER_LIB}"
-fi
-
-if [ "${OPENMP}" = true ]; then
-  MPAS_MAKE_OPTIONS="${MAKE_OPTIONS} OPENMP=true"
-fi
-
-if [ "${SINGLE_PRECISION}" = true ]; then
-  MPAS_MAKE_OPTIONS="${MAKE_OPTIONS} PRECISION=single"
-fi
-
-EXEC_DIR="${MPAS_APP_DIR}/exec"
-if [ ! -d "$EXEC_DIR" ]; then
-  mkdir "$EXEC_DIR"
-fi
-
-printf "\nATMOS_ONLY: ${ATMOS_ONLY}\n"
-
-if [ ${ATMOS_ONLY} = false ]; then
-  install_mpas_init
-fi
-
-install_mpas_model
+echo "=> Building"
+prepare_shell $@
+prepare_conda
+install_mpas init_atmosphere
+install_mpas atmosphere
 install_mpassit
-if [[ $PLATFORM != ursa ]] ; then
-  install_upp
-fi
-
-if [ "${CLEAN}" = true ]; then
-    if [ -f $PWD/Makefile ]; then
-       printf "... Clean executables ...\n"
-       make ${MAKE_SETTINGS} clean 2>&1 | tee log.make
-    fi
-fi
+install_upp
+echo "=> Ready"
