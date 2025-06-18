@@ -31,7 +31,7 @@ def test_validate__user_driver_validation_blocks(config):
     config_without_block = with_del(config, *keys)
     validation.validate(config_without_block)
     # Wrong: unsupported driver.
-    unsupported_drivers = ["some.hooligan", "some.wrong.driver"]
+    unsupported_drivers = ["some.typo", "some.wrong.driver"]
     with raises(ValidationError) as e:
         validation.validate(with_set(config, unsupported_drivers, *keys))
     assert "Unsupported driver in 'driver_validation_blocks'" in str(e.value)

@@ -5,8 +5,8 @@ from pathlib import Path  # noqa: TC003
 from typing import Literal
 
 from pydantic import BaseModel, Field, NonNegativeInt, PositiveInt, model_validator
+from uwtools.api.driver import yaml_keys_to_classes
 
-Driver = {"mpas", "mpas_init", "ungrib", "upp"}
 Model = Literal["GFS", "RAP"]
 
 
@@ -46,12 +46,13 @@ class User(BaseModel):
 
     @model_validator(mode="after")
     def validate_driver_blocks(self):
-        for path in self.driver_validation_blocks or []:
-            driver = path.rsplit(".", 1)[-1]
-            if driver not in Driver:
+        valid_drivers = set(yaml_keys_to_classes().keys())
+        for key_path in self.driver_validation_blocks or []:
+            driver = key_path.rsplit(".", 1)[-1]
+            if driver not in valid_drivers:
                 msg = (
                     f"Unsupported driver in 'driver_validation_blocks': '{driver}'. "
-                    f"Supported drivers are: {Driver}."
+                    f"Supported drivers are: {valid_drivers}."
                 )
                 raise ValueError(msg)
         return self

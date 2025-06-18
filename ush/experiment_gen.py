@@ -15,11 +15,8 @@ from subprocess import STDOUT, CalledProcessError, check_output
 
 from uwtools.api import rocoto
 from uwtools.api.config import YAMLConfig, get_yaml_config, realize
+from uwtools.api.driver import yaml_keys_to_classes
 from uwtools.api.logging import use_uwtools_logger
-from uwtools.api.mpas import MPAS
-from uwtools.api.mpas_init import MPASInit
-from uwtools.api.ungrib import Ungrib
-from uwtools.api.upp import UPP
 
 sys.path.append(str(Path(__file__).parent.parent))
 
@@ -170,15 +167,9 @@ def validate_driver_blocks(workflow_config: YAMLConfig) -> None:
     """
     Validate driver configuration blocks in workflow config.
     """
-    driver_classes = {
-        "mpas": MPAS,
-        "mpas_init": MPASInit,
-        "ungrib": Ungrib,
-        "upp": UPP,
-    }
     for block in workflow_config["user"]["driver_validation_blocks"]:
         section, driver = block.rsplit(".", 1)
-        driver_class = driver_classes[driver]
+        driver_class = yaml_keys_to_classes()[driver]
         kwargs = {
             "config": workflow_config,
             "cycle": workflow_config["user"]["first_cycle"],

@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from subprocess import CalledProcessError
 from unittest.mock import Mock, patch
@@ -79,42 +79,6 @@ def test_create_grid_files_failure(tmp_path, caplog):
         assert "Error running command:" in caplog.text
         assert "gpmetis error: segmentation fault" in caplog.text
         assert "Failed with status: 1" in caplog.text
-
-
-def test_validate_driver_blocks(test_config):
-    test_config["user"]["driver_validation_blocks"] = [
-        "some.mpas",
-        "some.ungrib",
-    ]
-    instance_mpas = Mock()
-    instance_ungrib = Mock()
-    with (
-        patch.object(experiment_gen, "MPAS", return_value=instance_mpas) as mpas,
-        patch.object(experiment_gen, "Ungrib", return_value=instance_ungrib) as ungrib,
-        patch.object(experiment_gen.inspect, "signature") as signature,
-    ):
-        signature.return_value.parameters = {}
-        experiment_gen.validate_driver_blocks(test_config)
-        mpas.assert_called_once()
-        ungrib.assert_called_once()
-        instance_mpas.validate.assert_called_once()
-        instance_ungrib.validate.assert_called_once()
-
-
-def test_validate_driver_blocks_leadtime(test_config):
-    test_config["user"]["driver_validation_blocks"] = [
-        "some.upp",
-    ]
-    instance_upp = Mock()
-    with (
-        patch.object(experiment_gen, "UPP", return_value=instance_upp) as upp,
-        patch.object(experiment_gen.inspect, "signature") as signature,
-    ):
-        signature.return_value.parameters = {"leadtime": Mock()}
-        experiment_gen.validate_driver_blocks(test_config)
-        upp.assert_called_once()
-        instance_upp.validate.assert_called_once()
-        assert "leadtime" in upp.call_args.kwargs
 
 
 def test_generate_workflow_files(tmp_path, test_config, validated_config):
@@ -236,3 +200,44 @@ def test_stage_grid_files(test_config, validated_config):
             test_config, validated_config.user.experiment_dir, validated_config
         )
     create.assert_called_once_with(validated_config.user.experiment_dir, mesh_file, 64)
+
+
+def test_validate_driver_blocks(test_config):
+    test_config["user"]["driver_validation_blocks"] = [
+        "some.mpas",
+        "some.ungrib",
+    ]
+    mpas_config = Mock()
+    ungrib_config = Mock()
+    mpas = Mock(return_value=mpas_config)
+    ungrib = Mock(return_value=ungrib_config)
+    with patch.object(experiment_gen, "yaml_keys_to_classes") as mapping:
+        mapping.return_value = {
+            "mpas": mpas,
+            "ungrib": ungrib,
+        }
+        experiment_gen.validate_driver_blocks(test_config)
+        mpas.assert_called_once()
+        ungrib.assert_called_once()
+        mpas_config.validate.assert_called_once()
+        ungrib_config.validate.assert_called_once()
+
+
+def test_validate_driver_blocks_leadtime(test_config):
+    test_config["user"]["driver_validation_blocks"] = [
+        "some.upp",
+    ]
+    upp_config = Mock()
+    upp = Mock(return_value=upp_config)
+    with (
+        patch.object(experiment_gen.inspect, "signature") as signature,
+        patch.object(experiment_gen, "yaml_keys_to_classes") as mapping,
+    ):
+        signature.return_value.parameters = {"leadtime": timedelta(hours=0)}
+        mapping.return_value = {
+            "upp": upp,
+        }
+        experiment_gen.validate_driver_blocks(test_config)
+        upp.assert_called_once()
+        upp_config.validate.assert_called_once()
+        assert "leadtime" in upp.call_args.kwargs
