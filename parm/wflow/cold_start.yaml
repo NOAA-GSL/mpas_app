@@ -7,7 +7,8 @@ workflow:
     - attrs:
         group: forecast
       spec: "{{ user.first_cycle.strftime('%Y%m%d%H%M') }} {{ user.last_cycle.strftime('%Y%m%d%H%M') }} {{user.cycle_frequency}}:00:00"
-  log: "{{ user.experiment_dir }}/workflow.log"
+  log:
+    value: "{{ user.experiment_dir }}/workflow.log"
   entities:
     EXPERIMENT_CONFIG: "{{user.experiment_dir}}/experiment.yaml"
     LOGDIR: "{{user.experiment_dir}}/log"
