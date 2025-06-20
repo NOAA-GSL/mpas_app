@@ -4,7 +4,7 @@ from datetime import datetime  # noqa: TC003
 from pathlib import Path  # noqa: TC003
 from typing import Literal
 
-from pydantic import BaseModel, Field, NonNegativeInt, PositiveInt, model_validator
+from pydantic import BaseModel, NonNegativeInt, PositiveInt, model_validator
 from uwtools.api.driver import yaml_keys_to_classes
 
 Model = Literal["GFS", "RAP"]
@@ -27,7 +27,7 @@ class LBCs(BaseModel):
 
 class User(BaseModel):
     cycle_frequency: PositiveInt
-    driver_validation_blocks: list[str] | None = Field(default=None)
+    driver_validation_blocks: list[str] | None = None
     experiment_dir: Path
     first_cycle: datetime
     ics: ICs
@@ -48,10 +48,10 @@ class User(BaseModel):
     def validate_driver_blocks(self):
         valid_drivers = yaml_keys_to_classes().keys()
         for key_path in self.driver_validation_blocks or []:
-            driver = key_path.rsplit(".", 1)[-1]
+            driver = key_path.split(".")[-1]
             if driver not in valid_drivers:
                 msg = (
-                    f"Unsupported driver in 'driver_validation_blocks': '{driver}'. "
+                    f"Unsupported driver in 'driver_validation_blocks': '{driver}'."
                     f"Supported drivers are: {valid_drivers}."
                 )
                 raise ValueError(msg)

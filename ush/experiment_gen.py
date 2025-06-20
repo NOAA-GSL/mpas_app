@@ -167,9 +167,10 @@ def validate_driver_blocks(workflow_config: YAMLConfig) -> None:
     """
     Validate driver configuration blocks in workflow config.
     """
+    yaml_to_class_map = yaml_keys_to_classes()
     for block in workflow_config["user"]["driver_validation_blocks"]:
         section, driver = block.rsplit(".", 1)
-        driver_class = yaml_keys_to_classes()[driver]
+        driver_class = yaml_to_class_map[driver]
         kwargs = {
             "config": workflow_config,
             "cycle": workflow_config["user"]["first_cycle"],
