@@ -21,13 +21,13 @@ lint:
 	ruff check .
 
 regtest:
-	pytest --cov -k "regtest" tests
+	pytest -k "regtest" tests
 
 rmenv:
 	$(if $(ENVPATH),conda env remove -y -n $(ENVNAME))
 
 systest:
-	pytest --cov -k "systest" -n 5 tests
+	pytest -k "systest" -n 5 tests
 
 test: lint typecheck unittest
 
