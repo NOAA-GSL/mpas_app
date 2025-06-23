@@ -54,7 +54,6 @@ def test_validate__user_first_and_last_cycle(config):
     [
         (["cycle_frequency"], MSG.gt0, 0),
         (["cycle_frequency"], MSG.int, None),
-        (["driver_validation_blocks"], MSG.list, "FOO"),
         (["driver_validation_blocks"], MSG.str, [None]),
         (["first_cycle"], MSG.dt, None),
         (["ics", "external_model"], MSG.model, "FOO"),

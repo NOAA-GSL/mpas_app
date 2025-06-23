@@ -168,7 +168,7 @@ def validate_driver_blocks(workflow_config: YAMLConfig) -> None:
     Validate driver configuration blocks in workflow config.
     """
     yaml_to_class_map = yaml_keys_to_classes()
-    for block in workflow_config["user"]["driver_validation_blocks"]:
+    for block in workflow_config["user"].get("driver_validation_blocks", []):
         section, driver = block.rsplit(".", 1)
         driver_class = yaml_to_class_map[driver]
         kwargs = {
@@ -177,6 +177,7 @@ def validate_driver_blocks(workflow_config: YAMLConfig) -> None:
             "key_path": section.split("."),
         }
         if "leadtime" in inspect.signature(driver_class).parameters:
+            # hours=0 is an arbitrary number for validation purposes.
             kwargs["leadtime"] = timedelta(hours=0)
         driver = driver_class(**kwargs)
         driver.validate()

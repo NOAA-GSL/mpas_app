@@ -6,6 +6,7 @@ from unittest.mock import Mock, patch
 
 from pytest import fixture, raises
 from uwtools.api.config import YAMLConfig, get_yaml_config
+from uwtools.exceptions import UWConfigError
 
 from ush import experiment_gen, validation
 
@@ -13,15 +14,15 @@ from ush import experiment_gen, validation
 @fixture
 def test_config(tmp_path):
     return {
-        "data": {"mesh_files": str(tmp_path / "meshes")},
-        "create_ics": {"mpas_init": {"execution": {"batchargs": {"cores": 32}}}},
-        "forecast": {"mpas": {"execution": {"batchargs": {"nodes": 2, "tasks_per_node": 32}}}},
         "user": {
             "first_cycle": "2023-09-15T00:00:00",
             "platform": "jet",
             "ics": {"external_model": "GFS"},
             "lbcs": {"external_model": "GFS"},
         },
+        "data": {"mesh_files": str(tmp_path / "meshes")},
+        "create_ics": {"mpas_init": {"execution": {"batchargs": {"cores": 32}}}},
+        "forecast": {"mpas": {"execution": {"batchargs": {"nodes": 2, "tasks_per_node": 32}}}},
     }
 
 
@@ -219,14 +220,12 @@ def test_validate_driver_blocks(test_config):
 
 def test_validate_driver_blocks_failure(test_config):
     test_config["user"]["driver_validation_blocks"] = ["forecast.mpas"]
-    with raises(KeyError):
-        experiment_gen.validate_driver_blocks(YAMLConfig(test_config["forecast"]))
+    with raises(UWConfigError):
+        experiment_gen.validate_driver_blocks(YAMLConfig(test_config))
 
 
 def test_validate_driver_blocks_leadtime(test_config):
-    test_config["user"]["driver_validation_blocks"] = [
-        "some.upp",
-    ]
+    test_config["user"]["driver_validation_blocks"] = ["some.upp"]
     upp_config = Mock()
     upp = Mock(return_value=upp_config)
     with (
@@ -234,9 +233,7 @@ def test_validate_driver_blocks_leadtime(test_config):
         patch.object(experiment_gen, "yaml_keys_to_classes") as mapping,
     ):
         signature.return_value.parameters = {"leadtime": timedelta(hours=0)}
-        mapping.return_value = {
-            "upp": upp,
-        }
+        mapping.return_value = {"upp": upp}
         experiment_gen.validate_driver_blocks(test_config)
         upp.assert_called_once()
         upp_config.validate.assert_called_once()
