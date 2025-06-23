@@ -1,4 +1,5 @@
 /.coverage
+/.pytest
 /build_upp/
 /conda/
 /conda_loc
