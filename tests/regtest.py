@@ -1,4 +1,3 @@
-import sys
 from pathlib import Path
 from textwrap import dedent
 
@@ -6,7 +5,7 @@ from pytest import fixture
 
 from scripts.utils import run_shell_cmd
 
-root = Path(__file__).parent.parent
+ROOT = Path(__file__).parent.parent
 
 
 @fixture
@@ -26,7 +25,7 @@ def user_yaml(tmp_path):
 def test_regtest_experiment_gen(user_yaml):
     experiment_dir = user_yaml.parent
     cmd = f"./experiment_gen.py workflows/3km_conus.yaml workflows/conus.jet.yaml {user_yaml}"
-    success, output = run_shell_cmd(cmd, cwd=root / "ush")
+    success, output = run_shell_cmd(cmd, cwd=ROOT / "ush")
     assert success
     for fn in [
         "experiment.yaml",
