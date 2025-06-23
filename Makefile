@@ -21,7 +21,7 @@ lint:
 	ruff check .
 
 regtest:
-	pytest -k "regtest" tests/*
+	pytest --basetemp=$(PWD)/.pytest -k "regtest" tests/*
 
 rmenv:
 	$(if $(ENVPATH),conda env remove -y -n $(ENVNAME))

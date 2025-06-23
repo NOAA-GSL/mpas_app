@@ -23,9 +23,6 @@ def user_yaml(tmp_path):
     return path
 
 
-# TODO Use user-controlled temp space
-
-
 def test_regtest_experiment_gen(user_yaml):
     experiment_dir = user_yaml.parent
     cmd = f"./experiment_gen.py workflows/3km_conus.yaml workflows/conus.jet.yaml {user_yaml}"
