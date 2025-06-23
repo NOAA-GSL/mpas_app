@@ -28,6 +28,7 @@ ignore = [
   "C901",    # complex-structure
   "COM812",  # missing-trailing-comma
   "D",       # all pydocstyle
+  "FBT001",  # boolean-type-hint-positional-argument
   "FBT002",  # boolean-default-value-positional-argument
   "LOG015",  # root-logger-call
   "PLR0912", # too-many-branches
