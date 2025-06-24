@@ -25,7 +25,7 @@ Viewing Online Documentation
 
 Online documentation generation and hosting for ``mpas_app`` is provided by :rtd:`Read the Docs <>`. Click *View docs* to view the official docs for the project.
 
-Docs are also built and temporarily published for PRs to this repo: The checks section of the GitHub PR will provide a preview link. Note that if commits are pushed to the PR's source branch, Read the Docs will rebuild the PR docs.
+Docs are also built and temporarily published for PRs to this repo. To view, visit the :rtd:`builds page <builds>`, click the latest build corresponding to your PR number, then click *View docs*.
 
 Documentation Guidelines
 ------------------------
