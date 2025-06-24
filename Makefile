@@ -1,7 +1,7 @@
 DEVPKGS  = $(shell cat devpkgs)
 ENVNAME  = mpas_app
 ENVPATH  = $(shell ls $(CONDA_PREFIX)/envs/$(ENVNAME) 2>/dev/null)
-TARGETS  = devenv env format lint rmenv test typecheck unittest
+TARGETS  = devenv docs env format lint rmenv test typecheck unittest
 
 .PHONY: $(TARGETS)
 
@@ -10,6 +10,9 @@ all:
 
 devenv: env
 	conda install -y -n $(ENVNAME) $(DEVPKGS)
+
+docs:
+	$(MAKE) -C docs docs
 
 env: rmenv
 	conda env create
