@@ -3,7 +3,7 @@ Developer Setup
 
 If an existing conda (:miniforge:`Miniforge <>` recommended) installation is available and writable, activate it and skip step 1.
 
-#. Visit the :miniforge:`Miniforge releases page <releases/latest>` and download the ``Miniforge3-[os]-[architecture].sh`` installer appropriate to the target system, for example ``Miniforge3-Linux-x86_64.sh``:
+#. Visit the :miniforge:`Miniforge latest release page <releases/latest>` and download the ``Miniforge3-[os]-[architecture].sh`` installer appropriate to the target system, for example ``Miniforge3-Linux-x86_64.sh``:
 
    .. code-block:: text
 

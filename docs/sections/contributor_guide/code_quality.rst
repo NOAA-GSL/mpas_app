@@ -1,7 +1,7 @@
 Code Quality
 ============
 
-Several ``make`` targets are available for use In the ``mpas_app`` development environment:
+Several ``make`` targets are available for use in an activated ``mpas_app`` development environment:
 
 * ``make docs`` to build the HTML documentation (see :doc:`Documentation <documentation>`).
 * ``make format`` to format Python code and docstrings with :ruff:`ruff <>`.
@@ -12,9 +12,9 @@ Several ``make`` targets are available for use In the ``mpas_app`` development e
 * ``make typecheck`` to typecheck Python code with :mypy:`mypy <>`.
 * ``make unittest`` to run the unit tests and report coverage with :pytest:`pytest <>` and :coverage:`coverage <>`.
 
-Configuration for these tools is provided by the file ``pyproject.toml``.
+Configuration for these tools is provided by the file ``pyproject.toml`` in the repo root.
 
-Code should be formatted and tested periodically during the development process. A useful idiom is to run ``make format && make test`` to format the code and run all basic checks, which is equivalent to executing the ``format``, ``lint``, ``typecheck``, and ``unittest`` targets. The order is intentional:
+Code should be formatted and tested periodically during the development process. A useful idiom is to run ``make format && make test`` to format the code and run all basic tests, which is equivalent to executing the ``format``, ``lint``, ``typecheck``, and ``unittest`` targets. The order is intentional:
 
 * ``format`` will complain about certain kinds of syntax errors that would cause all the remaining code-quality tools to fail (and that could change line numbers reported by other tools, if it ran after them).
 * ``lint`` provides a good first check for obvious errors and anti-patterns in the code.
