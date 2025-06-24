@@ -4,13 +4,13 @@ Code Quality
 Several ``make`` targets are available for use In the ``mpas_app`` development environment:
 
 * ``make docs`` to build the HTML documentation (see :doc:`Documentation <documentation>`).
-* ``make format`` to format Python code and docstrings with :ruff:`ruff<>`.
-* ``make lint`` to lint Python code with :ruff:`ruff<>`.
+* ``make format`` to format Python code and docstrings with :ruff:`ruff <>`.
+* ``make lint`` to lint Python code with :ruff:`ruff <>`.
 * ``make regtest`` to run the regression tests.
 * ``make systest`` to run system tests.
 * ``make test`` to run the linter, typechecker, and unit tests.
-* ``make typecheck`` to typecheck Python code with :mypy:`mypy<>`.
-* ``make unittest`` to run the unit tests and report coverage with :pytest:`pytest<>` and :coverage:`coverage<>`.
+* ``make typecheck`` to typecheck Python code with :mypy:`mypy <>`.
+* ``make unittest`` to run the unit tests and report coverage with :pytest:`pytest <>` and :coverage:`coverage <>`.
 
 Configuration for these tools is provided by the file ``pyproject.toml``.
 

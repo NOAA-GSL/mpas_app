@@ -1,7 +1,7 @@
 BUILDDIR = build
 SOURCEDIR = .
 SPHINXBUILD = sphinx-build
-SPHINXOPTS = -a -n -W --keep-going
+SPHINXOPTS = --fail-on-warning --nitpicky --write-all
 
 .PHONY: clean docs help
 
@@ -13,7 +13,7 @@ clean:
 
 docs:
 	$(MAKE) html
-	linkchecker --check-extern --no-warnings --user-agent Mozilla/5.0 build/html/index.html
+	linkchecker --check-extern --no-warnings build/html/index.html
 
 %:
 	mkdir -pv $(BUILDDIR)

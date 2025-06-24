@@ -15,10 +15,13 @@ copyright = str(dt.datetime.now(tz=dt.timezone.utc).year)  # noqa: A001
 extensions = ["sphinx.ext.autodoc", "sphinx.ext.extlinks", "sphinx.ext.intersphinx"]
 extlinks: dict = {
     "coverage": ("https://coverage.readthedocs.io/en/7.3.4/%s", "%s"),
+    "github-docs": ("https://docs.github.com/en/%s", "%s"),
     "miniforge": ("https://github.com/conda-forge/miniforge/%s", "%s"),
     "mpas_app": ("https://github.com/noaa-gsl/mpas_app/%s", "%s"),
     "mypy": ("https://mypy.readthedocs.io/en/stable/%s", "%s"),
     "pytest": ("https://docs.pytest.org/en/7.4.x/%s", "%s"),
+    "rst": ("https://www.sphinx-doc.org/en/master/usage/restructuredtext/%s", "%s"),
+    "rtd": ("https://readthedocs.org/projects/mpas_app/%s", "%s"),
     "ruff": ("https://docs.astral.sh/ruff/%s", "%s"),
 }
 extlinks_detect_hardcoded_links = True
