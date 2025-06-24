@@ -204,11 +204,10 @@ def test_stage_grid_files(test_config, validated_config):
 
 
 def test_validate_driver_blocks(test_config):
-    test_config["user"]["driver_validation_blocks"] = ["some.mpas", "some.ungrib"]
     mpas, ungrib = Mock(), Mock()
     with patch.object(experiment_gen, "yaml_keys_to_classes") as mapping:
         mapping.return_value = {"mpas": mpas, "ungrib": ungrib}
-        experiment_gen.validate_driver_blocks(test_config)
+        experiment_gen.validate_driver_blocks(["some.mpas", "some.ungrib"], test_config)
         mpas.assert_called_once()
         mpas().validate.assert_called_once()
         ungrib.assert_called_once()
@@ -216,13 +215,11 @@ def test_validate_driver_blocks(test_config):
 
 
 def test_validate_driver_blocks_failure(test_config):
-    test_config["user"]["driver_validation_blocks"] = ["forecast.mpas"]
     with raises(UWConfigError):
-        experiment_gen.validate_driver_blocks(YAMLConfig(test_config))
+        experiment_gen.validate_driver_blocks(["forecast.mpas"], YAMLConfig(test_config))
 
 
 def test_validate_driver_blocks_leadtime(test_config):
-    test_config["user"]["driver_validation_blocks"] = ["some.upp"]
     upp_config = Mock()
     upp = Mock(return_value=upp_config)
     with (
@@ -231,7 +228,7 @@ def test_validate_driver_blocks_leadtime(test_config):
     ):
         signature.return_value.parameters = {"leadtime": timedelta(hours=0)}
         mapping.return_value = {"upp": upp}
-        experiment_gen.validate_driver_blocks(test_config)
+        experiment_gen.validate_driver_blocks(["some.upp"], test_config)
         upp.assert_called_once()
         upp_config.validate.assert_called_once()
         assert "leadtime" in upp.call_args.kwargs

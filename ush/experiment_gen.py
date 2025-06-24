@@ -52,7 +52,7 @@ def generate_workflow_files(
     for block in workflow_blocks:
         workflow_config.update_from(get_yaml_config(block))
     workflow_config.update_from(experiment_config)
-    validate_driver_blocks(workflow_config)
+    validate_driver_blocks(validated.user.driver_validation_blocks, workflow_config)
     realize(
         input_config=workflow_config,
         output_file=experiment_file,
@@ -163,14 +163,14 @@ def stage_grid_files(
             create_grid_files(experiment_dir, mesh_file_path, nprocs)
 
 
-def validate_driver_blocks(workflow_config: YAMLConfig) -> None:
+def validate_driver_blocks(validated_blocks: list[str], workflow_config: YAMLConfig) -> None:
     """
     Validate driver configuration blocks in workflow config.
     """
     yaml_to_class_map = yaml_keys_to_classes()
-    for block in workflow_config["user"].get("driver_validation_blocks", []):
-        section, driver = block.rsplit(".", 1)
-        driver_class = yaml_to_class_map[driver]
+    for block in validated_blocks:
+        section, driver_name = block.rsplit(".", 1)
+        driver_class = yaml_to_class_map[driver_name]
         kwargs = {
             "config": workflow_config,
             "cycle": workflow_config["user"]["first_cycle"],
