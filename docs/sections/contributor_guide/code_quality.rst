@@ -6,8 +6,8 @@ Several ``make`` targets are available for use in an activated ``mpas_app`` deve
 * ``make docs`` to build the HTML documentation (see :doc:`Documentation <documentation>`).
 * ``make format`` to format Python code and docstrings with :ruff:`ruff <>`.
 * ``make lint`` to lint Python code with :ruff:`ruff <>`.
-* ``make regtest`` to run the regression tests.
-* ``make systest`` to run system tests.
+* ``make regtest`` to run the :ref:`regtests`.
+* ``make systest`` to run the :ref:`systests`.
 * ``make test`` to run the linter, typechecker, and unit tests.
 * ``make typecheck`` to typecheck Python code with :mypy:`mypy <>`.
 * ``make unittest`` to run the unit tests and report coverage with :pytest:`pytest <>` and :coverage:`coverage <>`.
@@ -24,3 +24,17 @@ Code should be formatted and tested periodically during the development process.
 All the above tests are executed by the CI system against PRs, so be sure that code is formatted and that tests pass locally.
 
 The ``mpas_app`` repository has standardized 100% unit-test coverage, enforced by ``make unittest`` and its configuration in ``pyproject.toml``. Please help maintain this high standard.
+
+.. _regtests:
+
+Regression Tests
+----------------
+
+Coming soon.
+
+.. _systests:
+
+System Tests
+------------
+
+Coming soon.
