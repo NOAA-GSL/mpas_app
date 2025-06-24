@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from datetime import datetime  # noqa: TC003
 from pathlib import Path  # noqa: TC003
-from typing import Any, Literal
+from typing import Literal
 
-from pydantic import BaseModel, NonNegativeInt, PositiveInt, field_validator, model_validator
+from pydantic import BaseModel, Field, NonNegativeInt, PositiveInt, model_validator
 from uwtools.api.driver import yaml_keys_to_classes
 
 Model = Literal["GFS", "RAP"]
@@ -27,7 +27,7 @@ class LBCs(BaseModel):
 
 class User(BaseModel):
     cycle_frequency: PositiveInt
-    driver_validation_blocks: list[str] = []
+    driver_validation_blocks: list[str] = Field(default_factory=list)
     experiment_dir: Path
     first_cycle: datetime
     ics: ICs
@@ -36,11 +36,6 @@ class User(BaseModel):
     mesh_label: str
     platform: str
     workflow_blocks: list[str]
-
-    @field_validator("driver_validation_blocks", mode="before")
-    @classmethod
-    def driver_list(cls, value: Any) -> list[str]:
-        return [value] if isinstance(value, str) else (value or [])
 
     @model_validator(mode="after")
     def first_and_last_cycle(self):

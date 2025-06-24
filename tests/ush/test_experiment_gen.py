@@ -208,14 +208,20 @@ def test_validate_driver_blocks(test_config):
         "some.mpas",
         "some.ungrib",
     ]
-    mpas, ungrib = Mock(), Mock()
+    mpas_config = Mock()
+    ungrib_config = Mock()
+    mpas = Mock(return_value=mpas_config)
+    ungrib = Mock(return_value=ungrib_config)
     with patch.object(experiment_gen, "yaml_keys_to_classes") as mapping:
-        mapping.return_value = {"mpas": mpas, "ungrib": ungrib}
+        mapping.return_value = {
+            "mpas": mpas,
+            "ungrib": ungrib,
+        }
         experiment_gen.validate_driver_blocks(test_config)
         mpas.assert_called_once()
-        mpas().validate.assert_called_once()
         ungrib.assert_called_once()
-        ungrib().validate.assert_called_once()
+        mpas_config.validate.assert_called_once()
+        ungrib_config.validate.assert_called_once()
 
 
 def test_validate_driver_blocks_failure(test_config):
