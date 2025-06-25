@@ -209,9 +209,7 @@ def test_validate_driver_blocks(test_config):
         mapping.return_value = {"mpas": mpas, "ungrib": ungrib}
         experiment_gen.validate_driver_blocks(["some.mpas", "some.ungrib"], test_config)
         mpas.assert_called_once()
-        mpas().validate.assert_called_once()
         ungrib.assert_called_once()
-        ungrib().validate.assert_called_once()
 
 
 def test_validate_driver_blocks_failure(test_config):
@@ -230,5 +228,4 @@ def test_validate_driver_blocks_leadtime(test_config):
         mapping.return_value = {"upp": upp}
         experiment_gen.validate_driver_blocks(["some.upp"], test_config)
         upp.assert_called_once()
-        upp_config.validate.assert_called_once()
         assert "leadtime" in upp.call_args.kwargs
