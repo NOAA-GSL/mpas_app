@@ -8,6 +8,7 @@ Contributions to the ``mpas_app`` project are made via a :github-docs:`Fork <pul
 
 #. :github-docs:`Fork <get-started/exploring-projects-on-github/contributing-to-a-project#forking-a-repository>` the :mpas_app:`mpas_app repository <>` into your personal GitHub account.
 #. :github-docs:`Clone <get-started/exploring-projects-on-github/contributing-to-a-project>` your fork onto your development system.
+#. :github-docs:`Create <issues/tracking-your-work-with-issues/using-issues/creating-an-issue>` an ``mpas_app`` :mpas_app:`Issue <issues>` to discuss your proposed work.
 #. :github-docs:`Create a branch <get-started/exploring-projects-on-github/contributing-to-a-project#creating-a-branch-to-work-on>` in your clone for your changes.
 #. :github-docs:`Make, commit, and push changes <get-started/exploring-projects-on-github/contributing-to-a-project#making-and-pushing-changes>` in your clone / to your fork. (Refer to the :doc:`Developer Setup <developer_setup>` page for setting up a development shell, formatting and testing your code, etc.)
 #. When your work is complete, :github-docs:`create a pull request <get-started/exploring-projects-on-github/contributing-to-a-project#making-a-pull-request>` to merge your changes.
