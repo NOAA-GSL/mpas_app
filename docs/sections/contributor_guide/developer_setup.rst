@@ -7,8 +7,8 @@ MPAS App installs and manages its own conda installation in the ``conda/`` subdi
 
    make devenv
    source conda/etc/profile.d/conda.sh
-   source docs/install-deps # if developing documentation
    conda activate mpas_app
+   source docs/install-deps # if developing documentation
 
 After initial installation, the ``mpas_app`` environment can be re-activated in a fresh shell with the command:
 
