@@ -1,18 +1,22 @@
+ACTIVATE = . conda/etc/profile.d/conda.sh && conda activate
 DEVPKGS  = $(shell cat devpkgs)
 ENVNAME  = mpas_app
 ENVPATH  = $(shell ls $(CONDA_PREFIX)/envs/$(ENVNAME) 2>/dev/null)
-TARGETS  = devenv env format lint rmenv test typecheck unittest
+TARGETS  = conda devenv env format lint rmenv test typecheck unittest
 
 .PHONY: $(TARGETS)
 
 all:
 	$(error Valid targets are: $(TARGETS))
 
-devenv: env
-	conda install -y -n $(ENVNAME) $(DEVPKGS)
+conda:
+	./build.sh --conda-only
 
-env: rmenv
-	conda env create
+devenv: env
+	$(ACTIVATE) && mamba install -y -n $(ENVNAME) $(DEVPKGS)
+
+env: conda rmenv
+	$(ACTIVATE) && mamba env create -y -f environment.yml
 
 format:
 	@./format
