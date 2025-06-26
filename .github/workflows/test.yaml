@@ -17,7 +17,9 @@ jobs:
       - uses: actions/checkout@v3
       - name: Prepare Environment
         run: make devenv
+      - name: Code-Quality Check
+        run: .github/scripts/cq.sh
       - name: Format Check
-        run: .github/scripts/format-check.sh
-      - name: Test
-        run: .github/scripts/test.sh
+        run: .github/scripts/format.sh
+      - name: Docs Check
+        run: .github/scripts/docs.sh

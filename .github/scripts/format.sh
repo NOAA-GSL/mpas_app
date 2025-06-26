@@ -1,7 +1,6 @@
 set -eu
 source conda/etc/profile.d/conda.sh
 conda activate mpas_app
-conda info
 set -x
 make format
 if [[ -n "$(git status --porcelain)" ]]; then
