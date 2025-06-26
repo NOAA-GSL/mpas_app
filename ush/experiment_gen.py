@@ -39,8 +39,11 @@ def create_grid_files(expt_dir: Path, mesh_file_path: Path, nprocs: int) -> None
 
 
 def generate_workflow_files(
-        experiment_config: YAMLConfig, experiment_file: Path, mpas_app: Path, user_config:
-        YAMLConfig, validated: Config
+    experiment_config: YAMLConfig,
+    experiment_file: Path,
+    mpas_app: Path,
+    user_config: YAMLConfig,
+    validated: Config,
 ):
     """
     Generate the Rocoto XML and the experiment YAML.
