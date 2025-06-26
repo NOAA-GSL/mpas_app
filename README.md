@@ -67,7 +67,7 @@ Currently, Jet and Hera are the only platforms fully supported on the `main` bra
 ./build.sh -p <platform>
 ```
 
-The app is partially supported on Ursa. UPP is not currently supported on that platform.
+The app is partially supported on Ursa for the HFIP 2025 experiment configuration.
 
 To see the different build options (including MPAS build options):
 
