@@ -3,6 +3,7 @@ user:
   workflow_blocks:
     - cold_start.yaml
     - post.yaml
+    - graphics.yaml
 
 workflow:
   tasks:
@@ -15,8 +16,10 @@ workflow:
           attrs:
             task: mpas_ics
     metatask_post:
-      task_upp_#fhr#: !remove
-      task_combine_grib_#fhr#: !remove
+      task_combine_grib_#fhr#:
+        command:
+          cyclestr:
+            value: 'cd {{ user.experiment_dir }}/@Y@m@d@H/upp/#fhr# ; FHR=$( printf "%02d" "$((10##fhr#))") ; cat PRSLEV.GrbF$FHR NATLEV.GrbF$FHR 2DFLD.GrbF$FHR >> ../COMBINED.GrbF$FHR'
 
 create_ics:
   mpas_init: &mpas_init
@@ -115,3 +118,10 @@ post:
     control_file: "{{ user.mpas_app }}/parm/upp/postxconfig-NT-hfip_mpas.txt"
     files_to_copy:
       postxconfig-NT.txt: "{{ user.mpas_app }}/parm/upp/postxconfig-NT-hfip_mpas.txt"
+graphics:
+  execution:
+    batchargs:
+      tasks_per_node: 192
+      nodes: 1
+  config:
+    MODEL_DESCRIPTOR: "HFIP (experimental)"

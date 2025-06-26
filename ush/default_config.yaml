@@ -352,7 +352,7 @@ post:
       envcmds:
         - ulimit -s unlimited || true
         - module use {{ user.mpas_app }}/src/UPP/modulefiles
-        - module load {{ user.platform }}
+        - module load {{ user.platform }}_intel
       executable: "{{ user.mpas_app }}/exec/upp.x"
       mpicmd: srun
     files_to_copy:
@@ -437,6 +437,8 @@ graphics:
       nodes: 1
   config:
     FCST_LENGTH: !int '{{ forecast.mpas.length }}'
-    PYGRAF: "{{ user.mpas_app }}/ush/pygraf"
-    OUTPUT_ROOT: "{{ user.experiment_dir }}"
+    FCST_FREQUENCY: 6
     MODEL_DESCRIPTOR: "MPAS Experiment"
+    OUTPUT_ROOT: "{{ user.experiment_dir }}"
+    PLATFORM: "{{ user.platform }}"
+    PYGRAF: "{{ user.mpas_app }}/ush/pygraf"

@@ -13,6 +13,10 @@ create_conda_envs () {
     echo "=> Creating ungrib conda environment"
     mamba create -y -n ungrib -c maddenp ungrib
   fi
+  if ! conda env list | grep -q "^pygraf\s"; then
+    echo "=> Creating pygraf conda environment"
+    mamba create -y -n pygraf --file ush/pygraf/environment.yml
+  fi
 }
 
 export_var_defaults () {
