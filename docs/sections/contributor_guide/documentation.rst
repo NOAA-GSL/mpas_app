@@ -20,7 +20,7 @@ After making and saving changes, re-run ``make docs`` and refresh your browser.
 
 If, at some point, you remove and recreate the ``mpas_app`` development environment, you will need to re-run ``. install-deps`` in the new environment. Until then, the installed doc packages will persist and support docs generation.
 
-**Note:** Previewing -- and, in general, developing -- documentation may be more easily accomplished on a personal workstation than on an HPC system. It may nevertheless be possible to preview documentation built on an HPC by 1. Running an X Windows client on your personal workstation, 2. Correctly configuring X forwarding over ssh, and 3. Launching a browser (e.g. Firefox) installed on the HPC; or, if the HPC provides a remote-desktop interface, using that for documentation development.
+.. note:: Previewing -- and, in general, developing -- documentation may be more easily accomplished on a personal workstation than on an HPC system. It may nevertheless be possible to preview documentation built on an HPC by 1. Running an X Windows client on your personal workstation, 2. Correctly configuring X forwarding over ssh, and 3. Launching a browser (e.g. Firefox) installed on the HPC; or, if the HPC provides a remote-desktop interface, using that for documentation development.
 
 Viewing Online Documentation
 ----------------------------
