@@ -1,4 +1,7 @@
 MPAS App
 ========
 
-Docs go here.
+.. toctree::
+
+   sections/user_guide/index
+   sections/contributor_guide/index
