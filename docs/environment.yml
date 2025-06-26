@@ -3,6 +3,6 @@ channels:
   - conda-forge
 dependencies:
   - linkchecker 10.4.*
-  - python >=3.9,<3.13
+  - sphinx 7.4.*
   - sphinx_rtd_theme 3.0.*
   - sphinxcontrib-bibtex 2.6.*
