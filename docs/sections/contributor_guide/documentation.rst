@@ -7,7 +7,7 @@ Locally Building and Previewing Documentation
 To locally build the docs:
 
 #. Create and activate a development environment as described in the :doc:`Developer Setup <developer_setup>` section.
-#. From the clone root, install the required additional packages: ``. docs/install-deps``
+#. Ensure that the required additional packages are installed: ``source docs/install-deps``
 #. Build the docs: ``make docs``
 
 The ``make docs`` command will build the docs under ``docs/build/html``, after which you can preview them in your web browser at the URL
@@ -17,8 +17,6 @@ The ``make docs`` command will build the docs under ``docs/build/html``, after w
    file://<filesystem-path-to-your-clone>/docs/build/html/index.html
 
 After making and saving changes, re-run ``make docs`` and refresh your browser.
-
-If, at some point, you remove and recreate the ``mpas_app`` development environment, you will need to re-run ``. install-deps`` in the new environment. Until then, the installed doc packages will persist and support docs generation.
 
 .. note:: Previewing -- and, in general, developing -- documentation may be more easily accomplished on a personal workstation than on an HPC system. It may nevertheless be possible to preview documentation built on an HPC by 1. Running an X Windows client on your personal workstation, 2. Correctly configuring X forwarding over ssh, and 3. Launching a browser (e.g. Firefox) installed on the HPC; or, if the HPC provides a remote-desktop interface, using that for documentation development.
 

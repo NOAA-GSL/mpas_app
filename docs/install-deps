@@ -1,1 +1,1 @@
-conda install -q -y $($(dirname ${BASH_SOURCE[0]})/deps)
+mamba install -q -y -n mpas_app $($(dirname ${BASH_SOURCE[0]})/deps)
