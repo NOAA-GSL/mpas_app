@@ -1,21 +1,25 @@
+ACTIVATE = . conda/etc/profile.d/conda.sh && conda activate
 DEVPKGS  = $(shell cat devpkgs)
 ENVNAME  = mpas_app
 ENVPATH  = $(shell ls $(CONDA_PREFIX)/envs/$(ENVNAME) 2>/dev/null)
-TARGETS  = devenv docs env format lint rmenv test typecheck unittest
+TARGETS  = conda devenv docs env format lint rmenv test typecheck unittest
 
 .PHONY: $(TARGETS)
 
 all:
 	$(error Valid targets are: $(TARGETS))
 
+conda:
+	./build.sh --conda-only
+
 devenv: env
-	conda install -y -n $(ENVNAME) $(DEVPKGS)
+	$(ACTIVATE) && mamba install -y -n $(ENVNAME) $(DEVPKGS)
 
 docs:
 	$(MAKE) -C docs docs
 
-env: rmenv
-	conda env create
+env: conda rmenv
+	$(ACTIVATE) && mamba env create -y -f environment.yml
 
 format:
 	@./format
@@ -24,13 +28,13 @@ lint:
 	ruff check .
 
 regtest:
-	pytest --cov -k "regtest" tests
+	pytest --basetemp=$(PWD)/.pytest -k "regtest" tests/*
 
 rmenv:
 	$(if $(ENVPATH),conda env remove -y -n $(ENVNAME))
 
 systest:
-	pytest --cov -k "systest" -n 5 tests
+	pytest -k "systest" -n 5 tests/*
 
 test: lint typecheck unittest
 

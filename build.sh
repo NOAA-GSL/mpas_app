@@ -7,7 +7,7 @@ create_conda_envs () {
   conda activate
   if ! conda env list | grep -q "^mpas_app\s"; then
     echo "=> Creating mpas_app conda environment"
-    mamba env create -y -n mpas_app --file environment.yml
+    make env
   fi
   if ! conda env list | grep -q "^ungrib\s"; then
     echo "=> Creating ungrib conda environment"
@@ -26,6 +26,7 @@ export_var_defaults () {
   export BUILD_JOBS=4
   export COMPILER=
   export CONDA_DIR=$MPAS_APP_DIR/conda
+  export CONDA_ONLY=false
   export DEBUG=false
   export EXEC_DIR=$MPAS_APP_DIR/exec
   export GEN_F90=false
@@ -143,6 +144,7 @@ install_upp () {
 
 prepare_conda () {
   install_conda
+  test $CONDA_ONLY == true && exit 0
   create_conda_envs
 }
 
@@ -150,12 +152,12 @@ prepare_shell () {
   export_var_defaults
   parse_cli_args $@
   validate_and_update_vars
-  show_settings
+  test $CONDA_ONLY == false && show_settings || true
 }
 
 parse_cli_args () {
   local long name opts
-  long=atmos-only,build-jobs:,compiler:,conda-dir:,debug,exec-dir:,gen-f90,help,openmp,platform:,single-precision,tau,timer-lib:,use-papi
+  long=atmos-only,build-jobs:,compiler:,conda-dir:,conda-only,debug,exec-dir:,gen-f90,help,openmp,platform:,single-precision,tau,timer-lib:,use-papi
   name=$(basename ${BASH_SOURCE[0]})
   opts=$(getopt -n $name -o c:hp:v -l $long -- "$@") || usage_error
   eval set -- $opts
@@ -166,6 +168,7 @@ parse_cli_args () {
       --build-jobs)       BUILD_JOBS=$2 && shift ;;
       --compiler|-c)      COMPILER=$2 && shift   ;;
       --conda-dir)        CONDA_DIR=$2 && shift  ;;
+      --conda-only)       CONDA_ONLY=true        ;;
       --debug)            DEBUG=true             ;;
       --exec-dir)         EXEC_DIR=$2 && shift   ;;
       --gen-f90)          GEN_F90=true           ;;
@@ -190,6 +193,7 @@ show_settings () {
     BUILD_JOBS=$BUILD_JOBS
     COMPILER=$COMPILER
     CONDA_DIR=$CONDA_DIR
+    CONDA_ONLY=$CONDA_ONLY
     DEBUG=$DEBUG
     EXEC_DIR=$EXEC_DIR
     GEN_F90=$GEN_F90
@@ -223,6 +227,8 @@ OPTIONS
       number of build jobs (default: 4)
   --conda-dir CONDA_DIR
       directory to install conda info (default: conda/ under MPAS App)
+  --conda-only
+      install conda (not environments) and exit
   --debug
       build MPAS in debug mode
   --exec-dir EXEC_DIR
@@ -249,6 +255,10 @@ usage_error () {
 validate_and_update_vars () {
 
   local module_path
+
+  # No need for what follows if we're only installing conda:
+
+  test $CONDA_ONLY == true && return
 
   # Validate/update platform settings:
 
