@@ -177,8 +177,9 @@ def validate_driver_blocks(validated_blocks: list[str], workflow_config: YAMLCon
             "key_path": section.split("."),
         }
         if "leadtime" in inspect.signature(driver_class).parameters:
-            # hours=0 is an arbitrary number for validation purposes.
+            # 0 is an arbitrary number for validation purposes.
             kwargs["leadtime"] = timedelta(hours=0)
+        # Object is validated when instantiated.
         driver_class(**kwargs)
 
 
