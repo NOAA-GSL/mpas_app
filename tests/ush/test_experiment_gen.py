@@ -218,8 +218,7 @@ def test_validate_driver_blocks_failure(test_config):
 
 
 def test_validate_driver_blocks_leadtime(test_config):
-    upp_config = Mock()
-    upp = Mock(return_value=upp_config)
+    upp = Mock()
     with (
         patch.object(experiment_gen.inspect, "signature") as signature,
         patch.object(experiment_gen, "yaml_keys_to_classes") as mapping,
