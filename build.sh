@@ -13,6 +13,10 @@ create_conda_envs () {
     echo "=> Creating ungrib conda environment"
     mamba create -y -n ungrib -c maddenp ungrib
   fi
+  if ! conda env list | grep -q "^pygraf\s"; then
+    echo "=> Creating pygraf conda environment"
+    mamba create -y -n pygraf --file ush/pygraf/environment.yml
+  fi
 }
 
 export_var_defaults () {
@@ -120,13 +124,12 @@ install_mpassit () {
 }
 
 install_upp () {
-  test $PLATFORM == ursa && return
   echo "=> Building UPP"
   (
     source $MPAS_APP_DIR/etc/lmod-setup.sh $PLATFORM
     module purge
     module use $MPAS_APP_DIR/src/UPP/modulefiles
-    module load $PLATFORM
+    module load ${PLATFORM}_$COMPILER
     d=$MPAS_APP_DIR/build_upp
     mkdir -pv $d
     cd $d
@@ -296,8 +299,8 @@ validate_and_update_vars () {
 echo "=> Building"
 prepare_shell $@
 prepare_conda
-install_mpas init_atmosphere
-install_mpas atmosphere
-install_mpassit
+#install_mpas init_atmosphere
+#install_mpas atmosphere
+#install_mpassit
 install_upp
 echo "=> Ready"

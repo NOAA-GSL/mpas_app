@@ -310,7 +310,12 @@
            <shortname>BUCKET_GRAUPEL_ON_SURFACE</shortname>
            <scale>6.0</scale>
        </param>
-
+<!--
+       <param>
+           <shortname>BUCKET_HAIL_ON_SURFACE</shortname>
+           <scale>3.0</scale>
+       </param>
+-->
        <param>
            <shortname>GSD_CSNOW_ON_SURFACE</shortname>
            <scale>1.0</scale>
@@ -342,12 +347,12 @@
        </param>
 
        <param>
-            <shortname>GSD_HGT_ON_CLOUD_BASE</shortname>
+            <shortname>HGT_ON_CLOUD_BASE</shortname>
             <scale>-3.0</scale>
        </param>
 
        <param>
-           <shortname>GSD_HGT_ON_CLOUD_TOP</shortname>
+           <shortname>HGT_ON_CLOUD_TOP</shortname>
            <scale>-3.0</scale>
        </param>
 
@@ -410,13 +415,7 @@
        </param>
 
        <param>
-           <shortname>MAX_MAXUVV_ON_SPEC_PRES_LVL_ABOVE_GRND_10-100hpa</shortname>
-           <table_info>NCEP</table_info>
-           <scale>-4.0</scale>
-       </param>
-
-       <param>
-           <shortname>MAX_MAXDVV_ON_SPEC_HGT_LVL_ABOVE_GRND_10-100hpa</shortname>
+           <shortname>MAX_MAXUVV_ON_ISOBARIC_SFC_100-1000hpa</shortname>
            <table_info>NCEP</table_info>
            <scale>-4.0</scale>
        </param>
@@ -468,18 +467,13 @@
        </param>
 
        <param>
-           <shortname>GSD_MAX_COLMAX_GRAUPEL_HAIL_DIAMETER</shortname>
-           <scale>4.0</scale>
+           <shortname>MAX_GRAUPEL_HAIL_DIAMETER_IN_COLUMN</shortname>
+           <scale>3.0</scale>
        </param>
 
        <param>
-           <shortname>GSD_MAX_SIGMA_LVL_MAX_GRAUPEL_HAIL_DIAMETER</shortname>
-           <scale>4.0</scale>
-       </param>
-
-       <param>
-           <shortname>GSD_HAILCAST_HAIL_DIAMETER</shortname>
-           <scale>4.0</scale>
+           <shortname>MAX_GRAUPEL_HAIL_DIAMETER_AT_LOWEST_LVL</shortname>
+           <scale>3.0</scale>
        </param>
 
        <param>
@@ -580,13 +574,7 @@
        </param>
 
        <param>
-           <shortname>GSD_VIL_ON_ENTIRE_ATMOS</shortname>
-           <table_info>NCEP</table_info>
-           <scale>6.0</scale>
-       </param>
-
-       <param>
-           <shortname>GSD_RADARVIL_ON_ENTIRE_ATMOS</shortname>
+           <shortname>VIL_ON_ENTIRE_ATMOS</shortname>
            <scale>6.0</scale>
        </param>
 
@@ -623,7 +611,7 @@
        </param>
 
        <param>
-           <shortname>GSD_PRES_ON_CLOUD_BASE</shortname>
+           <shortname>PRES_ON_CLOUD_BASE</shortname>
            <scale>3.0</scale>
        </param>
 
