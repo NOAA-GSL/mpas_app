@@ -6,6 +6,13 @@
 #
 user:
   cycle_frequency: 12
+  driver_validation_blocks:
+    - prepare_grib_ics.ungrib
+    - prepare_grib_lbcs.ungrib
+    - create_ics.mpas_init
+    - create_lbcs.mpas_init
+    - forecast.mpas
+    - post.upp
   experiment_dir: ""
   first_cycle: !!timestamp 2023-09-15T00:00:00
   last_cycle: !!timestamp 2023-09-15T00:00:00

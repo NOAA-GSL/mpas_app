@@ -1,4 +1,8 @@
 user:
+  driver_validation_blocks:
+    - prepare_grib_ics.ungrib
+    - create_ics.mpas_init
+    - forecast.mpas
   mesh_label: x5.8060930
   workflow_blocks:
     - cold_start.yaml
