@@ -1,7 +1,12 @@
 workflow:
   tasks:
     task_graphics:
-      command: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; ; &MPAS_APP;/scripts/run_graphics.sh'
+      command:
+        cyclestr:
+          value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; && &MPAS_APP;/scripts/run_graphics.py
+            -c &EXPERIMENT_CONFIG;
+            --cycle @Y-@m-@dT@H:@M:@S
+            --key-path graphics'
       account: "{{ platform.account }}"
       join:
         cyclestr:
@@ -9,14 +14,6 @@ workflow:
       walltime: "{{ graphics.execution.batchargs.walltime }}"
       nodes: "{{ graphics.execution.batchargs.nodes }}:ppn={{ graphics.execution.batchargs.tasks_per_node }}"
       partition: "{{ graphics.execution.batchargs.partition }}"
-      envars:
-        CONFIG_PATH: '&EXPERIMENT_CONFIG;'
-        CYCLE:
-          cyclestr:
-            value: "@Y@m@d@H"
-        FCST_LOCATION:
-          cyclestr:
-            value: "{{ user.experiment_dir }}/@Y@m@d@H/upp"
       dependency:
         taskdep:
           attrs:
