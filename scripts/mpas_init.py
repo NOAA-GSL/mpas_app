@@ -1,72 +1,19 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
-The run script for the mpas init_atmosphere
+The run script for the MPAS init_atmosphere.
 """
 
-import datetime as dt
-import logging
 import inspect
 import sys
-from argparse import ArgumentParser
 from pathlib import Path
 
-from uwtools.api.config import get_yaml_config
+sys.path.append(str(Path(__file__).parent.parent))
+
 from uwtools.api.mpas_init import MPASInit
-from uwtools.api.logging import use_uwtools_logger
 
-from utils import run_shell_cmd
-
-def parse_args(argv):
-    """
-    Parse arguments for the script.
-    """
-    parser = ArgumentParser(
-        description="Script that runs UPP via uwtools API.",
-    )
-    parser.add_argument(
-        "-c",
-        "--config-file",
-        metavar="PATH",
-        required=True,
-        help="Path to experiment config file.",
-        type=Path,
-    )
-    parser.add_argument(
-        "--cycle",
-        help="The cycle in ISO8601 format (e.g. 2024-07-15T18).",
-        required=True,
-        type=dt.datetime.fromisoformat,
-    )
-    parser.add_argument(
-        "--key-path",
-        help="Dot-separated path of keys leading through the config to the driver's YAML block.",
-        metavar="KEY[.KEY...]",
-        required=True,
-        type=lambda s: s.split("."),
-    )
-    return parser.parse_args(argv)
-
-
-def run_mpas_init(config_file, cycle, key_path):
-    """
-    Setup and run the mpas_init UW Driver.
-    """
-
-    # Run mpas_init
-    mpas_init_driver = MPASInit(config=config_file, cycle=cycle, key_path=key_path)
-    mpas_init_dir = Path(mpas_init_driver.config["rundir"])
-    logging.info(f"Will run mpas_init in {mpas_init_dir}")
-    mpas_init_driver.run()
-
-    if not (mpas_init_dir / "runscript.mpas_init.done").is_file():
-        print("Error occurred running mpas_init. Please see component error logs.")
-        sys.exit(1)
-
-    expt_config = get_yaml_config(config_file)
-    external_model = expt_config["user"]["ics"]["external_model"]
-    if external_model == "RRFS" and "ics" in key_path:
-        # Switch out values from fix files
-        variables_from_fix(expt_config, mpas_init_driver.config)
+from scripts.utils import run_shell_cmd
+from scripts.common import parse_args, run_component
+from uwtools.api.config import get_yaml_config
 
 def variables_from_fix(expt_config, driver_config):
     """
@@ -85,15 +32,19 @@ def variables_from_fix(expt_config, driver_config):
             taskname=inspect.stack()[0][3],
             )
 
-
-if __name__ == "__main__":
-
-    use_uwtools_logger()
-
-
-    args = parse_args(sys.argv[1:])
-    run_mpas_init(
+def main():
+    args = parse_args()
+    mpas_init_driver = run_component(
+        driver_class=MPASInit,
         config_file=args.config_file,
         cycle=args.cycle,
         key_path=args.key_path,
     )
+    # For RRFS ICS, use some variables from fix files
+    expt_config = get_yaml_config(args.config_file)
+    external_model = expt_config["user"]["ics"]["external_model"]
+    if external_model == "RRFS" and "ics" in args,key_path:
+        variables_from_fix(expt_config, mpas_init_driver.config)
+
+if __name__ == "__main__":
+    main()  # pragma: no cover

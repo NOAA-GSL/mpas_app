@@ -1,0 +1,25 @@
+name: Test
+on:
+  pull_request:
+    branches:
+      - '**'
+  push:
+    branches:
+      - '**'
+  workflow_dispatch:
+    branches:
+      - '**'
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Prepare Environment
+        run: make devenv
+      - name: Code-Quality Check
+        run: .github/scripts/cq.sh
+      - name: Format Check
+        run: .github/scripts/format.sh
+      - name: Docs Check
+        run: .github/scripts/docs.sh

@@ -1,7 +1,5 @@
-
 from __future__ import annotations
 
-import logging
 import sys
 from subprocess import STDOUT, CalledProcessError, check_output
 from typing import TYPE_CHECKING
@@ -26,7 +24,7 @@ def run_shell_cmd(
     :param env: Environment variables to set before running cmd.
     :param log_output: Log output from successful cmd? (Error output is always logged.)
     :param taskname: Name of task executing this command, for logging.
-    :return: A result object providing combined stder/stdout output and success values.
+    :return: A result object providing combined stderr/stdout output and success values.
     """
     pre = f"{taskname}: " if taskname else ""
     msg = f"%sRunning: {cmd}"
@@ -65,10 +63,10 @@ def walk_key_path(config, key_path):
         try:
             subconfig = config[key]
         except KeyError:
-            logging.error(f"Bad config path: {pathstr}")
+            log.error("Bad config path: %s", pathstr)
             raise
         if not isinstance(subconfig, dict):
-            logging.error(f"Value at {pathstr} must be a dictionary")
+            log.error("Value at %s must be a dictionary", pathstr)
             sys.exit(1)
         config = subconfig
     return config

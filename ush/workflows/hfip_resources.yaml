@@ -1,0 +1,22 @@
+
+create_ics:
+  mpas_init:
+    execution:
+      batchargs:
+        cores: 1200
+        walltime: "00:03:00"
+
+forecast:
+  mpas:
+    execution:
+      batchargs:
+        cores: 8000
+        walltime: "8:00:00"
+
+post:
+  mpassit:
+    execution:
+      batchargs:
+        nodes: 24
+        cores: 1200
+        walltime: "00:07:00"

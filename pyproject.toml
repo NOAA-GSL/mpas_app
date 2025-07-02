@@ -1,0 +1,52 @@
+[tool.coverage.report]
+exclude_also = ["if TYPE_CHECKING:"]
+fail_under = 100
+show_missing = true
+skip_covered = true
+
+[tool.coverage.run]
+source = ["scripts", "ush"]
+
+[tool.mypy]
+check_untyped_defs = true
+exclude = ["conda", "pygraf", "src"]
+pretty = true
+warn_return_any = true
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+exclude = ["conda", "pygraf", "src"]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+  "ANN",     # all flake8-annotations
+  "C408",    # unnecessary-collection-call
+  "C901",    # complex-structure
+  "COM812",  # missing-trailing-comma
+  "D",       # all pydocstyle
+  "FBT002",  # boolean-default-value-positional-argument
+  "LOG015",  # root-logger-call
+  "PLR0912", # too-many-branches
+  "PLR2004", # magic-value-comparison
+  "PTH207",  # glob
+  "S101",    # assert
+  "S310",    # suspicious-url-open-usage
+  "S602",    # subprocess-popen-with-shell-equals-true
+  "S604",    # call-with-shell-equals-true
+  "T201",    # print
+  "TRY400",  # error-instead-of-exception
+  "UP031",   # printf-string-formatting
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+  "PT013",   # pytest-incorrect-pytest-import
+  "SLF001",  # private-member-access
+]
+"ush/retrieve_data.py" = [
+  "PLR0913", # too-many-arguments
+]

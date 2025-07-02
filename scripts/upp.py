@@ -1,30 +1,28 @@
+#!/usr/bin/env python3
 """
-The runscript for UPP
+The runscript for UPP.
 """
 
-import os
 import sys
-from datetime import datetime, timedelta
 from pathlib import Path
 
-from uwtools.api import config as uwconfig
+sys.path.append(str(Path(__file__).parent.parent))
+
 from uwtools.api.upp import UPP
 
+from scripts.common import parse_args, run_component
 
-# Load the YAML config
-CONFIG_PATH = os.environ["CONFIG_PATH"]
-CYCLE = os.environ["CYCLE"]
-LEAD = timedelta(hours=int(os.environ["LEAD"]))
 
-cycle = datetime.fromisoformat(CYCLE)
+def main():
+    args = parse_args(lead_required=True)
+    run_component(
+        driver_class=UPP,
+        config_file=args.config_file,
+        cycle=args.cycle,
+        leadtime=args.leadtime,
+        key_path=args.key_path,
+    )
 
-# Run UPP
-upp_driver = UPP(config=CONFIG_PATH, cycle=cycle, leadtime=LEAD, key_path=["post"])
-upp_driver.run()
 
-# Obtain run directory path
-upp_dir = Path(upp_driver.config["rundir"])
-
-if not (upp_dir / "runscript.upp.done").is_file():
-    print("Error occurred running UPP. Please see component error logs.")
-    sys.exit(1)
+if __name__ == "__main__":
+    main()  # pragma: no cover

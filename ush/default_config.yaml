@@ -6,9 +6,16 @@
 #
 user:
   cycle_frequency: 12
+  driver_validation_blocks:
+    - prepare_grib_ics.ungrib
+    - prepare_grib_lbcs.ungrib
+    - create_ics.mpas_init
+    - create_lbcs.mpas_init
+    - forecast.mpas
+    - post.upp
   experiment_dir: ""
   first_cycle: !!timestamp 2023-09-15T00:00:00
-  last_cycle:  !!timestamp 2023-09-15T00:00:00
+  last_cycle: !!timestamp 2023-09-15T00:00:00
   ics:
     external_model: GFS
     offset_hours: 0
@@ -17,9 +24,6 @@ user:
     interval_hours: 6
     offset_hours: 0
   mesh_label: hrrrv5
-  # mpas_app is the path to the clone and is set by experiment_gen.py
-  mpas_app: ""
-  # platform is a user-required setting
   platform: big_computer
   workflow_blocks:
     - cold_start.yaml
@@ -30,6 +34,7 @@ data:
 platform:
   # Supported scheduler options include Slurm, PBSPro, and LSF
   scheduler: slurm
+  service_partition: service
 get_ics_data:
   execution:
     cores: 1
@@ -342,9 +347,12 @@ post:
       batchargs:
         walltime: 00:30:00
         cores: 768
+        nodes: 24
         native:
           - --exclusive
-    fix_dir: /path/to/fix/files
+    fixdir: /path/to/fix/files
+    nmldir: '{{ user.mpas_app }}/parm/mpassit'
+    parmdir: '{{ user.mpas_app }}/parm/mpassit'
     rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/mpassit'
   upp:
     # upp settings follow UW Tools driver YAML

@@ -5,6 +5,7 @@ platform:
   scheduler: slurm
   geog_data:
     global: /scratch2/BMC/wrfruc/talcott/mpas/global/static/geog/
+  hrrr_fix: /scratch2/BMC/gsd-fv3-dev/mpas_dev/fix
 forecast:
   mpas:
     execution:

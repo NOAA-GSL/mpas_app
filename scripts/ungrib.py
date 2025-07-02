@@ -1,53 +1,21 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
-The run script for ungrib
+The run script for ungrib.
 """
 
-import datetime as dt
 import glob
 import inspect
-import logging
 import sys
-from argparse import ArgumentParser
 from pathlib import Path
 
+sys.path.append(str(Path(__file__).parent.parent))
+
 from iotaa import asset, external, task, tasks, refs
-
-from uwtools.api.config import get_yaml_config
 from uwtools.api.ungrib import Ungrib
-from uwtools.api.logging import use_uwtools_logger
+from uwtools.api.config import get_yaml_config
 
-from utils import run_shell_cmd, walk_key_path
-
-def parse_args(argv):
-    """
-    Parse arguments for the script.
-    """
-    parser = ArgumentParser(
-        description="Script that runs UPP via uwtools API.",
-    )
-    parser.add_argument(
-        "-c",
-        "--config-file",
-        metavar="PATH",
-        required=True,
-        help="Path to experiment config file.",
-        type=Path,
-    )
-    parser.add_argument(
-        "--cycle",
-        help="The cycle in ISO8601 format (e.g. 2024-07-15T18).",
-        required=True,
-        type=dt.datetime.fromisoformat,
-    )
-    parser.add_argument(
-        "--key-path",
-        help="Dot-separated path of keys leading through the config to the driver's YAML block.",
-        metavar="KEY[.KEY...]",
-        required=True,
-        type=lambda s: s.split("."),
-    )
-    return parser.parse_args(argv)
+from scripts.common import parse_args, run_component
+from scripts.utils import run_shell_cmd, walk_key_path
 
 @external
 def file(path: Path):
@@ -164,13 +132,14 @@ def run_ungrib(config_file, cycle, key_path):
         sys.exit(1)
 
 
-if __name__ == "__main__":
-
-    use_uwtools_logger()
-
-    args = parse_args(sys.argv[1:])
+def main():
+    args = parse_args()
     run_ungrib(
         config_file=args.config_file,
         cycle=args.cycle,
         key_path=args.key_path,
-        )
+    )
+
+
+if __name__ == "__main__":
+    main()  # pragma: no cover
