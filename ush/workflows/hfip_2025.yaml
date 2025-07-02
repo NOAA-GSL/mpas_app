@@ -124,4 +124,7 @@ graphics:
       tasks_per_node: 192
       nodes: 1
   config:
-    MODEL_DESCRIPTOR: "HFIP (experimental)"
+    identifier: "HFIP (experimental)"
+    image_list: "{{ user.mpas_app }}/parm/pygraf/hfip_subset.yml"
+    specs_update: "{{ user.mpas_app }}/parm/pygraf/hfip_update_specs.yml"
+

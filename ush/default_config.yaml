@@ -16,6 +16,8 @@ user:
     external_model: GFS
     interval_hours: 6
     offset_hours: 0
+  forecast:
+    output_interval: 6
   mesh_label: hrrrv5
   platform: big_computer
   workflow_blocks:
@@ -287,7 +289,7 @@ forecast:
         mutable: true
         type: output
         filename_template: "history.$Y-$M-$D_$h.$m.$s.nc"
-        output_interval: "06:00:00"
+        output_interval: "{{ '%02d' % user.forecast.output_interval }}:00:00"
         files:
           - stream_list.atmosphere.output
         clobber_mode: overwrite
@@ -436,9 +438,18 @@ graphics:
       walltime: "{{ forecast.mpas.execution.batchargs.walltime }}"
       nodes: 1
   config:
-    FCST_LENGTH: !int '{{ forecast.mpas.length }}'
-    FCST_FREQUENCY: 6
-    MODEL_DESCRIPTOR: "MPAS Experiment"
-    OUTPUT_ROOT: "{{ user.experiment_dir }}"
-    PLATFORM: "{{ user.platform }}"
-    PYGRAF: "{{ user.mpas_app }}/ush/pygraf"
+    pygraf_path: "{{ user.mpas_app }}/ush/pygraf"
+    forecast_length: "{{ forecast.mpas.length }}"
+    graphics_output_path: "{{ user.experiment_dir }}/{{ cycle.strftime('%Y%m%d%H') }}/pyprd"
+    identifier: "MPAS Experiment"
+    image_list: "{{ user.mpas_app }}/ush/pygraf/image_lists/hrrr_subset.yml"
+    input_data_location: "{{ user.experiment_dir }}/{{ cycle.strftime('%Y%m%d%H') }}/upp"
+    input_file_template: COMBINED.GrbF{FCST_TIME:02d},
+    ntasks: ${SLURM_CPUS_ON_NODE:-12}
+    output_interval: "{{ user.forecast.output_interval }}"
+    specs_file: "{{ user.mpas_app }}/ush/pygraf/adb_graphics/default_specs.yml"
+    tiles: full
+    wait_between_output: 25
+    zip_file_path: "{{ user.experiment_dir }}/{{ cycle.strftime('%Y%m%d%H') }}/nclprd"
+    specs_update: null
+
