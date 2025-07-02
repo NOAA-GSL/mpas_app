@@ -59,6 +59,9 @@ RRFS:
             dimensions:
               config_nfglevels: 66
               config_nfgsoillevels: 9
+        files_to_link:
+          shdmax.{{ user.mesh_label }}.nc: "{{ platform.hrrr_fix }}/shdmax.{{ user.mesh_label }}.nc"
+          shdmin.{{ user.mesh_label }}.nc: "{{ platform.hrrr_fix }}/shdmin.{{ user.mesh_label }}.nc"
   lbcs:
     prepare_grib_lbcs:
       <<: *prepare_grib_rrfs

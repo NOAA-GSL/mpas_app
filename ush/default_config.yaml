@@ -45,8 +45,9 @@ prepare_grib_ics:
   ungrib:
     execution:
       batchargs:
-        cores: 1
-        walltime: 00:15:00
+        nodes: 1
+        tasks_per_node: 1
+        walltime: 00:30:00
       envcmds:
         - source {{ user.mpas_app }}/load_wflow_modules.sh {{ user.platform }}
         - conda activate ungrib
@@ -71,8 +72,9 @@ prepare_grib_lbcs:
   ungrib:
     execution:
       batchargs:
-        cores: 1
-        walltime: 00:15:00
+        nodes: 1
+        tasks_per_node: 1
+        walltime: 00:30:00
       envcmds:
         - source {{ user.mpas_app }}/load_wflow_modules.sh {{ user.platform }}
         - conda activate ungrib

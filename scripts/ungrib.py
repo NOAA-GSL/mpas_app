@@ -11,7 +11,7 @@ import sys
 from argparse import ArgumentParser
 from pathlib import Path
 
-from iotaa import asset, external, task, tasks
+from iotaa import asset, external, task, tasks, refs
 
 from uwtools.api.config import get_yaml_config
 from uwtools.api.ungrib import Ungrib
@@ -62,27 +62,39 @@ def regrid_input(infile: Path, rundir, wgrib_config: dict):
     :param infile: Input file path.
     :param wgrib_config: User-provided configuration settings.
     """
-    outfile = Path(infile.resolve().stem + ".tmp.grib2")
+    outfile = Path(rundir, infile.resolve().stem + ".tmp.grib2")
     yield f"wgrib2 regrid {outfile}"
     yield asset(outfile, outfile.is_file)
     yield file(infile)
     budget_fields = Path(wgrib_config["budget_fields"]).read_text().strip()
     neighbor_fields = Path(wgrib_config["neighbor_fields"]).read_text().strip()
     options = [
-        "-ncpu 8",
         "-set_bitmap 1",
         "-set_grib_type c3",
         "-new_grid_winds grid",
         f"-new_grid_vectors {wgrib_config['grid_vectors']}",
         "-new_grid_interpolation bilinear",
-        f"-if \"{budget_fields}\" -new_grid_interpolation budget -fi",
-        f"-if \"{neighbor_fields}\" -new_grid_interpolation neighbor -fi",
+        f"-if \'{budget_fields}\' -new_grid_interpolation budget -fi",
+        f"-if \'{neighbor_fields} \' -new_grid_interpolation neighbor -fi",
         f"-new_grid {wgrib_config['grid_specs']}",
         ]
-    cmd = f"module load wgrib2 && wgrib2 {infile} {' '.join(options)} {outfile}"
+    cmd = f"module load wgrib2/2.0.8 && wgrib2 {infile} {' '.join(options)} {outfile}"
+    #export LD_LIBRARY_PATH=/lfs5/NAGAPE/wof/miniconda3_RL/lib
+    #export CPATH=/usr/include/tirpc:$CPATH
+    #export LD_LIBRARY_PATH=/lfs5/NAGAPE/wof/miniconda3_RL/lib:/apps/netcdf/4.7.0/intel_2023.2.0-impi/lib:/apps/hdf5/1.10.5/intel_2023.2.0-impi/lib:/apps/pnetcdf/1.12.3/intel_2023.2.0-impi/lib:/misc/apps/oneapi/mpi/2021.10.0/libfabric/lib:/misc/apps/oneapi/mpi/2021.10.0/lib/release:/misc/apps/oneapi/mpi/2021.10.0/lib:/misc/apps/oneapi/mkl/2023.2.0/lib/intel64:/misc/apps/oneapi/compiler/2023.2.0/linux/lib:/misc/apps/oneapi/compiler/2023.2.0/linux/lib/x64:/misc/apps/oneapi/compiler/2023.2.0/linux/lib/oclfpga/host/linux64/lib:/misc/apps/oneapi/compiler/2023.2.0/linux/compiler/lib/intel64_lin:/home/role.apps/lib:/apps/szip/2.1/lib
+    #export CPATH=/usr/include/tirpc:/apps/netcdf/4.7.0/intel_2023.2.0-impi/include:/misc/apps/oneapi/mpi/2021.10.0/include:/misc/apps/oneapi/mkl/2023.2.0/include:/misc/apps/oneapi/compiler/2023.2.0/linux/lib/oclfpga/include
+    cmd = f"""
+    env
+    source /mnt/lfs5/BMC/wrfruc/cholt/mpas_work/rrfs_ics_lbcs/mpas_app/etc/lmod-setup.sh jet
+    module purge
+    module use /lfs5/NAGAPE/wof/mpas/modules
+    module load build_jet_Rocky8_intel_smiol
+    set -x
+    /apps/wgrib2/2.0.8/intel/18.0.5.274/bin/wgrib2 {infile} {" ".join(options)} {outfile}"""
     run_shell_cmd(
         cmd=cmd,
         cwd=rundir,
+        env={},
         log_output=True,
         taskname=inspect.stack()[0][3],
         )
@@ -99,14 +111,19 @@ def merge_vector_fields(infile: Path, outfile: Path, rundir: Path, wgrib_config:
     # or refs(regrid_task)
     # iotaa.logcfg -- for iotaa output logging.
 
-    cmd = (f"module load wgrib2 && wgrib2 {regrid_task.refs}",
-        f"-new_grid_vectors {wgrib_config['grid_vectors']}",
-        f"-submsg_uv {outfile}",
-        "-ncpu 8",
-        )
+    cmd = f"""
+    env
+    source /mnt/lfs5/BMC/wrfruc/cholt/mpas_work/rrfs_ics_lbcs/mpas_app/etc/lmod-setup.sh jet
+    module purge
+    module use /lfs5/NAGAPE/wof/mpas/modules
+    module load build_jet_Rocky8_intel_smiol
+    set -x
+    /apps/wgrib2/2.0.8/intel/18.0.5.274/bin/wgrib2 {refs(regrid_task)} -not aerosol=Dust -new_grid_vectors \"{wgrib_config['grid_vectors']}\" -submsg_uv {outfile}
+       """ 
     run_shell_cmd(
         cmd=cmd,
         cwd=rundir,
+        env={},
         log_output=True,
         taskname=inspect.stack()[0][3],
         )
@@ -116,10 +133,11 @@ def link_to_regridded_grib(infile:Path, rundir: Path, wgrib_config: dict):
     """
     Update original link to point to regridded grib file.
     """
-    outfile = infile.resolve().stem + ".tmp2.grib2"
+    linked_file = infile.resolve()
+    outfile = linked_file.name if "tmp" in linked_file.name else linked_file.stem + ".tmp2.grib2"
     yield f"ungrib: update link {infile} to {outfile}"
-    yield asset(infile, lambda: infile.resolve() == outfile)
-    yield merge_vector_fields(infile, Path(outfile), rundir, wgrib_config)
+    yield asset(infile, lambda: infile.resolve().name == outfile)
+    yield merge_vector_fields(infile, Path(rundir, outfile), rundir, wgrib_config)
     infile.unlink()
     infile.symlink_to(outfile)
 
@@ -154,7 +172,7 @@ def run_ungrib(config_file, cycle, key_path):
             ungrib_driver.config["rundir"],
             walk_key_path(config=expt_config, key_path=key_path)
         )
-    #ungrib_driver.run()
+    ungrib_driver.run()
 
     if not (ungrib_dir / "runscript.ungrib.done").is_file():
         print("Error occurred running ungrib. Please see component error logs.")

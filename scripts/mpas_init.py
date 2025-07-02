@@ -55,7 +55,7 @@ def run_mpas_init(config_file, cycle, key_path):
     # Run mpas_init
     mpas_init_driver = MPASInit(config=config_file, cycle=cycle, key_path=key_path)
     mpas_init_dir = Path(mpas_init_driver.config["rundir"])
-    logging.info("Will run mpas_init in {mpas_init_dir}")
+    logging.info(f"Will run mpas_init in {mpas_init_dir}")
     mpas_init_driver.run()
 
     if not (mpas_init_dir / "runscript.mpas_init.done").is_file():
@@ -64,7 +64,7 @@ def run_mpas_init(config_file, cycle, key_path):
 
     expt_config = get_yaml_config(config_file)
     external_model = expt_config["user"]["ics"]["external_model"]
-    if external_model == "RRFS":
+    if external_model == "RRFS" and "ics" in key_path:
         # Switch out values from fix files
         variables_from_fix(expt_config, mpas_init_driver.config)
 
@@ -96,5 +96,4 @@ if __name__ == "__main__":
         config_file=args.config_file,
         cycle=args.cycle,
         key_path=args.key_path,
-        member=args.member,
     )

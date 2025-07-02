@@ -69,7 +69,7 @@ workflow:
         cyclestr:
           value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ prepare_grib_ics.ungrib.execution.batchargs.walltime }}"
-      cores: !int "{{ prepare_grib_ics.ungrib.execution.batchargs.cores }}"
+      nodes: "{{ prepare_grib_lbcs.ungrib.execution.batchargs.nodes }}:ppn={{ prepare_grib_lbcs.ungrib.execution.batchargs.tasks_per_node }}"
       dependency:
         taskdep:
           attrs:
@@ -86,7 +86,7 @@ workflow:
         cyclestr:
           value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ prepare_grib_lbcs.ungrib.execution.batchargs.walltime }}"
-      cores: !int "{{ prepare_grib_lbcs.ungrib.execution.batchargs.cores }}"
+      nodes: "{{ prepare_grib_lbcs.ungrib.execution.batchargs.nodes }}:ppn={{ prepare_grib_lbcs.ungrib.execution.batchargs.tasks_per_node }}"
       dependency:
         taskdep:
           attrs:
@@ -109,19 +109,18 @@ workflow:
           attrs:
             task: ungrib_ics
     task_mpas_lbcs:
-      command: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; ; python &MPAS_APP;/scripts/mpas_init.py'
+      command:
+        cyclestr:
+          value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; && &MPAS_APP;/scripts/mpas_init.py
+            -c &EXPERIMENT_CONFIG;
+            --cycle @Y-@m-@dT@H:@M:@S
+            --key-path create_lbcs'
       account: "{{ platform.account }}"
       join:
         cyclestr:
           value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ create_lbcs.mpas_init.execution.batchargs.walltime }}"
       cores: !int "{{ create_lbcs.mpas_init.execution.batchargs.cores }}"
-      envars:
-        CONFIG_PATH: '&EXPERIMENT_CONFIG;'
-        CYCLE:
-          cyclestr:
-            value: "@Y-@m-@dT@H:@M:@S"
-        EXPT_SECT: create_lbcs
       dependency:
         and:
           taskdep_ics:
