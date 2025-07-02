@@ -68,6 +68,7 @@ def regrid_input(infile: Path, rundir, wgrib_config: dict):
     yield file(infile)
     budget_fields = Path(wgrib_config["budget_fields"]).read_text().strip()
     neighbor_fields = Path(wgrib_config["neighbor_fields"]).read_text().strip()
+    # MUST leave space after {neighbor_fields} below for now.
     options = [
         "-set_bitmap 1",
         "-set_grib_type c3",
@@ -75,22 +76,13 @@ def regrid_input(infile: Path, rundir, wgrib_config: dict):
         f"-new_grid_vectors {wgrib_config['grid_vectors']}",
         "-new_grid_interpolation bilinear",
         f"-if \'{budget_fields}\' -new_grid_interpolation budget -fi",
+        # DO NOT REMOVE SPACE    v
         f"-if \'{neighbor_fields} \' -new_grid_interpolation neighbor -fi",
         f"-new_grid {wgrib_config['grid_specs']}",
         ]
-    cmd = f"module load wgrib2/2.0.8 && wgrib2 {infile} {' '.join(options)} {outfile}"
-    #export LD_LIBRARY_PATH=/lfs5/NAGAPE/wof/miniconda3_RL/lib
-    #export CPATH=/usr/include/tirpc:$CPATH
-    #export LD_LIBRARY_PATH=/lfs5/NAGAPE/wof/miniconda3_RL/lib:/apps/netcdf/4.7.0/intel_2023.2.0-impi/lib:/apps/hdf5/1.10.5/intel_2023.2.0-impi/lib:/apps/pnetcdf/1.12.3/intel_2023.2.0-impi/lib:/misc/apps/oneapi/mpi/2021.10.0/libfabric/lib:/misc/apps/oneapi/mpi/2021.10.0/lib/release:/misc/apps/oneapi/mpi/2021.10.0/lib:/misc/apps/oneapi/mkl/2023.2.0/lib/intel64:/misc/apps/oneapi/compiler/2023.2.0/linux/lib:/misc/apps/oneapi/compiler/2023.2.0/linux/lib/x64:/misc/apps/oneapi/compiler/2023.2.0/linux/lib/oclfpga/host/linux64/lib:/misc/apps/oneapi/compiler/2023.2.0/linux/compiler/lib/intel64_lin:/home/role.apps/lib:/apps/szip/2.1/lib
-    #export CPATH=/usr/include/tirpc:/apps/netcdf/4.7.0/intel_2023.2.0-impi/include:/misc/apps/oneapi/mpi/2021.10.0/include:/misc/apps/oneapi/mkl/2023.2.0/include:/misc/apps/oneapi/compiler/2023.2.0/linux/lib/oclfpga/include
     cmd = f"""
-    env
-    source /mnt/lfs5/BMC/wrfruc/cholt/mpas_work/rrfs_ics_lbcs/mpas_app/etc/lmod-setup.sh jet
-    module purge
-    module use /lfs5/NAGAPE/wof/mpas/modules
-    module load build_jet_Rocky8_intel_smiol
-    set -x
-    /apps/wgrib2/2.0.8/intel/18.0.5.274/bin/wgrib2 {infile} {" ".join(options)} {outfile}"""
+    module load wgrib2
+    wgrib2 {infile} {" ".join(options)} {outfile}"""
     run_shell_cmd(
         cmd=cmd,
         cwd=rundir,
@@ -112,18 +104,12 @@ def merge_vector_fields(infile: Path, outfile: Path, rundir: Path, wgrib_config:
     # iotaa.logcfg -- for iotaa output logging.
 
     cmd = f"""
-    env
-    source /mnt/lfs5/BMC/wrfruc/cholt/mpas_work/rrfs_ics_lbcs/mpas_app/etc/lmod-setup.sh jet
-    module purge
-    module use /lfs5/NAGAPE/wof/mpas/modules
-    module load build_jet_Rocky8_intel_smiol
-    set -x
-    /apps/wgrib2/2.0.8/intel/18.0.5.274/bin/wgrib2 {refs(regrid_task)} -not aerosol=Dust -new_grid_vectors \"{wgrib_config['grid_vectors']}\" -submsg_uv {outfile}
-       """ 
+    module load wgrib2
+    wgrib2 {refs(regrid_task)} -not aerosol=Dust -new_grid_vectors \"{wgrib_config['grid_vectors']}\" -submsg_uv {outfile}
+       """
     run_shell_cmd(
         cmd=cmd,
         cwd=rundir,
-        env={},
         log_output=True,
         taskname=inspect.stack()[0][3],
         )
@@ -167,7 +153,6 @@ def run_ungrib(config_file, cycle, key_path):
     logging.info(f"Will run ungrib in {ungrib_dir}")
     if external_model == "RRFS":
         ungrib_driver.gribfiles()
-        # iotaa.logcfg()
         regrid_winds(
             ungrib_driver.config["rundir"],
             walk_key_path(config=expt_config, key_path=key_path)
