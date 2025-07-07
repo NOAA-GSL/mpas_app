@@ -8,7 +8,7 @@ CONUS 3km Quick Start Guide
       git clone https://github.com/NOAA-GSL/mpas_app.git --recursive
       cd mpas_app
 
-2. Build the Model and components:
+2. Build the model and components:
 
    .. code-block:: bash
 

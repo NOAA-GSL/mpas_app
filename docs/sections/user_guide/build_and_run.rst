@@ -1,5 +1,5 @@
-Building and Running the Model
-==============================
+Building and Running the MPAS App
+=================================
 
 Getting Started
 ---------------
