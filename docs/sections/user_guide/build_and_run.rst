@@ -1,5 +1,5 @@
-Building and Running the MPAS App
-=================================
+Build and Run the MPAS App
+==========================
 
 Getting Started
 ---------------
