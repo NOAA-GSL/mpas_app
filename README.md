@@ -6,6 +6,10 @@ App for building and running the [MPAS-Model](https://github.com/NOAA-GSL/MPAS-M
 
 For bugs, questions, and requests related to the app, please use GitHub Issues in the `NOAA-GSL`/`mpas_app` repository. These will be monitored closely, and we will get back to you as quickly as possible.
 
+## Developers
+
+Please see our [Contributor Guide](https://mpas-app.readthedocs.io/en/latest/sections/contributor_guide/index.html).
+
 ## CONUS 3km Quickstart Guide - Jet or Hera
 
 More detailed information on how the app runs and making changes to the model inputs can be found [further down](#getting-started).

@@ -22,6 +22,21 @@ MSG = SimpleNamespace(
 # Tests
 
 
+def test_validate__user_driver_validation_blocks(config):
+    keys = ["user", "driver_validation_blocks"]
+    # Fine: one of the uwtools drivers
+    valid_blocks = ["some.ungrib", "some.mpas_init", "some.mpas", "some.upp"]
+    validation.validate(with_set(config, valid_blocks, *keys))
+    # Fine: no driver_validation_blocks specified
+    config_without_block = with_del(config, *keys)
+    validation.validate(config_without_block)
+    # Wrong: unsupported driver
+    unsupported_drivers = ["some.typo", "some.wrong.driver"]
+    with raises(ValidationError) as e:
+        validation.validate(with_set(config, unsupported_drivers, *keys))
+    assert "Unsupported driver in 'driver_validation_blocks'" in str(e.value)
+
+
 def test_validate__user_first_and_last_cycle(config):
     keys = ["user", "last_cycle"]
     # Fine: last_cycle coincides with first_cycle.
@@ -39,6 +54,7 @@ def test_validate__user_first_and_last_cycle(config):
     [
         (["cycle_frequency"], MSG.gt0, 0),
         (["cycle_frequency"], MSG.int, None),
+        (["driver_validation_blocks"], MSG.str, [None]),
         (["first_cycle"], MSG.dt, None),
         (["ics", "external_model"], MSG.model, "FOO"),
         (["ics", "offset_hours"], MSG.ge0, -1),
@@ -119,6 +135,7 @@ def config(tmp_path):
     return {
         "user": {
             "cycle_frequency": 12,
+            "driver_validation_blocks": ["forecast.mpas", "post.upp"],
             "experiment_dir": tmp_path,
             "first_cycle": datetime(2025, 4, 30, 12, tzinfo=timezone.utc),
             "ics": {"external_model": "GFS", "offset_hours": 0},
