@@ -289,8 +289,8 @@ validate_and_update_vars () {
 echo "=> Building"
 prepare_shell $@
 prepare_conda
-#install_mpas init_atmosphere
-#install_mpas atmosphere
-#install_mpassit
+install_mpas init_atmosphere
+install_mpas atmosphere
+install_mpassit
 install_upp
 echo "=> Ready"
