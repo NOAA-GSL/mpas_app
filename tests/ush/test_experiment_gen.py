@@ -95,7 +95,7 @@ def test_generate_workflow_files(tmp_path, test_config, validated_config):
         patch("sys.exit") as sysexit,
     ):
         experiment_gen.generate_workflow_files(
-            get_yaml_config({}), experiment_file, mpas_app, validated_config
+            get_yaml_config({}), experiment_file, mpas_app, get_yaml_config({}), validated_config
         )
         get_yaml_config.assert_called()
         realize.assert_called_once()
@@ -114,7 +114,7 @@ def test_generate_workflow_files_failure(tmp_path, test_config, validated_config
         patch("sys.exit") as sysexit,
     ):
         experiment_gen.generate_workflow_files(
-            get_yaml_config({}), experiment_file, mpas_app, validated_config
+            get_yaml_config({}), experiment_file, mpas_app, get_yaml_config({}), validated_config
         )
         sysexit.assert_called_once_with(1)
 
@@ -126,7 +126,7 @@ def test_main(validated_config, test_config, tmp_path):
         patch.object(
             experiment_gen,
             "prepare_configs",
-            return_value=(experiment_config, Path("/some/mpas_app")),
+            return_value=(experiment_config, get_yaml_config({}), Path("/some/mpas_app")),
         ),
         patch.object(experiment_gen, "validate", return_value=validated_config),
         patch.object(
@@ -167,7 +167,9 @@ def test_prepare_configs(test_config):
     ):
         get_yaml_config.side_effect = [YAMLConfig(cfg) for cfg in config_dicts]
         path.return_value.parent.parent.resolve.return_value = Path("/some/mpas_app")
-        experiment_config, mpas_app = experiment_gen.prepare_configs([Path("user.yaml")])
+        experiment_config, user_config, mpas_app = experiment_gen.prepare_configs(
+            [Path("user.yaml")]
+        )
     assert isinstance(experiment_config, YAMLConfig)
     assert experiment_config["data"]["mesh_files"] == test_config["data"]["mesh_files"]
     assert experiment_config["ics_key"] == "ics_value"
