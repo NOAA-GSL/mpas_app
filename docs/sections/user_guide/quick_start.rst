@@ -1,4 +1,4 @@
-CONUS 3km Quick start Guide
+CONUS 3km Quick Start Guide
 ---------------------------
 
 1. On Hera or Jet, clone the app's ``main`` branch and navigate to its directory:
