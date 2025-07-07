@@ -1,5 +1,5 @@
-Build and Run the MPAS App
-==========================
+Building and Running the MPAS App
+=================================
 
 Getting Started
 ---------------
@@ -88,8 +88,8 @@ To remove tasks from the workflow:
        task_get_lbcs_data: !remove
        task_mpas_lbcs: !remove
 
-Generate the Experiment
------------------------
+Generating the Experiment
+-------------------------
 
 Activate the environment from the ``mpas_app/`` directory:
 

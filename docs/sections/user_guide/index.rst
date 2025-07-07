@@ -8,4 +8,4 @@ Welcome to the MPAS App *User Guide*.
    :maxdepth: 2
 
    quick_start
-   build_and_run
+   build_run
