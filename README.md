@@ -4,7 +4,7 @@ App for building and running the [MPAS-Model](https://github.com/NOAA-GSL/MPAS-M
 
 ## Documentation
 
-Full documentation is hosted on [Read the Docs](https://mpas-app.readthedocs.io/en/lastest):
+Full documentation is hosted on [Read the Docs](https://mpas-app.readthedocs.io/en/latest).
 
 ## Issues
 
