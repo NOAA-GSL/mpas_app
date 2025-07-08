@@ -1,11 +1,12 @@
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from subprocess import CalledProcessError
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from pytest import fixture, raises
 from uwtools.api.config import YAMLConfig, get_yaml_config
+from uwtools.exceptions import UWConfigError
 
 from ush import experiment_gen, validation
 
@@ -13,14 +14,15 @@ from ush import experiment_gen, validation
 @fixture
 def test_config(tmp_path):
     return {
-        "data": {"mesh_files": str(tmp_path / "meshes")},
-        "create_ics": {"mpas_init": {"execution": {"batchargs": {"cores": 32}}}},
-        "forecast": {"mpas": {"execution": {"batchargs": {"nodes": 2, "tasks_per_node": 32}}}},
         "user": {
+            "first_cycle": "2023-09-15T00:00:00",
             "platform": "jet",
             "ics": {"external_model": "GFS"},
             "lbcs": {"external_model": "GFS"},
         },
+        "data": {"mesh_files": str(tmp_path / "meshes")},
+        "create_ics": {"mpas_init": {"execution": {"batchargs": {"cores": 32}}}},
+        "forecast": {"mpas": {"execution": {"batchargs": {"nodes": 2, "tasks_per_node": 32}}}},
     }
 
 
@@ -29,6 +31,7 @@ def validated_config(tmp_path):
     return validation.Config(
         user=validation.User(
             mesh_label="testmesh",
+            driver_validation_blocks=["some.mpas", "some.upp"],
             experiment_dir=tmp_path,
             workflow_blocks=["block1.yaml"],
             cycle_frequency=6,
@@ -86,12 +89,13 @@ def test_generate_workflow_files(tmp_path, test_config, validated_config):
         patch.object(
             experiment_gen, "get_yaml_config", return_value=YAMLConfig(test_config)
         ) as get_yaml_config,
+        patch.object(experiment_gen, "validate_driver_blocks"),
         patch.object(experiment_gen, "realize") as realize,
         patch.object(experiment_gen.rocoto, "realize", return_value=True) as rocoto_realize,
         patch("sys.exit") as sysexit,
     ):
         experiment_gen.generate_workflow_files(
-            get_yaml_config({}), experiment_file, mpas_app, validated_config
+            get_yaml_config({}), experiment_file, mpas_app, get_yaml_config({}), validated_config
         )
         get_yaml_config.assert_called()
         realize.assert_called_once()
@@ -104,12 +108,13 @@ def test_generate_workflow_files_failure(tmp_path, test_config, validated_config
     mpas_app = tmp_path / "mpas_app"
     with (
         patch.object(experiment_gen, "get_yaml_config", return_value=YAMLConfig(test_config)),
+        patch.object(experiment_gen, "validate_driver_blocks"),
         patch.object(experiment_gen, "realize"),
         patch.object(experiment_gen.rocoto, "realize", return_value=False),
         patch("sys.exit") as sysexit,
     ):
         experiment_gen.generate_workflow_files(
-            get_yaml_config({}), experiment_file, mpas_app, validated_config
+            get_yaml_config({}), experiment_file, mpas_app, get_yaml_config({}), validated_config
         )
         sysexit.assert_called_once_with(1)
 
@@ -121,7 +126,7 @@ def test_main(validated_config, test_config, tmp_path):
         patch.object(
             experiment_gen,
             "prepare_configs",
-            return_value=(experiment_config, Path("/some/mpas_app")),
+            return_value=(experiment_config, get_yaml_config({}), Path("/some/mpas_app")),
         ),
         patch.object(experiment_gen, "validate", return_value=validated_config),
         patch.object(
@@ -162,7 +167,9 @@ def test_prepare_configs(test_config):
     ):
         get_yaml_config.side_effect = [YAMLConfig(cfg) for cfg in config_dicts]
         path.return_value.parent.parent.resolve.return_value = Path("/some/mpas_app")
-        experiment_config, mpas_app = experiment_gen.prepare_configs([Path("user.yaml")])
+        experiment_config, user_config, mpas_app = experiment_gen.prepare_configs(
+            [Path("user.yaml")]
+        )
     assert isinstance(experiment_config, YAMLConfig)
     assert experiment_config["data"]["mesh_files"] == test_config["data"]["mesh_files"]
     assert experiment_config["ics_key"] == "ics_value"
@@ -196,3 +203,30 @@ def test_stage_grid_files(test_config, validated_config):
             test_config, validated_config.user.experiment_dir, validated_config
         )
     create.assert_called_once_with(validated_config.user.experiment_dir, mesh_file, 64)
+
+
+def test_validate_driver_blocks(test_config):
+    mpas, ungrib = Mock(), Mock()
+    with patch.object(experiment_gen, "yaml_keys_to_classes") as mapping:
+        mapping.return_value = {"mpas": mpas, "ungrib": ungrib}
+        experiment_gen.validate_driver_blocks(["some.mpas", "some.ungrib"], test_config)
+        mpas.assert_called_once()
+        ungrib.assert_called_once()
+
+
+def test_validate_driver_blocks_failure(test_config):
+    with raises(UWConfigError):
+        experiment_gen.validate_driver_blocks(["forecast.mpas"], YAMLConfig(test_config))
+
+
+def test_validate_driver_blocks_leadtime(test_config):
+    upp = Mock()
+    with (
+        patch.object(experiment_gen.inspect, "signature") as signature,
+        patch.object(experiment_gen, "yaml_keys_to_classes") as mapping,
+    ):
+        signature.return_value.parameters = {"leadtime": timedelta(hours=0)}
+        mapping.return_value = {"upp": upp}
+        experiment_gen.validate_driver_blocks(["some.upp"], test_config)
+        upp.assert_called_once()
+        assert "leadtime" in upp.call_args.kwargs

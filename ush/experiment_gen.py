@@ -5,14 +5,17 @@ Creates the experiment directory and populates it with necessary configuration a
 """
 
 import argparse
+import inspect
 import logging
 import sys
+from datetime import timedelta
 from pathlib import Path
 from shutil import copy
 from subprocess import STDOUT, CalledProcessError, check_output
 
 from uwtools.api import rocoto
 from uwtools.api.config import YAMLConfig, get_yaml_config, realize
+from uwtools.api.driver import yaml_keys_to_classes
 from uwtools.api.logging import use_uwtools_logger
 
 sys.path.append(str(Path(__file__).parent.parent))
@@ -54,6 +57,7 @@ def generate_workflow_files(
         workflow_config.update_from(get_yaml_config(block))
     for config in (experiment_config, user_config):
         workflow_config.update_from(config)
+    validate_driver_blocks(validated.user.driver_validation_blocks, workflow_config)
     realize(
         input_config=workflow_config,
         output_file=experiment_file,
@@ -162,6 +166,26 @@ def stage_grid_files(
         if not part_file.is_file():
             logging.info("Creating grid file for %s procs", nprocs)
             create_grid_files(experiment_dir, mesh_file_path, nprocs)
+
+
+def validate_driver_blocks(validated_blocks: list[str], workflow_config: YAMLConfig) -> None:
+    """
+    Validate driver configuration blocks in workflow config.
+    """
+    yaml_to_class_map = yaml_keys_to_classes()
+    for block in validated_blocks:
+        section, driver_name = block.rsplit(".", 1)
+        driver_class = yaml_to_class_map[driver_name]
+        kwargs = {
+            "config": workflow_config,
+            "cycle": workflow_config["user"]["first_cycle"],
+            "key_path": section.split("."),
+        }
+        if "leadtime" in inspect.signature(driver_class).parameters:
+            # 0 is an arbitrary number for validation purposes.
+            kwargs["leadtime"] = timedelta(hours=0)
+        # Driver is validated when instantiated.
+        driver_class(**kwargs)
 
 
 if __name__ == "__main__":
