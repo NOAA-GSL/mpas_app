@@ -89,7 +89,7 @@ forecast:
           config_tempo_ml_nc_pbl: true
           config_lsm_scheme: sf_noahmp
           num_soil_layers: 4
-          config_gf_sub3d: 1
+          config_gfl_sub3d: 1
         physics_lsm_noahmp:
           config_noahmp_iopt_crs: 2
           config_noahmp_iopt_stc: 3

@@ -425,7 +425,7 @@ post:
       update_values:
         model_inputs:
           filename: "{{ post.mpassit.rundir }}/{{ '%03d' % (leadtime.total_seconds() / 3600) }}/MPAS-A_out.{{ (cycle + leadtime).strftime('%Y-%m-%d_%H.%M.%S') }}.nc"
-          ioform: netcdfpara
+          ioform: netcdf
           grib: grib2
           datestr: "{{ (cycle + leadtime).strftime('%Y-%m-%d_%H:%M:%S') }}"
           modelname: RAPR
