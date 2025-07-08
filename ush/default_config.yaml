@@ -447,16 +447,16 @@ graphics:
   config:
     pygraf_path: "{{ user.mpas_app }}/ush/pygraf"
     forecast_length: "{{ forecast.mpas.length }}"
-    graphics_output_path: "{{ user.experiment_dir }}/{{ cycle.strftime('%Y%m%d%H') }}/pyprd"
-    identifier: "MPAS Experiment"
+    graphics_output_path: "{{ user.experiment_dir }}/${CYCLE}/pyprd"
+    identifier: MPAS Experiment
     image_list: "{{ user.mpas_app }}/ush/pygraf/image_lists/hrrr_subset.yml"
-    input_data_location: "{{ user.experiment_dir }}/{{ cycle.strftime('%Y%m%d%H') }}/upp"
+    input_data_location: "{{ user.experiment_dir }}/${CYCLE}/upp"
     input_file_template: COMBINED.GrbF{FCST_TIME:02d},
     ntasks: ${SLURM_CPUS_ON_NODE:-12}
     output_interval: "{{ user.forecast.output_interval }}"
+    platform: "{{ user.platform }}"
     specs_file: "{{ user.mpas_app }}/ush/pygraf/adb_graphics/default_specs.yml"
     tiles: full
     wait_between_output: 25
-    zip_file_path: "{{ user.experiment_dir }}/{{ cycle.strftime('%Y%m%d%H') }}/nclprd"
-    specs_update: null
+    zip_file_path: "{{ user.experiment_dir }}/${CYCLE}/nclprd"
 
