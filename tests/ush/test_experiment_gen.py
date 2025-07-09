@@ -95,7 +95,11 @@ def test_generate_workflow_files(tmp_path, test_config, validated_config):
         patch("sys.exit") as sysexit,
     ):
         experiment_gen.generate_workflow_files(
-            get_yaml_config({}), experiment_file, mpas_app, get_yaml_config({}), validated_config
+            experiment_config=get_yaml_config({}),
+            experiment_file=experiment_file,
+            mpas_app=mpas_app,
+            user_config=get_yaml_config({}),
+            validated=validated_config,
         )
         get_yaml_config.assert_called()
         realize.assert_called_once()

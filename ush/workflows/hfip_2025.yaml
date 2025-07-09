@@ -23,7 +23,7 @@ workflow:
       task_combine_grib_#fhr#:
         command:
           cyclestr:
-            value: 'cd {{ user.experiment_dir }}/@Y@m@d@H/upp/#fhr# ; FHR=$( printf "%02d" "$((10##fhr#))") ; cat PRSLEV.GrbF$FHR NATLEV.GrbF$FHR 2DFLD.GrbF$FHR >> ../COMBINED.GrbF$FHR'
+            value: 'cd {{ user.experiment_dir }}/@Y@m@d@H/upp/#fhr# && FHR=$( printf "%02d" "$((10##fhr#))") && cat PRSLEV.GrbF$FHR NATLEV.GrbF$FHR 2DFLD.GrbF$FHR >> ../COMBINED.GrbF$FHR'
 
 create_ics:
   mpas_init: &mpas_init
