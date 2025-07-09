@@ -47,7 +47,7 @@ def generate_workflow_files(
     mpas_app: Path,
     user_config: YAMLConfig,
     validated: Config,
-):
+) -> None:
     """
     Generate the Rocoto XML and the experiment YAML.
     """
