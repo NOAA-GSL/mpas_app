@@ -1,7 +1,8 @@
+dvc==3.61.*
 make==4.4.*
 mypy==1.16.*
-pytest==8.4.*
 pytest-cov==6.2.*
 pytest-regressions==2.8.*
 pytest-xdist==3.7.*
+pytest==8.4.*
 ruff==0.12.*

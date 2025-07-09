@@ -3,6 +3,7 @@ DEVPKGS  = $(shell cat devpkgs)
 ENVNAME  = mpas_app
 ENVPATH  = $(shell ls $(CONDA_PREFIX)/envs/$(ENVNAME) 2>/dev/null)
 TARGETS  = conda devenv env format lint rmenv test typecheck unittest
+REGTEST  = pytest --basetemp=$(PWD)/.pytest -k "regtest" tests/*
 
 .PHONY: $(TARGETS)
 
@@ -25,7 +26,10 @@ lint:
 	ruff check .
 
 regtest:
-	pytest --basetemp=$(PWD)/.pytest -k "regtest" tests/*
+	$(REGTEST)
+
+regtest-regen:
+	$(REGTEST) --regen-all
 
 rmenv:
 	$(if $(ENVPATH),conda env remove -y -n $(ENVNAME))

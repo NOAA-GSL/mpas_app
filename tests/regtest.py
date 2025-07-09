@@ -22,7 +22,7 @@ def user_yaml(tmp_path):
     return path
 
 
-def test_regtest_experiment_gen(user_yaml):
+def test_regtest_experiment_gen(file_regression, user_yaml):
     experiment_dir = user_yaml.parent
     cmd = f"./experiment_gen.py workflows/3km_conus.yaml workflows/conus.jet.yaml {user_yaml}"
     success, output = run_shell_cmd(cmd, cwd=ROOT / "ush")
@@ -35,3 +35,4 @@ def test_regtest_experiment_gen(user_yaml):
         "rocoto.xml",
     ]:
         assert (experiment_dir / fn).is_file()
+    file_regression.check(contents=(experiment_dir / "rocoto.xml").read_text())
