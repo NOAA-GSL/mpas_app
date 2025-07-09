@@ -2,7 +2,7 @@ ACTIVATE = . conda/etc/profile.d/conda.sh && conda activate
 DEVPKGS  = $(shell cat devpkgs)
 ENVNAME  = mpas_app
 ENVPATH  = $(shell ls $(CONDA_PREFIX)/envs/$(ENVNAME) 2>/dev/null)
-REGTEST  = pytest --basetemp=$(PWD)/.pytest -k "regtest" tests/*
+REGTEST  = pytest --basetemp=$(PWD)/.pytest tests/regtest.py
 TARGETS  = conda devenv docs env format lint regtest regtest-data regtest-regen rmenv test typecheck unittest
 
 .PHONY: $(TARGETS)
@@ -32,8 +32,8 @@ regtest: regtest-data
 	$(REGTEST)
 
 regtest-data:
-	@test -z "$(PLATFORM)" && echo Must set PLATFORM && exit 1 || true
-	dvc pull --remote $(PLATFORM)
+	@test -z "$(datasrc)" && echo 'Set datasrc=<hera|jet|ursa>' && exit 1 || true
+	dvc pull --remote $(datasrc)
 
 regtest-regen: regtest-data
 	$(REGTEST) --regen-all
