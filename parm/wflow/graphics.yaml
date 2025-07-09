@@ -1,7 +1,7 @@
 workflow:
   tasks:
     task_graphics:
-      command: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; ; &MPAS_APP;/scripts/run_graphics.sh'
+      command: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; && &MPAS_APP;/scripts/run_graphics.sh'
       account: "{{ platform.account }}"
       join:
         cyclestr:
