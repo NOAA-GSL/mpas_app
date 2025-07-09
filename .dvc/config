@@ -1,4 +1,2 @@
-[core]
-    remote = jet
 ['remote "jet"']
     url = /mnt/lfs5/BMC/wrfruc/Paul.Madden/mpas_app_regtest_data
