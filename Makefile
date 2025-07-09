@@ -32,7 +32,7 @@ regtest: regtest-data
 	$(REGTEST)
 
 regtest-data:
-	@test -z "$(PLATFORM)" && echo Must set PLATFORM && false || true
+	@test -z "$(PLATFORM)" && echo Must set PLATFORM && exit 1 || true
 	dvc pull --remote $(PLATFORM)
 
 regtest-regen: regtest-data
