@@ -3,7 +3,7 @@ DEVPKGS  = $(shell cat devpkgs)
 ENVNAME  = mpas_app
 ENVPATH  = $(shell ls $(CONDA_PREFIX)/envs/$(ENVNAME) 2>/dev/null)
 REGTEST  = pytest --basetemp=$(PWD)/.pytest -k "regtest" tests/*
-TARGETS  = conda devenv env format lint regtest regtest-data regtest-regen rmenv test typecheck unittest
+TARGETS  = conda devenv docs env format lint regtest regtest-data regtest-regen rmenv test typecheck unittest
 
 .PHONY: $(TARGETS)
 
@@ -15,6 +15,9 @@ conda:
 
 devenv: env
 	$(ACTIVATE) && mamba install -y -n $(ENVNAME) $(DEVPKGS)
+
+docs:
+	$(MAKE) -C docs docs
 
 env: conda rmenv
 	$(ACTIVATE) && mamba env create -y -f environment.yml
