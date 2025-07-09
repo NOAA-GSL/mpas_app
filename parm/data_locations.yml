@@ -173,15 +173,14 @@ RAP:
       - https://noaa-rap-pds.s3.amazonaws.com/rap.{{yyyymmdd}}
 
 RRFS:
+  filenames:
+    anl:
+      - rrfs.t{{ hh }}z.natlev.3km.f{{ "%03d" % fcst_hr }}.na.grib2
+    fcst:
+      - rrfs.t{{ hh }}z.natlev.3km.f{{ "%03d" % fcst_hr }}.na.grib2
   aws:
-    protocol: download
-    url: https://noaa-rrfs-pds.s3.amazonaws.com/rrfs_a/rrfs.{yyyymmdd}/{hh}
-    file_names:
-      grib2:
-        anl:
-          - rrfs.t{hh}z.natlev.3km.f{fcst_hr:03d}.na.grib2
-        fcst:
-          - rrfs.t{hh}z.natlev.3km.f{fcst_hr:03d}.na.grib2
+    locations:
+      - https://noaa-rrfs-pds.s3.amazonaws.com/rrfs_a/rrfs.{{ yyyymmdd }}/{{ hh }}
 
 HRRR:
   filenames: &hrrr_filenames

@@ -9,6 +9,7 @@ from uwtools.logging import INDENT, log
 if TYPE_CHECKING:
     from pathlib import Path
 
+
 def run_shell_cmd(
     cmd: str,
     cwd: Path | str | None = None,
@@ -50,6 +51,7 @@ def run_shell_cmd(
         for line in output.split("\n"):
             logfunc("%s%s%s", pre, INDENT, line)
     return success, output
+
 
 def walk_key_path(config, key_path):
     """

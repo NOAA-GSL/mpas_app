@@ -5,8 +5,12 @@ import sys
 from argparse import ArgumentParser, Namespace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from uwtools.api.logging import use_uwtools_logger
+
+if TYPE_CHECKING:
+    from uwtools.api.driver import Driver
 
 # Public functions
 
@@ -38,12 +42,12 @@ def run_component(
     cycle: datetime,
     key_path: list[str],
     leadtime: timedelta | None = None,
-) -> type:
+) -> Driver:
     use_uwtools_logger()
     kwargs = {"config": config_file, "cycle": cycle, "key_path": key_path}
     if leadtime is not None:
         kwargs["leadtime"] = leadtime
-    driver = driver_class(**kwargs)
+    driver: Driver = driver_class(**kwargs)
     rundir = Path(driver.config["rundir"])
     logging.info("Running %s in %s", driver_class.__name__, rundir)
     task = driver.run()

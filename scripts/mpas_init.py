@@ -9,11 +9,12 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))
 
+from uwtools.api.config import get_yaml_config
 from uwtools.api.mpas_init import MPASInit
 
-from scripts.utils import run_shell_cmd
 from scripts.common import parse_args, run_component
-from uwtools.api.config import get_yaml_config
+from scripts.utils import run_shell_cmd
+
 
 def variables_from_fix(expt_config, driver_config):
     """
@@ -30,7 +31,8 @@ def variables_from_fix(expt_config, driver_config):
             cwd=driver_config["rundir"],
             log_output=True,
             taskname=inspect.stack()[0][3],
-            )
+        )
+
 
 def main():
     args = parse_args()
@@ -43,8 +45,9 @@ def main():
     # For RRFS ICS, use some variables from fix files
     expt_config = get_yaml_config(args.config_file)
     external_model = expt_config["user"]["ics"]["external_model"]
-    if external_model == "RRFS" and "ics" in args,key_path:
+    if external_model == "RRFS" and "ics" in args.key_path:
         variables_from_fix(expt_config, mpas_init_driver.config)
+
 
 if __name__ == "__main__":
     main()  # pragma: no cover
