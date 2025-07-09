@@ -121,7 +121,6 @@ def test_generate_workflow_files(tmp_path, test_config, validated_config):
             return_value=get_yaml_config(task_config),
         ),
         patch.object(experiment_gen, "validate_driver_blocks"),
-        patch("sys.exit") as sysexit,
     ):
         experiment_gen.generate_workflow_files(
             experiment_config=experiment_config,
