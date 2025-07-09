@@ -2,8 +2,8 @@ ACTIVATE = . conda/etc/profile.d/conda.sh && conda activate
 DEVPKGS  = $(shell cat devpkgs)
 ENVNAME  = mpas_app
 ENVPATH  = $(shell ls $(CONDA_PREFIX)/envs/$(ENVNAME) 2>/dev/null)
-TARGETS  = conda devenv env format lint rmenv test typecheck unittest
 REGTEST  = pytest --basetemp=$(PWD)/.pytest -k "regtest" tests/*
+TARGETS  = conda devenv env format lint regtest regtest-data regtest-regen rmenv test typecheck unittest
 
 .PHONY: $(TARGETS)
 
@@ -25,10 +25,14 @@ format:
 lint:
 	ruff check .
 
-regtest:
+regtest: regtest-data
 	$(REGTEST)
 
-regtest-regen:
+regtest-data:
+	@test -z "$(PLATFORM)" && echo Must set PLATFORM && false || true
+	dvc pull --remote $(PLATFORM)
+
+regtest-regen: regtest-data
 	$(REGTEST) --regen-all
 
 rmenv:
