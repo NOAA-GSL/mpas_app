@@ -23,6 +23,19 @@ def test_config(tmp_path):
         "data": {"mesh_files": str(tmp_path / "meshes")},
         "create_ics": {"mpas_init": {"execution": {"batchargs": {"cores": 32}}}},
         "forecast": {"mpas": {"execution": {"batchargs": {"nodes": 2, "tasks_per_node": 32}}}},
+        "workflow": {
+            "attrs": {"realtime": False, "scheduler": "slurm"},
+            "cycledef": [{"spec": "202209290000 202209300000 06:00:00"}],
+            "log": {"value": "/path/to/rocoto/log"},
+            "tasks": {
+                "task_bar": {
+                    "cores": 2,
+                    "join": "/path/to/bar/log",
+                    "command": "bar",
+                    "walltime": "00:01:00",
+                }
+            },
+        },
     }
 
 
@@ -40,7 +53,7 @@ def validated_config(tmp_path):
             ics=validation.ICs(external_model="GFS", offset_hours=0),
             lbcs=validation.LBCs(external_model="GFS", interval_hours=6, offset_hours=0),
             platform="jet",
-        )
+        ),
     )
 
 
@@ -84,31 +97,53 @@ def test_create_grid_files_failure(tmp_path, caplog):
 
 def test_generate_workflow_files(tmp_path, test_config, validated_config):
     experiment_file = tmp_path / "experiment.yaml"
+    experiment_config = get_yaml_config(test_config)
+    user_config = get_yaml_config({"user": {"platform": "hera"}})
     mpas_app = tmp_path / "mpas_app"
+    rocoto_xml = tmp_path / "rocoto.xml"
+    task_config = {
+        "workflow": {
+            "tasks": {
+                "task_foo": {
+                    "command": "foo",
+                    "cores": 2,
+                    "join": "/path/to/log",
+                    "walltime": "00:01:00",
+                }
+            }
+        }
+    }
+
     with (
         patch.object(
-            experiment_gen, "get_yaml_config", return_value=YAMLConfig(test_config)
-        ) as get_yaml_config,
+            experiment_gen,
+            "get_yaml_config",
+            return_value=get_yaml_config(task_config),
+        ),
         patch.object(experiment_gen, "validate_driver_blocks"),
-        patch.object(experiment_gen, "realize") as realize,
-        patch.object(experiment_gen.rocoto, "realize", return_value=True) as rocoto_realize,
         patch("sys.exit") as sysexit,
     ):
         experiment_gen.generate_workflow_files(
-            experiment_config=get_yaml_config({}),
+            experiment_config=experiment_config,
             experiment_file=experiment_file,
             mpas_app=mpas_app,
-            user_config=get_yaml_config({}),
+            user_config=user_config,
             validated=validated_config,
         )
-        get_yaml_config.assert_called()
-        realize.assert_called_once()
-        rocoto_realize.assert_called_once()
-        sysexit.assert_not_called()
+        assert rocoto_xml.is_file()
+        assert experiment_file.is_file()
+
+    experiment_out = get_yaml_config(experiment_file)
+    assert experiment_out["user"]["platform"] == "hera"
+    xml_content = rocoto_xml.read_text()
+    for task in ("foo", "bar"):
+        assert experiment_out["workflow"]["tasks"][f"task_{task}"]
+        assert f'<task name="{task}">' in xml_content
 
 
 def test_generate_workflow_files_failure(tmp_path, test_config, validated_config):
     experiment_file = tmp_path / "experiment.yaml"
+    experiment_config = get_yaml_config(test_config)
     mpas_app = tmp_path / "mpas_app"
     with (
         patch.object(experiment_gen, "get_yaml_config", return_value=YAMLConfig(test_config)),
@@ -118,7 +153,11 @@ def test_generate_workflow_files_failure(tmp_path, test_config, validated_config
         patch("sys.exit") as sysexit,
     ):
         experiment_gen.generate_workflow_files(
-            get_yaml_config({}), experiment_file, mpas_app, get_yaml_config({}), validated_config
+            experiment_config=experiment_config,
+            experiment_file=experiment_file,
+            mpas_app=mpas_app,
+            user_config=get_yaml_config({"user": {"platform": "hera"}}),
+            validated=validated_config,
         )
         sysexit.assert_called_once_with(1)
 
