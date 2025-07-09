@@ -16,7 +16,7 @@ from scripts.common import parse_args, run_component
 from scripts.utils import run_shell_cmd
 
 
-def variables_from_fix(expt_config, driver_config):
+def variables_from_fix(expt_config: Config, driver_config: Config) -> None:
     """
     Call ncks for variables that should come from fix files
     """
