@@ -9,14 +9,14 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from uwtools.api.config import get_yaml_config
+from uwtools.api.config import Config, get_yaml_config
 from uwtools.api.mpas_init import MPASInit
 
 from scripts.common import parse_args, run_component
 from scripts.utils import run_shell_cmd
 
 
-def variables_from_fix(expt_config: Config, driver_config: Config) -> None:
+def variables_from_fix(expt_config: Config, driver_config: dict) -> None:
     """
     Call ncks for variables that should come from fix files
     """

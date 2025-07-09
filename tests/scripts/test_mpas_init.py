@@ -57,5 +57,5 @@ def test_variables_from_fix():
         for var in ("shdmax", "shdmin")
     ]
     with patch.object(mpas_init, "run_shell_cmd") as run_shell_cmd:
-        mpas_init.variables_from_fix(test_config, test_config)
+        mpas_init.variables_from_fix(test_config, config)
         run_shell_cmd.assert_has_calls(expected_calls)
