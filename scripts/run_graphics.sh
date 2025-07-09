@@ -31,7 +31,7 @@
 while read -r line ; do
   # A regex to match list representations
   line=$(echo "$line" | sed -E -e "s/='\[(.*)\]'/=(\1)/" -e 's/,//g' -e 's/"//g' -e 's/None//g')
-  source <( echo eval "${line}" )
+  $line
 done < <(uw config realize -i "${CONFIG_PATH}" --output-format sh --key-path graphics.config)
 
 
