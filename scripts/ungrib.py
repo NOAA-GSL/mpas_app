@@ -3,6 +3,8 @@
 The run script for ungrib.
 """
 
+from __future__ import annotations
+
 import glob
 import inspect
 import logging
@@ -11,7 +13,7 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from iotaa import asset, external, refs, task, tasks
+from iotaa import asset, external, task, tasks
 from uwtools.api.config import get_yaml_config
 from uwtools.api.logging import use_uwtools_logger
 from uwtools.api.ungrib import Ungrib
@@ -59,7 +61,6 @@ def regrid_input(infile: Path, rundir, wgrib_config: dict):
     run_shell_cmd(
         cmd=cmd,
         cwd=rundir,
-        env={},
         log_output=True,
         taskname=inspect.stack()[0][3],
     )
@@ -81,7 +82,7 @@ def merge_vector_fields(infile: Path, outfile: Path, rundir: Path, wgrib_config:
     ]
     cmd = f"""
     module load wgrib2
-    wgrib2 {refs(regrid_task)} {" ".join(options)} {outfile}
+    wgrib2 {regrid_task.ref} {" ".join(options)} {outfile}
        """
     run_shell_cmd(
         cmd=cmd,
@@ -97,8 +98,10 @@ def link_to_regridded_grib(infile: Path, rundir: Path, wgrib_config: dict):
     Update original link to point to regridded grib file.
     """
     linked_file = infile.resolve()
+    # Check to ensure the link hasn't already been updated
     outfile = linked_file.name if "tmp" in linked_file.name else linked_file.stem + ".tmp2.grib2"
     yield f"ungrib: update link {infile} to {outfile}"
+    # Only do the work if the link doesn't point to the expected tmp2.grib2 file
     yield asset(infile, lambda: infile.resolve().name == outfile)
     yield merge_vector_fields(infile, Path(rundir, outfile), rundir, wgrib_config)
     infile.unlink()
