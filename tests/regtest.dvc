@@ -1,6 +1,6 @@
 outs:
-- md5: 967ea47cf809383ae32b7e7715649d95.dir
-  size: 9845
-  nfiles: 1
+- md5: 23323d17620574e5578837af5a447459.dir
+  size: 48699
+  nfiles: 2
   hash: md5
   path: regtest

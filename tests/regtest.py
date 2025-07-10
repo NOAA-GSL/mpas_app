@@ -35,4 +35,5 @@ def test_regtest_experiment_gen(file_regression, user_yaml):
         "rocoto.xml",
     ]:
         assert (experiment_dir / fn).is_file()
-    file_regression.check(contents=(experiment_dir / "rocoto.xml").read_text())
+    for fn in ["experiment.yaml", "rocoto.xml"]:
+        file_regression.check(contents=(experiment_dir / fn).read_text(), extension=f".{fn}")
