@@ -7,7 +7,6 @@ from scripts.utils import run_shell_cmd
 
 ROOT = Path(__file__).parent.parent
 
-
 @fixture
 def user_yaml(tmp_path):
     yaml = f"""
@@ -21,8 +20,19 @@ def user_yaml(tmp_path):
     path.write_text(dedent(yaml).strip())
     return path
 
+# NB: Keep tests in the order they need to run, not necessarily alphabetical.
 
-def test_regtest_experiment_gen(file_regression, user_yaml):
+def test_regtest_executables_exist():
+    for fn in [
+        "atmosphere_model",
+        "init_atmosphere_model",
+        "mpassit",
+        "upp.x",
+    ]:
+        assert (ROOT / "exec" / fn).is_file()
+
+
+def test_regtest_execute_experiment_gen_3km_conus(file_regression, user_yaml):
     experiment_dir = user_yaml.parent
     cmd = f"./experiment_gen.py workflows/3km_conus.yaml workflows/conus.jet.yaml {user_yaml}"
     success, output = run_shell_cmd(cmd, cwd=ROOT / "ush")
