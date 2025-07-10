@@ -42,8 +42,12 @@ def create_grid_files(expt_dir: Path, mesh_file_path: Path, nprocs: int) -> None
 
 
 def generate_workflow_files(
-    experiment_config: YAMLConfig, experiment_file: Path, mpas_app: Path, validated: Config
-):
+    experiment_config: YAMLConfig,
+    experiment_file: Path,
+    mpas_app: Path,
+    user_config: YAMLConfig,
+    validated: Config,
+) -> None:
     """
     Generate the Rocoto XML and the experiment YAML.
     """
@@ -51,7 +55,8 @@ def generate_workflow_files(
     workflow_config = get_yaml_config({})
     for block in workflow_blocks:
         workflow_config.update_from(get_yaml_config(block))
-    workflow_config.update_from(experiment_config)
+    for config in (experiment_config, user_config):
+        workflow_config.update_from(config)
     validate_driver_blocks(validated.user.driver_validation_blocks, workflow_config)
     realize(
         input_config=workflow_config,
@@ -70,10 +75,10 @@ def main():
     Stage the Rocoto XML and experiment YAML in the experiment directory.
     """
     user_config_files = parse_args()
-    experiment_config, mpas_app = prepare_configs(user_config_files)
+    experiment_config, user_config, mpas_app = prepare_configs(user_config_files)
     validated = validate(experiment_config.as_dict())
     experiment_dir, experiment_file = setup_experiment_directory(validated)
-    generate_workflow_files(experiment_config, experiment_file, mpas_app, validated)
+    generate_workflow_files(experiment_config, experiment_file, mpas_app, user_config, validated)
     stage_grid_files(experiment_config, experiment_dir, validated)
 
 
@@ -89,7 +94,7 @@ def parse_args() -> list[Path]:
     return [Path(p) for p in parser.parse_args().user_config_files]
 
 
-def prepare_configs(user_config_files: list[Path]) -> tuple[YAMLConfig, Path]:
+def prepare_configs(user_config_files: list[Path]) -> tuple[YAMLConfig, YAMLConfig, Path]:
     """
     Combine base, user, platform, and external model configs into one experiment config.
     """
@@ -115,7 +120,7 @@ def prepare_configs(user_config_files: list[Path]) -> tuple[YAMLConfig, Path]:
     for supp_config in (platform_config, user_config):
         experiment_config.update_from(supp_config)
     experiment_config.dereference()
-    return experiment_config, mpas_app
+    return experiment_config, user_config, mpas_app
 
 
 def required_nprocs(experiment_config: YAMLConfig) -> list[int]:

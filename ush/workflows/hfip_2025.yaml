@@ -7,6 +7,7 @@ user:
   workflow_blocks:
     - cold_start.yaml
     - post.yaml
+    - graphics.yaml
 
 workflow:
   tasks:
@@ -19,8 +20,10 @@ workflow:
           attrs:
             task: mpas_ics
     metatask_post:
-      task_upp_#fhr#: !remove
-      task_combine_grib_#fhr#: !remove
+      task_combine_grib_#fhr#:
+        command:
+          cyclestr:
+            value: 'cd {{ user.experiment_dir }}/@Y@m@d@H/upp/#fhr# && FHR=$( printf "%02d" "$((10##fhr#))") && cat PRSLEV.GrbF$FHR NATLEV.GrbF$FHR 2DFLD.GrbF$FHR >> ../COMBINED.GrbF$FHR'
 
 create_ics:
   mpas_init: &mpas_init
@@ -86,7 +89,7 @@ forecast:
           config_tempo_ml_nc_pbl: true
           config_lsm_scheme: sf_noahmp
           num_soil_layers: 4
-          config_gf_sub3d: 1
+          config_gfl_sub3d: 1
         physics_lsm_noahmp:
           config_noahmp_iopt_crs: 2
           config_noahmp_iopt_stc: 3
@@ -115,3 +118,17 @@ post:
   mpassit:
     nmldir: '{{ user.mpas_app }}/parm/mpassit/hfip_2025'
     parmdir: '{{ user.mpas_app }}/parm/mpassit/hfip_2025'
+  upp:
+    control_file: "{{ user.mpas_app }}/parm/upp/postxconfig-NT-hfip_mpas.txt"
+    files_to_copy:
+      postxconfig-NT.txt: "{{ user.mpas_app }}/parm/upp/postxconfig-NT-hfip_mpas.txt"
+graphics:
+  execution:
+    batchargs:
+      tasks_per_node: 192
+      nodes: 1
+  config:
+    identifier: HFIP Experimental
+    image_list: "{{ user.mpas_app }}/parm/pygraf/hfip_subset.yml"
+    specs_file: "{{ user.mpas_app }}/parm/pygraf/hfip_specs.yml"
+
