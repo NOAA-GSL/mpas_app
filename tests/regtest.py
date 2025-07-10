@@ -7,6 +7,7 @@ from scripts.utils import run_shell_cmd
 
 ROOT = Path(__file__).parent.parent
 
+
 @fixture
 def user_yaml(tmp_path):
     yaml = f"""
@@ -20,7 +21,9 @@ def user_yaml(tmp_path):
     path.write_text(dedent(yaml).strip())
     return path
 
+
 # NB: Keep tests in the order they need to run, not necessarily alphabetical.
+
 
 def test_regtest_executables_exist():
     for fn in [
