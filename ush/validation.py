@@ -7,7 +7,7 @@ from typing import Literal
 from pydantic import BaseModel, Field, NonNegativeInt, PositiveInt, model_validator
 from uwtools.api.driver import yaml_keys_to_classes
 
-Model = Literal["GFS", "RAP"]
+Model = Literal["GFS", "RAP", "RRFS"]
 
 
 class Config(BaseModel):
