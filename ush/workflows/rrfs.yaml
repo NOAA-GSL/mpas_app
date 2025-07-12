@@ -1,0 +1,553 @@
+common:
+  comroot: "{{ common.outdir }}/com"
+  fcst_len_hrs_cycles: 12 03 03 03 03 03 12 03 03 03 03 03 12 03 03 03 03 03 12 03 03 03 03 03
+  home_rrfs: /scratch2/BMC/wrfruc/cholt/{{ common.run }}_042525/{{ common.run }}-workflow
+  launch: "{{ common.home_rrfs }}/workflow/sideload/launch.sh"
+  logdir: "{{ common.logroot }}/{{ common.run }}.@Y@m@d/@H/{{ common.wgf }}/{{ common.run }}"
+  logroot: "{{ common.outdir }}/com/{{ common.run }}/{{ common.ver }}/logs"
+  outdir: /scratch2/BMC/wrfruc/cholt/OPSROOT/hrly_12km
+  retro_data: /scratch2/BMC/rtrr/RRFS2_RETRO_DATA/May2024
+  run: rrfs
+  tag: d12km
+  ver: v2.1.0
+  wgf: det
+common_envars: &common_envars
+    CDATE:
+      cyclestr:
+        value: "@Y@m@d@H"
+    COMINrrfs: "{{ common.comroot }}/{{ common.run }}/{{ common.ver }}"
+    COMOUT:
+      cyclestr:
+        value: "{{ common.comroot }}/{{ common.run }}/{{ common.ver }}/{{ common.run }}.@Y@m@d/@H"
+    COMROOT: "{{ common.comroot }}"
+    CYC_INTERVAL: 1
+    DATAROOT:
+      cyclestr:
+        value: "{{ common.outdir }}/stmp/@Y@m@d"
+    EXPDIR: "{{ common.outdir }}/exp/{{ common.run }}{{ common.wgf }}"
+    HOMErrfs: "{{ common.home_rrfs }}"
+    KEEPDATA: "no"
+    MESH_NAME: conus12km
+    MPI_RUN_CMD: srun
+    NET: "{{ common.run }}"
+    PDY:
+      cyclestr:
+        value: "@Y@m@d"
+    RUN: "{{ common.run }}"
+    WGF: "{{ common.wgf }}"
+    cyc:
+      cyclestr:
+        value: "@H"
+    rrfs_ver: "{{ common.ver }}"
+workflow:
+  attrs:
+    cyclethrottle: 3
+    realtime: false
+    scheduler: slurm
+    taskthrottle: 30
+  cycledef:
+    - attrs:
+        group: ic
+      spec: 202405270000 202405280000 12:00:00
+    - attrs:
+        group: lbc
+      spec: 202405270000 202405280000 12:00:00
+    - attrs:
+        group: prod
+      spec: 202405270000 202405280000 01:00:00
+  log:
+    attrs:
+      verbosity: 10
+    value:
+      cyclestr:
+        value: "{{ common.logdir }}.log"
+  tasks:
+    task_ioda_bufr:
+      attrs:
+        cycledefs: prod
+        maxtries: 1
+      account: wrfruc
+      command: "{{ common.launch }} JRRFS_IODA_BUFR {{ common.home_rrfs }}"
+      jobname:
+        cyclestr:
+          value: "{{ common.tag }}_ioda_bufr_c@H"
+      join:
+        cyclestr:
+          value: "{{ common.logdir }}_ioda_bufr_{{ common.tag }}_@Y@m@d@H.log"
+      nodes: 1:ppn=1
+      partition: hera
+      queue: batch
+      walltime: "00:30:00"
+      envars:
+        <<: *common_envars
+        OBSPATH: "{{ common.retro_data }}/obs_rap"
+        REFERENCE_TIME: "@Y-@m-@dT@H:00:00Z"
+        YAML_GEN_METHOD: 1
+      dependency:
+        and: # pointless?
+          datadep:
+            attrs:
+              age: "00:05:00"
+            value:
+              cyclestr:
+                value: "{{ common.retro_data }}/obs_rap/@Y@m@d@H.rap.t@Hz.prepbufr.tm00"
+    task_ungrib_ic:
+      attrs:
+        cycledefs: ic
+        maxtries: 1
+      account: wrfruc
+      command: "{{ common.launch }} JRRFS_UNGRIB {{ common.home_rrfs }}"
+      jobname:
+        cyclestr:
+          value: "{{ common.tag }}_ungrib_ic_c@H"
+      join:
+        cyclestr:
+          value: "{{ common.logdir }}_ungrib_ic_{{ common.tag }}_@Y@m@d@H.log"
+      nodes: 1:ppn=1
+      partition: hera
+      queue: batch
+      walltime: "00:30:00"
+      envars:
+        <<: *common_envars
+        EXTRN_MDL_SOURCE: GFS
+        NAME_PATTERN:
+          cyclestr:
+            attrs:
+              offset: "-6:00:00"
+            value: "gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.ffHHH"
+        NAME_PATTERN_B:
+          cyclestr:
+            attrs:
+              offset: "-6:00:00"
+            value: "gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.ffHHH"
+        OFFSET: 6
+        SOURCE_BASEDIR:
+          cyclestr:
+            attrs:
+              offset: "-6:00:00"
+            value: "{{ common.retro_data }}/GFS"
+        TYPE: ic
+      dependency:
+        and:
+          datadep_grib:
+            attrs:
+              age: "00:05:00"
+            value:
+              cyclestr:
+                attrs:
+                  offset: "-6:00:00"
+                value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f006"
+          datadep_grib_b:
+            attrs:
+              age: "00:05:00"
+            value:
+              cyclestr:
+                attrs:
+                  offset: "-6:00:00"
+                value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f006"
+    metatask_ungrib_lbc:
+      var:
+        group_index: "01"
+      task_ungrib_lbc_g#group_index#:
+        attrs:
+          cycledefs: lbc
+          maxtries: 1
+        account: wrfruc
+        command: "{{ common.launch }} JRRFS_UNGRIB {{ common.home_rrfs }}"
+        jobname:
+          cyclestr:
+            value: "{{ common.tag }}_ungrib_lbc_g#group_index#_c@H"
+        join:
+          cyclestr:
+            value: "{{ common.logdir }}_ungrib_lbc_g#group_index#_{{ common.tag }}_@Y@m@d@H.log"
+        nodes: 1:ppn=1
+        partition: hera
+        queue: batch
+        walltime: "00:30:00"
+        envars:
+          <<: *common_envars
+          EXTRN_MDL_SOURCE: GFS
+          GROUP_INDEX: "#group_index#"
+          GROUP_TOTAL_NUM: 1
+          INTERVAL: 1
+          LENGTH: 18
+          NAME_PATTERN:
+            cyclestr:
+              attrs:
+                offset: "-6:00:00"
+              value: gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.ffHHH
+          NAME_PATTERN_B:
+            cyclestr:
+              attrs:
+                offset: "-6:00:00"
+              value: gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.ffHHH
+          OFFSET: 6
+          SOURCE_BASEDIR:
+            cyclestr:
+              attrs:
+                offset: "-6:00:00"
+              value: "{{ common.retro_data }}/GFS"
+          TYPE: lbc
+    task_ic:
+      attrs:
+        cycledefs: ic
+        maxtries: 1
+      account: wrfruc
+      command: "{{ common.launch }} JRRFS_IC {{ common.home_rrfs }}"
+      jobname:
+        cyclestr:
+          value: "{{ common.tag }}_ic_c@H"
+      join:
+        cyclestr:
+          value: "{{ common.logdir }}_ic_{{ common.tag }}_@Y@m@d@H.log"
+      nodes: 1:ppn=40
+      partition: hera
+      queue: batch
+      walltime: "00:30:00"
+      envars:
+        <<: *common_envars
+        EXTRN_MDL_SOURCE: GFS
+        PHYSICS_SUITE: convection_permitting
+        NSOIL_LEVELS: 9
+      dependency:
+        and: # pointless?
+          taskdep:
+            attrs:
+              task: ungrib_ic
+    metatask_lbc:
+      var:
+        group_index: "01"
+      task_lbc_g#group_index#:
+        attrs:
+          cycledefs: lbc
+          maxtries: 1
+        account: wrfruc
+        command: "{{ common.launch }} JRRFS_LBC {{ common.home_rrfs }}"
+        jobname:
+          cyclestr:
+            value: "{{ common.tag }}_lbc_g#group_index#_c@H"
+        join:
+          cyclestr:
+            value: "{{ common.logdir }}_lbc_g#group_index#_{{ common.tag }}_@Y@m@d@H.log"
+        nodes: 1:ppn=40
+        partition: hera
+        queue: batch
+        walltime: "00:30:00"
+        envars:
+          <<: *common_envars
+          EXTRN_MDL_SOURCE: GFS
+          GROUP_INDEX: "#group_index#"
+          GROUP_TOTAL_NUM: 1
+          INTERVAL: 1
+          LENGTH: 18
+          NSOIL_LEVELS: 9
+          OFFSET: 6
+          PHYSICS_SUITE: convection_permitting
+        dependency:
+          and: # pointless?
+            metataskdep:
+              attrs:
+                metatask: ungrib_lbc
+    task_prep_ic:
+      attrs:
+        cycledefs: prod
+        maxtries: 1
+      account: wrfruc
+      command: "{{ common.launch }} JRRFS_PREP_IC {{ common.home_rrfs }}"
+      jobname:
+        cyclestr:
+          value: "{{ common.tag }}_prep_ic_c@H"
+      join:
+        cyclestr:
+          value: "{{ common.logdir }}_prep_ic_{{ common.tag }}_@Y@m@d@H.log"
+      nodes: 1:ppn=1
+      partition: hera
+      queue: batch
+      walltime: "00:10:00"
+      envars:
+        <<: *common_envars
+        COLDSTART_CYCS: 00 12
+      dependency:
+        and: # pointless?
+          or:
+            and_1:
+              or:
+                streq_00:
+                  left:
+                    cyclestr:
+                      value: "@H"
+                  right: "00"
+                streq_12:
+                  left:
+                    cyclestr:
+                      value: "@H"
+                  right: "12"
+              taskdep:
+                attrs:
+                  task: ic
+            and_2:
+              and_1_1: # pointless?
+                strneq_00:
+                  left:
+                    cyclestr:
+                      value: "@H"
+                  right: "00"
+                strneq_12:
+                  left:
+                    cyclestr:
+                      value: "@H"
+                  right: "12"
+                datadep:
+                  attrs:
+                    age: "00:05:00"
+                  value:
+                    - cyclestr:
+                        attrs:
+                          offset: "-1:00:00"
+                        value: "{{ common.outdir }}/com/{{ common.run }}/{{ common.ver }}/{{ common.run }}.@Y@m@d/@H/fcst/{{ common.wgf }}/"
+                    - cyclestr:
+                        value: "mpasout.@Y-@m-@d_@H.00.00.nc"
+    task_prep_lbc:
+      attrs:
+        cycledefs: prod
+        maxtries: 1
+      account: wrfruc
+      command: "{{ common.launch }} JRRFS_PREP_LBC {{ common.home_rrfs }}"
+      jobname:
+        cyclestr:
+          value: "{{ common.tag }}_prep_lbc_c@H"
+      join:
+        cyclestr:
+          value: "{{ common.logdir }}_prep_lbc_{{ common.tag }}_@Y@m@d@H.log"
+      nodes: 1:ppn=1
+      partition: hera
+      queue: batch
+      walltime: "00:30:00"
+      envars:
+        <<: *common_envars
+        FCST_LENGTH: 1
+        LBC_INTERVAL: 1
+        FCST_LEN_HRS_CYCLES: "{{ common.fcst_len_hrs_cycles }}"
+      dependency:
+        and: # pointless?
+          or:
+            metataskdep_minus_00:
+              attrs:
+                cycle_offset: "-0:00:00"
+                metatask: lbc
+            metataskdep_minus_01:
+              attrs:
+                cycle_offset: "-1:00:00"
+                metatask: lbc
+            metataskdep_minus_02:
+              attrs:
+                cycle_offset: "-2:00:00"
+                metatask: lbc
+            metataskdep_minus_03:
+              attrs:
+                cycle_offset: "-3:00:00"
+                metatask: lbc
+            metataskdep_minus_04:
+              attrs:
+                cycle_offset: "-4:00:00"
+                metatask: lbc
+            metataskdep_minus_05:
+              attrs:
+                cycle_offset: "-5:00:00"
+                metatask: lbc
+            metataskdep_minus_06:
+              attrs:
+                cycle_offset: "-6:00:00"
+                metatask: lbc
+            metataskdep_minus_07:
+              attrs:
+                cycle_offset: "-7:00:00"
+                metatask: lbc
+            metataskdep_minus_08:
+              attrs:
+                cycle_offset: "-8:00:00"
+                metatask: lbc
+            metataskdep_minus_09:
+              attrs:
+                cycle_offset: "-9:00:00"
+                metatask: lbc
+            metataskdep_minus_10:
+              attrs:
+                cycle_offset: "-10:00:00"
+                metatask: lbc
+            metataskdep_minus_11:
+              attrs:
+                cycle_offset: "-11:00:00"
+                metatask: lbc
+    task_jedivar:
+      attrs:
+        cycledefs: prod
+        maxtries: 1
+      account: wrfruc
+      command: "{{ common.launch }} JRRFS_JEDIVAR {{ common.home_rrfs }}"
+      jobname:
+        cyclestr:
+          value: "{{ common.tag }}_jedivar_c@H"
+      join:
+        cyclestr:
+          value: "{{ common.logdir }}_jedivar_{{ common.tag }}_@Y@m@d@H.log"
+      nodes: 4:ppn=20
+      partition: hera
+      queue: batch
+      walltime: "00:30:00"
+      envars:
+        <<: *common_envars
+        COLDSTART_CYCS_DO_DA: "true"
+        EXTRN_MDL_SOURCE: GFS
+        HYB_ENS_PATH: ""
+        HYB_ENS_TYPE: 1
+        HYB_WGT_ENS: 0.0
+        HYB_WGT_STATIC: 1.0
+        PHYSICS_SUITE: convection_permitting
+        REFERENCE_TIME: "@Y-@m-@dT@H:00:00Z"
+        YAML_GEN_METHOD: 1
+      dependency:
+        and: # pointless?
+          taskdep_prep_ic:
+            attrs:
+              task: prep_ic
+          taskdep_ioda_bufr:
+            attrs:
+              task: ioda_bufr
+    task_fcst:
+      attrs:
+        cycledefs: prod
+        maxtries: 1
+      account: wrfruc
+      command: "{{ common.launch }} JRRFS_FCST {{ common.home_rrfs }}"
+      jobname:
+        cyclestr:
+          value: "{{ common.tag }}_fcst_c@H"
+      join:
+        cyclestr:
+          value: "{{ common.logdir }}_fcst_{{ common.tag }}_@Y@m@d@H.log"
+      nodes: 2:ppn=40
+      partition: hera
+      queue: batch
+      walltime: "1:30:00"
+      envars:
+        <<: *common_envars
+        EXTRN_MDL_SOURCE: GFS
+        FCST_LENGTH: 1
+        FCST_LEN_HRS_CYCLES: "{{ common.fcst_len_hrs_cycles }}"
+        HISTORY_INTERVAL: 1
+        LBC_INTERVAL: 1
+        PHYSICS_SUITE: convection_permitting
+        RESTART_INTERVAL: 99
+      dependency:
+        and:
+          taskdep_prep_lbc:
+            attrs:
+              cycle_offset: "0:00:00" # pointless?
+              task: prep_lbc
+          taskdep_prep_ic:
+            attrs:
+              task: prep_ic
+          taskdep_jedivar:
+            attrs:
+              task: jedivar
+    task_save_fcst:
+      attrs:
+        cycledefs: prod
+        maxtries: 1
+      account: wrfruc
+      command: "{{ common.launch }} JRRFS_SAVE_FCST {{ common.home_rrfs }}"
+      jobname:
+        cyclestr:
+          value: "{{ common.tag }}_save_fcst_c@H"
+      join:
+        cyclestr:
+          value: "{{ common.logdir }}_save_fcst_{{ common.tag }}_@Y@m@d@H.log"
+      nodes: 1:ppn=1
+      partition: hera
+      queue: batch
+      walltime: "1:30:00"
+      envars:
+        <<: *common_envars
+        FCST_LENGTH: 1
+        FCST_LEN_HRS_CYCLES: "{{ common.fcst_len_hrs_cycles }}"
+        HISTORY_INTERVAL: 1
+        RESTART_INTERVAL: 99
+      dependency:
+        and: # pointless?
+          datadep:
+            attrs:
+              age: "00:01:00"
+              task:
+                cyclestr:
+          datadep:
+            attrs:
+              age: "00:01:00"
+            value:
+              cyclestr:
+                value: "{{ common.outdir }}/stmp/@Y@m@d/{{ common.run }}_fcst_@H_{{ common.ver }}/{{ common.wgf }}/fcst_@H/diag.@Y-@m-@d_@H.@M.@S.nc"
+    metatask_mpassit:
+      var:
+        group_index: "01"
+        fhr2: "00" # pointless?
+      task_mpassit_g#group_index#:
+        attrs:
+          cycledefs: prod
+          maxtries: 1
+        account: wrfruc
+        command: "{{ common.launch }} JRRFS_MPASSIT {{ common.home_rrfs }}"
+        jobname:
+          cyclestr:
+            value: "{{ common.tag }}_mpassit_g#group_index#_c@H"
+        join:
+          cyclestr:
+            value: "{{ common.logdir }}_mpassit_g#group_index#_{{ common.tag }}_@Y@m@d@H.log"
+        nodes: 1:ppn=40
+        partition: hera
+        queue: batch
+        walltime: "1:00:00"
+        envars:
+          <<: *common_envars
+          FCST_LENGTH: 1
+          FCST_LEN_HRS_CYCLES: "{{ common.fcst_len_hrs_cycles }}"
+          GROUP_INDEX: "#group_index#"
+          GROUP_TOTAL_NUM: 1
+          HISTORY_INTERVAL: 1
+        dependency:
+          and: # pointless?
+            taskdep:
+              attrs:
+                task: save_fcst
+    metatask_upp:
+      var:
+        group_index: "01"
+        fhr2: "00" # pointless?
+      task_upp_g#group_index#:
+        attrs:
+          cycledefs: prod
+          maxtries: 1
+        account: wrfruc
+        command: "{{ common.launch }} JRRFS_UPP {{ common.home_rrfs }}"
+        jobname:
+          cyclestr:
+            value: "{{ common.tag }}_upp_g#group_index#_c@H"
+        join:
+          cyclestr:
+            value: "{{ common.logdir }}_upp_g#group_index#_{{ common.tag }}_@Y@m@d@H.log"
+        native: "--exclusive"
+        nodes: 1:ppn=40
+        partition: hera
+        queue: batch
+        walltime: "1:00:00"
+        envars:
+          <<: *common_envars
+          FCST_LENGTH: 1
+          FCST_LEN_HRS_CYCLES: "{{ common.fcst_len_hrs_cycles }}"
+          GROUP_INDEX: "#group_index#"
+          GROUP_TOTAL_NUM: 1
+          HISTORY_INTERVAL: 1
+        dependency:
+          and: # pointless?
+            metataskdep:
+              attrs:
+                metatask: mpassit
