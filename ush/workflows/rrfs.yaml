@@ -129,7 +129,6 @@ workflow:
         TYPE: ic
       dependency:
           sh:
-            attrs: {} # remove after uwtools bugfix
             command:
               cyclestr:
                 attrs:
@@ -180,7 +179,6 @@ workflow:
           TYPE: lbc
         dependency:
           sh:
-            attrs: {} # remove after uwtools bugfix
             command:
               cyclestr:
                 attrs:
@@ -267,7 +265,6 @@ workflow:
         or:
           and_cycle_is_00_or_12:
             sh:
-              attrs: {} # remove after uwtools bugfix
               command:
                 cyclestr:
                   value: "test @H == 00 -o @H == 12"
@@ -276,7 +273,6 @@ workflow:
                 task: ic
           and_otherwise:
             sh:
-              attrs: {} # remove after uwtools bugfix
               command:
                 cyclestr:
                   value: "test @H != 00 -a @H != 12"
