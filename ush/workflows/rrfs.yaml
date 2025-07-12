@@ -267,45 +267,32 @@ workflow:
         <<: *common_envars
         COLDSTART_CYCS: 00 12
       dependency:
-        and: # pointless?
-          or:
-            and_1:
-              or:
-                streq_00:
-                  left:
-                    cyclestr:
-                      value: "@H"
-                  right: "00"
-                streq_12:
-                  left:
-                    cyclestr:
-                      value: "@H"
-                  right: "12"
-              taskdep:
-                attrs:
-                  task: ic
-            and_2:
-              and_1_1: # pointless?
-                strneq_00:
-                  left:
-                    cyclestr:
-                      value: "@H"
-                  right: "00"
-                strneq_12:
-                  left:
-                    cyclestr:
-                      value: "@H"
-                  right: "12"
-                datadep:
-                  attrs:
-                    age: "00:05:00"
-                  value:
-                    - cyclestr:
-                        attrs:
-                          offset: "-1:00:00"
-                        value: "{{ common.outdir }}/com/{{ common.run }}/{{ common.ver }}/{{ common.run }}.@Y@m@d/@H/fcst/{{ common.wgf }}/"
-                    - cyclestr:
-                        value: "mpasout.@Y-@m-@d_@H.00.00.nc"
+        or:
+          and_cycle_is_00_or_12:
+            sh:
+              attrs: {} # remove after uwtools bugfix
+              command:
+                cyclestr:
+                  value: "test @H == 00 -o @H == 12"
+            taskdep:
+              attrs:
+                task: ic
+          and_otherwise:
+            sh:
+              attrs: {} # remove after uwtools bugfix
+              command:
+                cyclestr:
+                  value: "test @H != 00 -a @H != 12"
+            datadep:
+              attrs:
+                age: "00:05:00"
+              value:
+                - cyclestr:
+                    attrs:
+                      offset: "-1:00:00"
+                    value: "{{ common.outdir }}/com/{{ common.run }}/{{ common.ver }}/{{ common.run }}.@Y@m@d/@H/fcst/{{ common.wgf }}/"
+                - cyclestr:
+                    value: "mpasout.@Y-@m-@d_@H.00.00.nc"
     task_prep_lbc:
       attrs:
         cycledefs: prod
