@@ -135,7 +135,7 @@ workflow:
               cyclestr:
                 attrs:
                   offset: "-6:00:00"
-                value: "test $(find {{ common.retro_gfs }} -mmin +5 -regex '.*/gfs\\.t12z\\.pgrb2[b]?\\.0p25\\.f006' | wc -l) -eq 2"
+                value: "test $(find {{ common.retro_gfs }} -mmin +5 -regex '.*/gfs\\.t@Hz\\.pgrb2[b]?\\.0p25\\.f006' | wc -l) -eq 2"
     metatask_ungrib_lbc:
       var:
         group_index: "01"
@@ -186,7 +186,7 @@ workflow:
               cyclestr:
                 attrs:
                   offset: "-6:00:00"
-                value: "test $(seq -f '%03g' 6 24 | xargs -I% find {{ common.retro_gfs }} -mmin +5 -regex '.*/gfs\\.t12z\\.pgrb2[b]?\\.0p25\\.f%' | wc -l) -eq 38"
+                value: "test $(seq -f '%03g' 6 24 | xargs -I% find {{ common.retro_gfs }} -mmin +5 -regex '.*/gfs\\.t@Hz\\.pgrb2[b]?\\.0p25\\.f%' | wc -l) -eq 38"
     task_ic:
       attrs:
         cycledefs: ic
