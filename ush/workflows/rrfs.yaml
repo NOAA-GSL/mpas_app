@@ -85,13 +85,12 @@ workflow:
         REFERENCE_TIME: "@Y-@m-@dT@H:00:00Z"
         YAML_GEN_METHOD: 1
       dependency:
-        and: # pointless?
-          datadep:
-            attrs:
-              age: "00:05:00"
-            value:
-              cyclestr:
-                value: "{{ common.retro_data }}/obs_rap/@Y@m@d@H.rap.t@Hz.prepbufr.tm00"
+        datadep:
+          attrs:
+            age: "00:05:00"
+          value:
+            cyclestr:
+              value: "{{ common.retro_data }}/obs_rap/@Y@m@d@H.rap.t@Hz.prepbufr.tm00"
     task_ungrib_ic:
       attrs:
         cycledefs: ic
@@ -209,10 +208,9 @@ workflow:
         PHYSICS_SUITE: convection_permitting
         NSOIL_LEVELS: 9
       dependency:
-        and: # pointless?
-          taskdep:
-            attrs:
-              task: ungrib_ic
+        taskdep:
+          attrs:
+            task: ungrib_ic
     metatask_lbc:
       var:
         group_index: "01"
@@ -243,10 +241,9 @@ workflow:
           OFFSET: 6
           PHYSICS_SUITE: convection_permitting
         dependency:
-          and: # pointless?
-            metataskdep:
-              attrs:
-                metatask: ungrib_lbc
+          metataskdep:
+            attrs:
+              metatask: ungrib_lbc
     task_prep_ic:
       attrs:
         cycledefs: prod
@@ -315,56 +312,55 @@ workflow:
         LBC_INTERVAL: 1
         FCST_LEN_HRS_CYCLES: "{{ common.fcst_len_hrs_cycles }}"
       dependency:
-        and: # pointless?
-          or:
-            metataskdep_minus_00:
-              attrs:
-                cycle_offset: "-0:00:00"
-                metatask: lbc
-            metataskdep_minus_01:
-              attrs:
-                cycle_offset: "-1:00:00"
-                metatask: lbc
-            metataskdep_minus_02:
-              attrs:
-                cycle_offset: "-2:00:00"
-                metatask: lbc
-            metataskdep_minus_03:
-              attrs:
-                cycle_offset: "-3:00:00"
-                metatask: lbc
-            metataskdep_minus_04:
-              attrs:
-                cycle_offset: "-4:00:00"
-                metatask: lbc
-            metataskdep_minus_05:
-              attrs:
-                cycle_offset: "-5:00:00"
-                metatask: lbc
-            metataskdep_minus_06:
-              attrs:
-                cycle_offset: "-6:00:00"
-                metatask: lbc
-            metataskdep_minus_07:
-              attrs:
-                cycle_offset: "-7:00:00"
-                metatask: lbc
-            metataskdep_minus_08:
-              attrs:
-                cycle_offset: "-8:00:00"
-                metatask: lbc
-            metataskdep_minus_09:
-              attrs:
-                cycle_offset: "-9:00:00"
-                metatask: lbc
-            metataskdep_minus_10:
-              attrs:
-                cycle_offset: "-10:00:00"
-                metatask: lbc
-            metataskdep_minus_11:
-              attrs:
-                cycle_offset: "-11:00:00"
-                metatask: lbc
+        or:
+          metataskdep_minus_00:
+            attrs:
+              cycle_offset: "-0:00:00"
+              metatask: lbc
+          metataskdep_minus_01:
+            attrs:
+              cycle_offset: "-1:00:00"
+              metatask: lbc
+          metataskdep_minus_02:
+            attrs:
+              cycle_offset: "-2:00:00"
+              metatask: lbc
+          metataskdep_minus_03:
+            attrs:
+              cycle_offset: "-3:00:00"
+              metatask: lbc
+          metataskdep_minus_04:
+            attrs:
+              cycle_offset: "-4:00:00"
+              metatask: lbc
+          metataskdep_minus_05:
+            attrs:
+              cycle_offset: "-5:00:00"
+              metatask: lbc
+          metataskdep_minus_06:
+            attrs:
+              cycle_offset: "-6:00:00"
+              metatask: lbc
+          metataskdep_minus_07:
+            attrs:
+              cycle_offset: "-7:00:00"
+              metatask: lbc
+          metataskdep_minus_08:
+            attrs:
+              cycle_offset: "-8:00:00"
+              metatask: lbc
+          metataskdep_minus_09:
+            attrs:
+              cycle_offset: "-9:00:00"
+              metatask: lbc
+          metataskdep_minus_10:
+            attrs:
+              cycle_offset: "-10:00:00"
+              metatask: lbc
+          metataskdep_minus_11:
+            attrs:
+              cycle_offset: "-11:00:00"
+              metatask: lbc
     task_jedivar:
       attrs:
         cycledefs: prod
@@ -393,7 +389,7 @@ workflow:
         REFERENCE_TIME: "@Y-@m-@dT@H:00:00Z"
         YAML_GEN_METHOD: 1
       dependency:
-        and: # pointless?
+        and:
           taskdep_prep_ic:
             attrs:
               task: prep_ic
@@ -460,18 +456,12 @@ workflow:
         HISTORY_INTERVAL: 1
         RESTART_INTERVAL: 99
       dependency:
-        and: # pointless?
-          datadep:
-            attrs:
-              age: "00:01:00"
-              task:
-                cyclestr:
-          datadep:
-            attrs:
-              age: "00:01:00"
-            value:
-              cyclestr:
-                value: "{{ common.outdir }}/stmp/@Y@m@d/{{ common.run }}_fcst_@H_{{ common.ver }}/{{ common.wgf }}/fcst_@H/diag.@Y-@m-@d_@H.@M.@S.nc"
+        datadep:
+          attrs:
+            age: "00:01:00"
+          value:
+            cyclestr:
+              value: "{{ common.outdir }}/stmp/@Y@m@d/{{ common.run }}_fcst_@H_{{ common.ver }}/{{ common.wgf }}/fcst_@H/diag.@Y-@m-@d_@H.@M.@S.nc"
     metatask_mpassit:
       var:
         group_index: "01"
@@ -500,10 +490,9 @@ workflow:
           GROUP_TOTAL_NUM: 1
           HISTORY_INTERVAL: 1
         dependency:
-          and: # pointless?
-            taskdep:
-              attrs:
-                task: save_fcst
+          taskdep:
+            attrs:
+              task: save_fcst
     metatask_upp:
       var:
         group_index: "01"
@@ -533,7 +522,6 @@ workflow:
           GROUP_TOTAL_NUM: 1
           HISTORY_INTERVAL: 1
         dependency:
-          and: # pointless?
-            metataskdep:
-              attrs:
-                metatask: mpassit
+          metataskdep:
+            attrs:
+              metatask: mpassit
