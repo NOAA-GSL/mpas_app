@@ -713,7 +713,7 @@ workflow:
         REFERENCE_TIME: "@Y-@m-@dT@H:00:00Z"
         YAML_GEN_METHOD: 1
       dependency:
-        and: # pointless?
+        and:
           taskdep_prep_ic:
             attrs:
               task: prep_ic
