@@ -129,23 +129,13 @@ workflow:
             value: "{{ common.retro_data }}/GFS"
         TYPE: ic
       dependency:
-        and:
-          datadep_grib:
-            attrs:
-              age: "00:05:00"
-            value:
+          sh:
+            attrs: {} # remove after uwtools bugfix
+            command:
               cyclestr:
                 attrs:
                   offset: "-6:00:00"
-                value: "{{ common.retro_gfs }}/gfs.t@Hz.pgrb2.0p25.f006"
-          datadep_grib_b:
-            attrs:
-              age: "00:05:00"
-            value:
-              cyclestr:
-                attrs:
-                  offset: "-6:00:00"
-                value: "{{ common.retro_gfs }}/gfs.t@Hz.pgrb2b.0p25.f006"
+                value: "test $(find {{ common.retro_gfs }} -mmin +5 -regex '.*/gfs\\.t12z\\.pgrb2[b]?\\.0p25\\.f006' | wc -l) -eq 2"
     metatask_ungrib_lbc:
       var:
         group_index: "01"
