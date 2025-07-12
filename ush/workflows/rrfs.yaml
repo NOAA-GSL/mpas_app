@@ -188,6 +188,312 @@ workflow:
                 offset: "-6:00:00"
               value: "{{ common.retro_data }}/GFS"
           TYPE: lbc
+        dependency:
+          and:
+            datadep_pgrb2_006:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f006"
+            datadep_pgrb2b_006:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f006"
+            datadep_pgrb2_007:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f007"
+            datadep_pgrb2b_007:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f007"
+            datadep_pgrb2_008:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f008"
+            datadep_pgrb2b_008:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f008"
+            datadep_pgrb2_009:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f009"
+            datadep_pgrb2b_009:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f009"
+            datadep_pgrb2_010:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f010"
+            datadep_pgrb2b_010:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f010"
+            datadep_pgrb2_011:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f011"
+            datadep_pgrb2b_011:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f011"
+            datadep_pgrb2_012:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f012"
+            datadep_pgrb2b_012:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f012"
+            datadep_pgrb2_013:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f013"
+            datadep_pgrb2b_013:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f013"
+            datadep_pgrb2_014:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f014"
+            datadep_pgrb2b_014:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f014"
+            datadep_pgrb2_015:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f015"
+            datadep_pgrb2b_015:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f015"
+            datadep_pgrb2_016:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f016"
+            datadep_pgrb2b_016:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f016"
+            datadep_pgrb2_017:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f017"
+            datadep_pgrb2b_017:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f017"
+            datadep_pgrb2_018:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f018"
+            datadep_pgrb2b_018:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f018"
+            datadep_pgrb2_019:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f019"
+            datadep_pgrb2b_019:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f019"
+            datadep_pgrb2_020:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f020"
+            datadep_pgrb2b_020:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f020"
+            datadep_pgrb2_021:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f021"
+            datadep_pgrb2b_021:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f021"
+            datadep_pgrb2_022:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f022"
+            datadep_pgrb2b_022:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f022"
+            datadep_pgrb2_023:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f023"
+            datadep_pgrb2b_023:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f023"
+            datadep_pgrb2_024:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f024"
+            datadep_pgrb2b_024:
+              attrs:
+                age: "00:05:00"
+              value:
+                cyclestr:
+                  attrs:
+                    offset: "-6:00:00"
+                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f024"
     task_ic:
       attrs:
         cycledefs: ic
