@@ -1,2 +1,6 @@
+['remote "hera"']
+    url = /scratch3/BMC/avidmgmt/testdata/mpas_app
 ['remote "jet"']
     url = /mnt/lfs5/BMC/avidmgmt/testdata/mpas_app
+['remote "ursa"']
+    url = /scratch3/BMC/avidmgmt/testdata/mpas_app
