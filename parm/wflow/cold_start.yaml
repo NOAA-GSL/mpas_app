@@ -19,6 +19,7 @@ workflow:
       command: '&MPAS_APP;/scripts/get_external_data.sh'
       account: "{{ platform.account }}"
       partition: "{{ platform.service_partition }}"
+      memory: 30G
       join:
         cyclestr:
           value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
@@ -39,6 +40,7 @@ workflow:
       command: '&MPAS_APP;/scripts/get_external_data.sh'
       account: "{{ platform.account }}"
       partition: "{{ platform.service_partition }}"
+      memory: 30G
       join:
         cyclestr:
           value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
