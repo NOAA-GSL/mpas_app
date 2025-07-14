@@ -32,8 +32,8 @@ regtest: regtest-data
 	$(REGTEST)
 
 regtest-data:
-	@test -z "$(datasrc)" && echo 'Set datasrc=<hera|jet|ursa>' && exit 1 || true
-	dvc pull --remote $(datasrc)
+	@test -z "$(dataloc)" && echo 'Set dataloc=<hera|jet|ursa>' && exit 1 || true
+	dvc pull --remote $(dataloc)
 
 regtest-regen: regtest-data
 	$(REGTEST) --regen-all
