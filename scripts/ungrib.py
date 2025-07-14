@@ -98,10 +98,10 @@ def link_to_regridded_grib(infile: Path, rundir: Path, wgrib_config: dict):
     Update original link to point to regridded grib file.
     """
     linked_file = infile.resolve()
-    # Check to ensure the link hasn't already been updated
+    # Check to ensure the link hasn't already been updated.
     outfile = linked_file.name if "tmp" in linked_file.name else linked_file.stem + ".tmp2.grib2"
     yield f"ungrib: update link {infile} to {outfile}"
-    # Only do the work if the link doesn't point to the expected tmp2.grib2 file
+    # Only do the work if the link doesn't point to the expected tmp2.grib2 file.
     yield asset(infile, lambda: infile.resolve().name == outfile)
     yield merge_vector_fields(infile, Path(rundir, outfile), rundir, wgrib_config)
     infile.unlink()
@@ -113,10 +113,9 @@ def regrid_winds(rundir: Path, task_config: dict):
     """
     Use wgrib2 to regrid the winds.
     """
-    wgrib_config = task_config["wgrib2"]
     yield "Regridding winds with wgrib2"
     yield [
-        link_to_regridded_grib(Path(ingrib), rundir, wgrib_config)
+        link_to_regridded_grib(Path(ingrib), rundir, task_config["wgrib2"])
         for ingrib in glob.glob(str(Path(rundir, "GRIBFILE.*")))
     ]
 
@@ -131,7 +130,7 @@ def run_ungrib(config_file, cycle, key_path):
     ics_or_lbcs = "ics" if "ics" in ".".join(key_path) else "lbcs"
     external_model = expt_config["user"][ics_or_lbcs]["external_model"]
 
-    # Run ungrib
+    # Run ungrib.
     ungrib_driver = Ungrib(config=config_file, cycle=cycle, key_path=key_path)
     ungrib_dir = Path(ungrib_driver.config["rundir"])
     logging.info("Running %s in %s", Ungrib.__name__, ungrib_dir)

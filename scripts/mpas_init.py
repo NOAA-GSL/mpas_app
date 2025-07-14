@@ -42,7 +42,7 @@ def main():
         cycle=args.cycle,
         key_path=args.key_path,
     )
-    # For RRFS ICS, use some variables from fix files
+    # For RRFS ICS, use some variables from fix files.
     expt_config = get_yaml_config(args.config_file)
     external_model = expt_config["user"]["ics"]["external_model"]
     if external_model == "RRFS" and "ics" in args.key_path:
