@@ -6,7 +6,6 @@ The run script for ungrib.
 from __future__ import annotations
 
 import glob
-import inspect
 import logging
 import sys
 from pathlib import Path
@@ -37,7 +36,8 @@ def regrid_input(infile: Path, rundir, wgrib_config: dict):
     :param wgrib_config: User-provided configuration settings.
     """
     outfile = Path(rundir, infile.resolve().stem + ".tmp.grib2")
-    yield f"wgrib2 regrid {outfile}"
+    taskname = f"wgrib2 regrid {outfile}"
+    yield taskname
     yield asset(outfile, outfile.is_file)
     yield file(infile)
     budget_fields = Path(wgrib_config["budget_fields"]).read_text().strip()
@@ -62,7 +62,7 @@ def regrid_input(infile: Path, rundir, wgrib_config: dict):
         cmd=cmd,
         cwd=rundir,
         log_output=True,
-        taskname=inspect.stack()[0][3],
+        taskname=taskname,
     )
 
 
@@ -71,7 +71,8 @@ def merge_vector_fields(infile: Path, outfile: Path, rundir: Path, wgrib_config:
     """
     Use wgrib2 to merge vector fields.
     """
-    yield f"wgrib2 merge vector fields {outfile}"
+    taskname = f"wgrib2 merge vector fields {outfile}"
+    yield taskname
     yield asset(outfile, outfile.is_file)
     regrid_task = regrid_input(infile, rundir, wgrib_config)
     yield regrid_task
@@ -88,7 +89,7 @@ def merge_vector_fields(infile: Path, outfile: Path, rundir: Path, wgrib_config:
         cmd=cmd,
         cwd=rundir,
         log_output=True,
-        taskname=inspect.stack()[0][3],
+        taskname=taskname,
     )
 
 

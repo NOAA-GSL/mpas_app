@@ -18,7 +18,8 @@ from scripts.utils import run_shell_cmd
 
 def variables_from_fix(expt_config: Config, driver_config: dict) -> None:
     """
-    Call ncks for variables that should come from fix files
+    Append vegetation variables from fix files to the prepared MPAS
+    initialization file using ncks, available from the nco package.
     """
     init_file = driver_config["streams"]["output"]["filename_template"]
     files_to_link = driver_config["files_to_link"]
