@@ -9,7 +9,7 @@
     interp_hist          = .true.
     wrf_mod_vars         = .true.
     esmf_log=.false.
-    nx = 2800
+    nx = 3000
     ny = 2200
     dx = 3000.0
     dy = 3000.0
