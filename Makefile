@@ -3,6 +3,7 @@ DEVPKGS  = $(shell cat devpkgs)
 ENVNAME  = mpas_app
 ENVPATH  = $(shell ls $(CONDA_PREFIX)/envs/$(ENVNAME) 2>/dev/null)
 REGTEST  = pytest --basetemp=$(PWD)/.pytest --verbose tests/regtest.py
+REMOTES  = hera|jet|ursa
 TARGETS  = conda devenv docs env format lint regtest regtest-data regtest-regen rmenv test typecheck unittest
 
 .PHONY: $(TARGETS)
@@ -29,14 +30,13 @@ lint:
 	ruff check .
 
 regtest: regtest-data
+	@test -z "$(remote)" && echo 'Set remote=$(REMOTES)' && exit 1 || true
+	dvc pull --remote $(remote)
 	$(REGTEST)
 
-regtest-data:
-	@test -z "$(dataloc)" && echo 'Set dataloc=<hera|jet|ursa>' && exit 1 || true
-	dvc pull --remote $(dataloc)
-
-regtest-regen: regtest-data
+regtest-regen:
 	$(REGTEST) --regen-all
+	@echo "*** To update baseline, run: dvc push --remote $(REMOTES)"
 
 rmenv:
 	$(if $(ENVPATH),conda env remove -y -n $(ENVNAME))
