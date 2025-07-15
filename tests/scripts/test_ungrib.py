@@ -85,7 +85,7 @@ def test_merge_vector_fields(tmp_path):
         args, kwargs = run_shell_cmd.call_args
 
         assert kwargs["cwd"] == tmp_path
-        assert kwargs["taskname"] == "merge_vector_fields"
+        assert kwargs["taskname"] == f"wgrib2 merge vector fields {tmp_path}/outfile"
 
 
 def test_regrid_input(tmp_path):
@@ -106,7 +106,7 @@ def test_regrid_input(tmp_path):
 
         assert "foo:bar ' -new_grid_interpolation neighbor" in kwargs["cmd"]
         assert kwargs["cwd"] == tmp_path
-        assert kwargs["taskname"] == "regrid_input"
+        assert kwargs["taskname"] == f"wgrib2 regrid {tmp_path}/infile.tmp.grib2"
 
 
 def test_regrid_winds(tmp_path):
