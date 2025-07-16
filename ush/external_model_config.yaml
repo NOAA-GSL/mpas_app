@@ -38,10 +38,10 @@ GFS:
 RAP:
   user:
     ics:
-      file_template: "{{ platform.data.rap.file_template }}"
+      file_templates: "{{ platform.data.rap.file_templates }}"
       input_file_path: "{{ platform.data.rap.path }}"
     lbcs:
-      file_template: "{{ platform.data.rap.file_template }}"
+      file_templates: "{{ platform.data.rap.file_templates }}"
       input_file_path: "{{ platform.data.rap.path }}"
   ics:
     prepare_grib_ics:
