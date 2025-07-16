@@ -31,6 +31,7 @@ workflow:
         OUTPUT_PATH:
           cyclestr:
             value: "{{ user.experiment_dir }}/@Y@m@d@H/{{ user.ics.external_model }}"
+        DATA_STORES: "{{ user.ics.data_stores }}"
         EXTERNAL_MODEL: "{{ user.ics.external_model }}"
         ICS_or_LBCS: ICS
         TIME_OFFSET_HRS: "{{ user.ics.offset_hours }}"
@@ -51,6 +52,7 @@ workflow:
         OUTPUT_PATH:
           cyclestr:
             value: "{{ user.experiment_dir }}/@Y@m@d@H/{{ user.lbcs.external_model }}"
+        DATA_STORES: "{{ user.ics.data_stores }}"
         EXTERNAL_MODEL: "{{ user.lbcs.external_model }}"
         ICS_or_LBCS: LBCS
         TIME_OFFSET_HRS: "{{ user.lbcs.offset_hours }}"

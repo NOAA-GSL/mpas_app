@@ -17,9 +17,11 @@ user:
   first_cycle: !!timestamp 2023-09-15T00:00:00
   last_cycle: !!timestamp 2023-09-15T00:00:00
   ics:
+    data_stores: aws
     external_model: GFS
     offset_hours: 0
   lbcs:
+    data_stores: aws
     external_model: GFS
     interval_hours: 6
     offset_hours: 0
