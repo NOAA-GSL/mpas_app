@@ -1,8 +1,8 @@
 user:
   ics:
-    data_stores: disk aws
+    data_stores: disk
   lbcs:
-    data_stores: disk aws
+    data_stores: disk
 data:
   mesh_files: "{{ platform.hrrr_fix }}"
 platform:
