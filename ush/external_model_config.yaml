@@ -41,9 +41,6 @@ RAP:
       ics:
         file_templates: "{{ platform.data.rap.file_templates }}"
         input_file_path: "{{ platform.data.rap.path }}"
-      lbcs:
-        file_templates: "{{ platform.data.rap.file_templates }}"
-        input_file_path: "{{ platform.data.rap.path }}"
     prepare_grib_ics:
       ungrib:
         gribfiles:
@@ -57,6 +54,10 @@ RAP:
               config_nfglevels: 51
               config_nfgsoillevels: 9
   lbcs:
+    user:
+      lbcs:
+        file_templates: "{{ platform.data.rap.file_templates }}"
+        input_file_path: "{{ platform.data.rap.path }}"
     prepare_grib_lbcs:
       ungrib:
         gribfiles:
