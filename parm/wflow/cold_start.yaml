@@ -59,7 +59,7 @@ workflow:
         DATA_STORES: "{{ user.lbcs.data_stores }}"
         INPUT_FILE_PATH: "{{ user.lbcs.get('input_file_path', '') }}"
         FILE_TEMPLATES:
-        cyclestr:
+          cyclestr:
             value: "{{ user.lbcs.get('file_templates', '') }}"
         EXTERNAL_MODEL: "{{ user.lbcs.external_model }}"
         ICS_or_LBCS: LBCS
