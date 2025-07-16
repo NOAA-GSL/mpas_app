@@ -1,3 +1,8 @@
+user:
+  ics:
+    data_stores: disk aws
+  lbcs:
+    data_stores: disk aws
 data:
   mesh_files: "{{ platform.hrrr_fix }}"
 platform:
@@ -7,7 +12,6 @@ platform:
     global: /lfs5/BMC/wrfruc/Michael.Barlage/mpas/data/mpas_static
     raphrrr: /mnt/lfs5/BMC/wrfruc/HRRRv5/geog
   hrrr_fix: /misc/whome/role.wrfruc/HRRRv5/fix
-  data_stores: disk aws
   data:
     gfs:
       path: /public/data/grids/gfs/0p25deg/grib2
