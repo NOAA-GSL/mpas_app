@@ -16,7 +16,6 @@ if [[ -n "${INPUT_FILE_PATH:-}" ]]; then
   additional_args+=(--input-file-path "${INPUT_FILE_PATH}")
 fi
 
-file_template_args=""
 if [[ -n "${FILE_TEMPLATES:-}" ]]; then
   additional_args+=(--file-templates "${FILE_TEMPLATES}")
 fi
@@ -33,4 +32,3 @@ python -u ${MPAS_APP}/ush/retrieve_data.py \
     --filefmt grib2 \
     --output-path ${OUTPUT_PATH} \
     "${additional_args[@]}"
-

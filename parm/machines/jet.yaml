@@ -7,6 +7,14 @@ platform:
     global: /lfs5/BMC/wrfruc/Michael.Barlage/mpas/data/mpas_static
     raphrrr: /mnt/lfs5/BMC/wrfruc/HRRRv5/geog
   hrrr_fix: /misc/whome/role.wrfruc/HRRRv5/fix
+  data_stores: disk aws
+  data:
+    gfs:
+      path: /public/data/grids/gfs/0p25deg/grib2
+      file_template: "@y@J@h00{fcst_hr:04d}"
+    rap:
+      path: /public/data/grids/rap/full/wrfprs/grib2
+      file_template: "@y@J@h00{fcst_hr:04d}"
 forecast:
   mpas:
     execution:
