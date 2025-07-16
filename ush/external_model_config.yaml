@@ -1,13 +1,13 @@
 
 GFS:
-  user:
-    ics:
-      file_templates: "{{ platform.data.gfs.file_templates }}"
-      input_file_path: "{{ platform.data.gfs.path }}"
-    lbcs:
-      file_templates: "{{ platform.data.gfs.file_templates }}"
-      input_file_path: "{{ platform.data.gfs.path }}"
   ics:
+    user:
+      ics:
+        file_templates: "{{ platform.data.gfs.file_templates }}"
+        input_file_path: "{{ platform.data.gfs.path }}"
+      lbcs:
+        file_templates: "{{ platform.data.gfs.file_templates }}"
+        input_file_path: "{{ platform.data.gfs.path }}"
     prepare_grib_ics:
       ungrib:
         gribfiles:
@@ -36,14 +36,14 @@ GFS:
 
 
 RAP:
-  user:
-    ics:
-      file_templates: "{{ platform.data.rap.file_templates }}"
-      input_file_path: "{{ platform.data.rap.path }}"
-    lbcs:
-      file_templates: "{{ platform.data.rap.file_templates }}"
-      input_file_path: "{{ platform.data.rap.path }}"
   ics:
+    user:
+      ics:
+        file_templates: "{{ platform.data.rap.file_templates }}"
+        input_file_path: "{{ platform.data.rap.path }}"
+      lbcs:
+        file_templates: "{{ platform.data.rap.file_templates }}"
+        input_file_path: "{{ platform.data.rap.path }}"
     prepare_grib_ics:
       ungrib:
         gribfiles:
