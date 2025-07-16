@@ -33,7 +33,9 @@ workflow:
             value: "{{ user.experiment_dir }}/@Y@m@d@H/{{ user.ics.external_model }}"
         DATA_STORES: "{{ user.ics.data_stores }}"
         INPUT_FILE_PATH: "{{ user.ics.get('input_file_path', '')}}"
-        FILE_TEMPLATES: "{{ user.ics.get('file_templates', '')}}"
+        FILE_TEMPLATES:
+          cyclestr:
+            value: "{{ user.ics.get('file_templates', '')}}"
         EXTERNAL_MODEL: "{{ user.ics.external_model }}"
         ICS_or_LBCS: ICS
         TIME_OFFSET_HRS: "{{ user.ics.offset_hours }}"
@@ -56,7 +58,9 @@ workflow:
             value: "{{ user.experiment_dir }}/@Y@m@d@H/{{ user.lbcs.external_model }}"
         DATA_STORES: "{{ user.lbcs.data_stores }}"
         INPUT_FILE_PATH: "{{ user.lbcs.get('input_file_path', '') }}"
-        FILE_TEMPLATES: "{{ user.lbcs.get('file_templates', '') }}"
+        FILE_TEMPLATES:
+        cyclestr:
+            value: "{{ user.lbcs.get('file_templates', '') }}"
         EXTERNAL_MODEL: "{{ user.lbcs.external_model }}"
         ICS_or_LBCS: LBCS
         TIME_OFFSET_HRS: "{{ user.lbcs.offset_hours }}"
