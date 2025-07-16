@@ -5,9 +5,6 @@ GFS:
       ics:
         file_templates: "{{ platform.data.gfs.file_templates }}"
         input_file_path: "{{ platform.data.gfs.path }}"
-      lbcs:
-        file_templates: "{{ platform.data.gfs.file_templates }}"
-        input_file_path: "{{ platform.data.gfs.path }}"
     prepare_grib_ics:
       ungrib:
         gribfiles:
@@ -21,6 +18,10 @@ GFS:
               config_nfglevels: 51
               config_nfgsoillevels: 4
   lbcs:
+    user:
+      lbcs:
+        file_templates: "{{ platform.data.gfs.file_templates }}"
+        input_file_path: "{{ platform.data.gfs.path }}"
     prepare_grib_lbcs:
       ungrib:
         gribfiles:
