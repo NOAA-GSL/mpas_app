@@ -55,10 +55,8 @@ workflow:
           cyclestr:
             value: "{{ user.experiment_dir }}/@Y@m@d@H/{{ user.lbcs.external_model }}"
         DATA_STORES: "{{ user.lbcs.data_stores }}"
-        # INPUT_FILE_PATH: "{{ user.lbcs.get('input_file_path', '') }}"
-        INPUT_FILE_PATH: "{{ external_model_config[user.lbcs.external_model].user.lbcs.input_file_path }}"
-        FILE_TEMPLATES: "{{ external_model_config[user.lbcs.external_model].user.lbcs.file_templates }}"
-        # FILE_TEMPLATES: "{{ user.lbcs.get('file_templates', '') }}"
+        INPUT_FILE_PATH: "{{ user.lbcs.get('input_file_path', '') }}"
+        FILE_TEMPLATES: "{{ user.lbcs.get('file_templates', '') }}"
         EXTERNAL_MODEL: "{{ user.lbcs.external_model }}"
         ICS_or_LBCS: LBCS
         TIME_OFFSET_HRS: "{{ user.lbcs.offset_hours }}"
