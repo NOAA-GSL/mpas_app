@@ -18,7 +18,7 @@ platform:
       file_templates: "@y@j@H00{fcst_hr:04d}"
     rap:
       path: /public/data/grids/rap/full/wrfprs/grib2
-      file_templates: "@y@j@H00{{fcst_hr:04d}}"
+      file_templates: "@y@j@H00f{{ "%04d" % fcst_hr }}"
 forecast:
   mpas:
     execution:
