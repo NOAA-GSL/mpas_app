@@ -15,10 +15,10 @@ platform:
   data:
     gfs:
       path: /public/data/grids/gfs/0p25deg/grib2
-      file_templates: "@y@j@H00{fcst_hr:04d}"
+      file_templates: "@y@j@H00{{fcst_hr:04d}}"
     rap:
       path: /public/data/grids/rap/full/wrfprs/grib2
-      file_templates: "@y@j@H00{fcst_hr:04d}"
+      file_templates: "@y@j@H00{{fcst_hr:04d}}"
 forecast:
   mpas:
     execution:
