@@ -421,7 +421,6 @@ workflow:
         and:
           taskdep_prep_lbc:
             attrs:
-              cycle_offset: "0:00:00" # pointless?
               task: prep_lbc
           taskdep_prep_ic:
             attrs:
