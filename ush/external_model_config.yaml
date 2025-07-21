@@ -42,8 +42,16 @@ RAP:
 
 RRFS:
   ics:
+    workflow:
+      tasks:
+        task_get_ics_data:
+          memory: 30G
     prepare_grib_ics: &prepare_grib_rrfs
       ungrib:
+        execution:
+          batchargs:
+            walltime: 00:30:00
+            memory: 30G
         gribfiles:
           path: '{{ get_lbcs_data.rundir }}/rrfs.t{cycle_hour:02d}z.natlev.3km.f{forecast_hour:03d}.na.grib2'
         vtable: "{{ user.mpas_app }}/parm/ungrib/Vtable.RRFS"
@@ -63,6 +71,10 @@ RRFS:
           shdmax.{{ user.mesh_label }}.nc: "{{ platform.hrrr_fix }}/shdmax.{{ user.mesh_label }}.nc"
           shdmin.{{ user.mesh_label }}.nc: "{{ platform.hrrr_fix }}/shdmin.{{ user.mesh_label }}.nc"
   lbcs:
+    workflow:
+      tasks:
+        task_get_lbcs_data:
+          memory: 30G
     prepare_grib_lbcs:
       <<: *prepare_grib_rrfs
     create_lbcs:
