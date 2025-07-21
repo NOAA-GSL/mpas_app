@@ -36,7 +36,7 @@ def regrid_input(driver: Ungrib, infile: Path, wgrib_config: dict):
     """
     taskname = f"wgrib2 regrid {infile}"
     yield taskname
-    outfile = driver.rundir / f"tmp.{infile.stem}.grib2"
+    outfile = driver.rundir / f"tmp.{infile.name}.grib2"
     yield asset(outfile, outfile.is_file)
     yield driver.gribfiles()
     gribfile = infile.resolve()
@@ -75,7 +75,7 @@ def merge_vector_fields(driver: Ungrib, infile: Path, wgrib_config: dict):
     """
     taskname = f"wgrib2 merge vector fields {infile}"
     yield taskname
-    outfile = driver.rundir / f"tmp2.{infile.stem}.grib2"
+    outfile = driver.rundir / f"tmp2.{infile.name}.grib2"
     yield asset(outfile, outfile.is_file)
     regrid_task = regrid_input(driver, infile, wgrib_config)
     yield regrid_task
