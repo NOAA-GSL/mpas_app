@@ -5,7 +5,6 @@ The run script for ungrib.
 
 from __future__ import annotations
 
-import glob
 import logging
 import sys
 from pathlib import Path
@@ -28,18 +27,21 @@ def file(path: Path):
 
 
 @task
-def regrid_input(infile: Path, rundir, wgrib_config: dict):
+def regrid_input(driver: Ungrib, infile: Path, wgrib_config: dict):
     """
     Use wgrib2 to regrid the input file winds.
 
     :param infile: Input file path.
     :param wgrib_config: User-provided configuration settings.
     """
-    outfile = Path(rundir, infile.resolve().stem + ".tmp.grib2")
-    taskname = f"wgrib2 regrid {outfile}"
+    taskname = f"wgrib2 regrid {infile}"
     yield taskname
+    outfile = driver.rundir / f"tmp.{infile.stem}.grib2"
     yield asset(outfile, outfile.is_file)
-    yield file(infile)
+    yield driver.gribfiles()
+    gribfile = infile.resolve()
+    # Removes the GRIBFILE.* link.
+    infile.unlink()
     budget_fields = Path(wgrib_config["budget_fields"]).read_text().strip()
     neighbor_fields = Path(wgrib_config["neighbor_fields"]).read_text().strip()
     # MUST leave space after {neighbor_fields} below for now.
@@ -56,25 +58,26 @@ def regrid_input(infile: Path, rundir, wgrib_config: dict):
     ]
     cmd = f"""
     module load wgrib2
-    wgrib2 {infile} {" ".join(options)} {outfile}
+    wgrib2 {gribfile} {" ".join(options)} {outfile}
     """
     run_shell_cmd(
         cmd=cmd,
-        cwd=rundir,
+        cwd=driver.rundir,
         log_output=True,
         taskname=taskname,
     )
 
 
 @task
-def merge_vector_fields(infile: Path, outfile: Path, rundir: Path, wgrib_config: dict):
+def merge_vector_fields(driver: Ungrib, infile: Path, wgrib_config: dict):
     """
     Use wgrib2 to merge vector fields.
     """
-    taskname = f"wgrib2 merge vector fields {outfile}"
+    taskname = f"wgrib2 merge vector fields {infile}"
     yield taskname
+    outfile = driver.rundir / f"tmp2.{infile.stem}.grib2"
     yield asset(outfile, outfile.is_file)
-    regrid_task = regrid_input(infile, rundir, wgrib_config)
+    regrid_task = regrid_input(driver, infile, wgrib_config)
     yield regrid_task
     options = [
         "-not aerosol=Dust",
@@ -84,76 +87,64 @@ def merge_vector_fields(infile: Path, outfile: Path, rundir: Path, wgrib_config:
     cmd = f"""
     module load wgrib2
     wgrib2 {regrid_task.ref} {" ".join(options)} {outfile}
-       """
-    run_shell_cmd(
+    """
+    success, log = run_shell_cmd(
         cmd=cmd,
-        cwd=rundir,
+        cwd=driver.rundir,
         log_output=True,
         taskname=taskname,
     )
-
-
-@task
-def link_to_regridded_grib(infile: Path, rundir: Path, wgrib_config: dict):
-    """
-    Update original link to point to regridded grib file.
-    """
-    linked_file = infile.resolve()
-    # Check to ensure the link hasn't already been updated.
-    outfile = linked_file.name if "tmp" in linked_file.name else linked_file.stem + ".tmp2.grib2"
-    yield f"ungrib: update link {infile} to {outfile}"
-    # Only do the work if the link doesn't point to the expected tmp2.grib2 file.
-    yield asset(infile, lambda: infile.resolve().name == outfile)
-    yield merge_vector_fields(infile, Path(rundir, outfile), rundir, wgrib_config)
-    infile.unlink()
-    infile.symlink_to(outfile)
+    if success:
+        infile.symlink_to(outfile)
+    else:
+        for line in log.split("\n"):
+            logging.error(line)
+        outfile.unlink()
 
 
 @tasks
-def regrid_winds(rundir: Path, task_config: dict):
+def regrid_all(driver: Ungrib, wgrib2_config: dict):
     """
     Use wgrib2 to regrid the winds.
     """
     yield "Regridding winds with wgrib2"
-    yield [
-        link_to_regridded_grib(Path(ingrib), rundir, task_config["wgrib2"])
-        for ingrib in glob.glob(str(Path(rundir, "GRIBFILE.*")))
-    ]
+    gribfiles = driver.gribfiles()
+    yield [merge_vector_fields(driver, ingrib, wgrib2_config) for ingrib in gribfiles.ref]
 
 
+@task
 def run_ungrib(config_file, cycle, key_path):
     """
     Setup and run the ungrib driver.
     """
 
-    use_uwtools_logger()
     expt_config = get_yaml_config(config_file)
     ics_or_lbcs = "ics" if "ics" in ".".join(key_path) else "lbcs"
     external_model = expt_config["user"][ics_or_lbcs]["external_model"]
-
-    # Run ungrib.
+    yield f"run ungrib for {external_model} {ics_or_lbcs}"
     ungrib_driver = Ungrib(config=config_file, cycle=cycle, key_path=key_path)
-    ungrib_dir = Path(ungrib_driver.config["rundir"])
-    logging.info("Running %s in %s", Ungrib.__name__, ungrib_dir)
-    if external_model == "RRFS":
-        ungrib_driver.gribfiles()
-        regrid_winds(
-            ungrib_driver.config["rundir"], walk_key_path(config=expt_config, key_path=key_path)
-        )
+    donefile = ungrib_driver.rundir / "runscript.ungrib.done"
+    yield asset(donefile, donefile.is_file)
+    yield (
+        regrid_all(ungrib_driver, walk_key_path(config=expt_config, key_path=key_path)["wgrib2"])
+        if external_model == "RRFS"
+        else None
+    )
+    # Run ungrib.
+    logging.info("Running %s in %s", Ungrib.__name__, ungrib_driver.rundir)
     ungrib_driver.run()
-
-    if not (ungrib_dir / "runscript.ungrib.done").is_file():
-        print("Error occurred running ungrib. Please see component error logs.")
-        sys.exit(1)
 
 
 def main():
     args = parse_args()
-    run_ungrib(
+    use_uwtools_logger()
+    if not run_ungrib(
         config_file=args.config_file,
         cycle=args.cycle,
         key_path=args.key_path,
-    )
+    ).ready:
+        print("Error occurred running ungrib. Please see component error logs.")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
