@@ -460,7 +460,6 @@ workflow:
     metatask_mpassit:
       var:
         group_index: "01"
-        fhr2: "00" # pointless?
       task_mpassit_g#group_index#:
         attrs:
           cycledefs: prod
@@ -491,7 +490,6 @@ workflow:
     metatask_upp:
       var:
         group_index: "01"
-        fhr2: "00" # pointless?
       task_upp_g#group_index#:
         attrs:
           cycledefs: prod
