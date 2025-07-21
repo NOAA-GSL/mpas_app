@@ -1,5 +1,7 @@
 common:
   comroot: "{{ common.outdir }}/com"
+  cycle_first: 202405270000
+  cycle_last: 202405280000
   fcst_len_hrs_cycles: 12 03 03 03 03 03 12 03 03 03 03 03 12 03 03 03 03 03 12 03 03 03 03 03
   home_rrfs: /scratch2/BMC/wrfruc/cholt/{{ common.run }}_042525/{{ common.run }}-workflow
   launch: "{{ common.home_rrfs }}/workflow/sideload/launch.sh"
@@ -49,13 +51,13 @@ workflow:
   cycledef:
     - attrs:
         group: ic
-      spec: 202405270000 202405280000 12:00:00
+      spec: "{{ common.cycle_first }} {{ common.cycle_last }} 12:00:00"
     - attrs:
         group: lbc
-      spec: 202405270000 202405280000 12:00:00
+      spec: "{{ common.cycle_first }} {{ common.cycle_last }} 12:00:00"
     - attrs:
         group: prod
-      spec: 202405270000 202405280000 01:00:00
+      spec: "{{ common.cycle_first }} {{ common.cycle_last }} 01:00:00"
   log:
     attrs:
       verbosity: 10
