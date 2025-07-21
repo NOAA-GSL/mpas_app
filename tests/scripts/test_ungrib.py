@@ -45,6 +45,12 @@ def noop(*_args, **_kwargs):
     yield iotaa.asset(None, lambda: True)
 
 
+@iotaa.external
+def noop_not_ready(*_args, **_kwargs):
+    yield "No op not ready"
+    yield iotaa.asset(None, lambda: False)
+
+
 def test_file__missing(tmp_path):
     path = tmp_path / "file"
     assert not ungrib.file(path=path).ready
@@ -56,12 +62,11 @@ def test_file__present(tmp_path):
     assert ungrib.file(path=path).ready
 
 
-@mark.parametrize("success", [True, False])
-def test_main(args, success):
+@mark.parametrize("wrap", [noop, noop_not_ready])
+def test_main(args, wrap):
     with (
         patch.object(ungrib, "parse_args", return_value=args) as parse_args,
-        patch.object(ungrib, "run_ungrib") as run_ungrib,
-        patch.object(ungrib.run_ungrib, "ready", return_value=success) as ready,
+        patch.object(ungrib, "run_ungrib", return_value=wrap()) as run_ungrib,
         patch.object(ungrib.sys, "exit") as sysexit,
     ):
         ungrib.main()
@@ -71,7 +76,7 @@ def test_main(args, success):
             cycle=args.cycle,
             key_path=args.key_path,
         )
-        if not ready:
+        if not run_ungrib.ready:
             assert sysexit.assert_called_once_with(1)
 
 
