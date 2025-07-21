@@ -7,6 +7,7 @@ common:
   logroot: "{{ common.outdir }}/com/{{ common.run }}/{{ common.ver }}/logs"
   outdir: /scratch2/BMC/wrfruc/cholt/OPSROOT/hrly_12km
   retro_data: /scratch2/BMC/rtrr/RRFS2_RETRO_DATA/May2024
+  retro_gfs: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H"
   run: rrfs
   tag: d12km
   ver: v2.1.0
@@ -84,13 +85,12 @@ workflow:
         REFERENCE_TIME: "@Y-@m-@dT@H:00:00Z"
         YAML_GEN_METHOD: 1
       dependency:
-        and: # pointless?
-          datadep:
-            attrs:
-              age: "00:05:00"
-            value:
-              cyclestr:
-                value: "{{ common.retro_data }}/obs_rap/@Y@m@d@H.rap.t@Hz.prepbufr.tm00"
+        datadep:
+          attrs:
+            age: "00:05:00"
+          value:
+            cyclestr:
+              value: "{{ common.retro_data }}/obs_rap/@Y@m@d@H.rap.t@Hz.prepbufr.tm00"
     task_ungrib_ic:
       attrs:
         cycledefs: ic
@@ -128,23 +128,12 @@ workflow:
             value: "{{ common.retro_data }}/GFS"
         TYPE: ic
       dependency:
-        and:
-          datadep_grib:
-            attrs:
-              age: "00:05:00"
-            value:
+          sh:
+            command:
               cyclestr:
                 attrs:
                   offset: "-6:00:00"
-                value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f006"
-          datadep_grib_b:
-            attrs:
-              age: "00:05:00"
-            value:
-              cyclestr:
-                attrs:
-                  offset: "-6:00:00"
-                value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f006"
+                value: "test $(find {{ common.retro_gfs }} -mmin +5 -regex '.*/gfs\\.t@Hz\\.pgrb2[b]?\\.0p25\\.f006' | wc -l) -eq 2"
     metatask_ungrib_lbc:
       var:
         group_index: "01"
@@ -189,311 +178,12 @@ workflow:
               value: "{{ common.retro_data }}/GFS"
           TYPE: lbc
         dependency:
-          and:
-            datadep_pgrb2_006:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f006"
-            datadep_pgrb2b_006:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f006"
-            datadep_pgrb2_007:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f007"
-            datadep_pgrb2b_007:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f007"
-            datadep_pgrb2_008:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f008"
-            datadep_pgrb2b_008:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f008"
-            datadep_pgrb2_009:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f009"
-            datadep_pgrb2b_009:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f009"
-            datadep_pgrb2_010:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f010"
-            datadep_pgrb2b_010:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f010"
-            datadep_pgrb2_011:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f011"
-            datadep_pgrb2b_011:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f011"
-            datadep_pgrb2_012:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f012"
-            datadep_pgrb2b_012:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f012"
-            datadep_pgrb2_013:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f013"
-            datadep_pgrb2b_013:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f013"
-            datadep_pgrb2_014:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f014"
-            datadep_pgrb2b_014:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f014"
-            datadep_pgrb2_015:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f015"
-            datadep_pgrb2b_015:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f015"
-            datadep_pgrb2_016:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f016"
-            datadep_pgrb2b_016:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f016"
-            datadep_pgrb2_017:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f017"
-            datadep_pgrb2b_017:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f017"
-            datadep_pgrb2_018:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f018"
-            datadep_pgrb2b_018:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f018"
-            datadep_pgrb2_019:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f019"
-            datadep_pgrb2b_019:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f019"
-            datadep_pgrb2_020:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f020"
-            datadep_pgrb2b_020:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f020"
-            datadep_pgrb2_021:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f021"
-            datadep_pgrb2b_021:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f021"
-            datadep_pgrb2_022:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f022"
-            datadep_pgrb2b_022:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f022"
-            datadep_pgrb2_023:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f023"
-            datadep_pgrb2b_023:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f023"
-            datadep_pgrb2_024:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2.0p25.f024"
-            datadep_pgrb2b_024:
-              attrs:
-                age: "00:05:00"
-              value:
-                cyclestr:
-                  attrs:
-                    offset: "-6:00:00"
-                  value: "{{ common.retro_data }}/GFS/gfs.@Y@m@d/@H/gfs.t@Hz.pgrb2b.0p25.f024"
+          sh:
+            command:
+              cyclestr:
+                attrs:
+                  offset: "-6:00:00"
+                value: "test $(seq -f '%03g' 6 24 | xargs -I% find {{ common.retro_gfs }} -mmin +5 -regex '.*/gfs\\.t@Hz\\.pgrb2[b]?\\.0p25\\.f%' | wc -l) -eq 38"
     task_ic:
       attrs:
         cycledefs: ic
@@ -516,10 +206,9 @@ workflow:
         PHYSICS_SUITE: convection_permitting
         NSOIL_LEVELS: 9
       dependency:
-        and: # pointless?
-          taskdep:
-            attrs:
-              task: ungrib_ic
+        taskdep:
+          attrs:
+            task: ungrib_ic
     metatask_lbc:
       var:
         group_index: "01"
@@ -550,10 +239,9 @@ workflow:
           OFFSET: 6
           PHYSICS_SUITE: convection_permitting
         dependency:
-          and: # pointless?
-            metataskdep:
-              attrs:
-                metatask: ungrib_lbc
+          metataskdep:
+            attrs:
+              metatask: ungrib_lbc
     task_prep_ic:
       attrs:
         cycledefs: prod
@@ -574,45 +262,30 @@ workflow:
         <<: *common_envars
         COLDSTART_CYCS: 00 12
       dependency:
-        and: # pointless?
-          or:
-            and_1:
-              or:
-                streq_00:
-                  left:
-                    cyclestr:
-                      value: "@H"
-                  right: "00"
-                streq_12:
-                  left:
-                    cyclestr:
-                      value: "@H"
-                  right: "12"
-              taskdep:
-                attrs:
-                  task: ic
-            and_2:
-              and_1_1: # pointless?
-                strneq_00:
-                  left:
-                    cyclestr:
-                      value: "@H"
-                  right: "00"
-                strneq_12:
-                  left:
-                    cyclestr:
-                      value: "@H"
-                  right: "12"
-                datadep:
-                  attrs:
-                    age: "00:05:00"
-                  value:
-                    - cyclestr:
-                        attrs:
-                          offset: "-1:00:00"
-                        value: "{{ common.outdir }}/com/{{ common.run }}/{{ common.ver }}/{{ common.run }}.@Y@m@d/@H/fcst/{{ common.wgf }}/"
-                    - cyclestr:
-                        value: "mpasout.@Y-@m-@d_@H.00.00.nc"
+        or:
+          and_cycle_is_00_or_12:
+            sh:
+              command:
+                cyclestr:
+                  value: "test @H == 00 -o @H == 12"
+            taskdep:
+              attrs:
+                task: ic
+          and_otherwise:
+            sh:
+              command:
+                cyclestr:
+                  value: "test @H != 00 -a @H != 12"
+            datadep:
+              attrs:
+                age: "00:05:00"
+              value:
+                - cyclestr:
+                    attrs:
+                      offset: "-1:00:00"
+                    value: "{{ common.outdir }}/com/{{ common.run }}/{{ common.ver }}/{{ common.run }}.@Y@m@d/@H/fcst/{{ common.wgf }}/"
+                - cyclestr:
+                    value: "mpasout.@Y-@m-@d_@H.00.00.nc"
     task_prep_lbc:
       attrs:
         cycledefs: prod
@@ -635,56 +308,55 @@ workflow:
         LBC_INTERVAL: 1
         FCST_LEN_HRS_CYCLES: "{{ common.fcst_len_hrs_cycles }}"
       dependency:
-        and: # pointless?
-          or:
-            metataskdep_minus_00:
-              attrs:
-                cycle_offset: "-0:00:00"
-                metatask: lbc
-            metataskdep_minus_01:
-              attrs:
-                cycle_offset: "-1:00:00"
-                metatask: lbc
-            metataskdep_minus_02:
-              attrs:
-                cycle_offset: "-2:00:00"
-                metatask: lbc
-            metataskdep_minus_03:
-              attrs:
-                cycle_offset: "-3:00:00"
-                metatask: lbc
-            metataskdep_minus_04:
-              attrs:
-                cycle_offset: "-4:00:00"
-                metatask: lbc
-            metataskdep_minus_05:
-              attrs:
-                cycle_offset: "-5:00:00"
-                metatask: lbc
-            metataskdep_minus_06:
-              attrs:
-                cycle_offset: "-6:00:00"
-                metatask: lbc
-            metataskdep_minus_07:
-              attrs:
-                cycle_offset: "-7:00:00"
-                metatask: lbc
-            metataskdep_minus_08:
-              attrs:
-                cycle_offset: "-8:00:00"
-                metatask: lbc
-            metataskdep_minus_09:
-              attrs:
-                cycle_offset: "-9:00:00"
-                metatask: lbc
-            metataskdep_minus_10:
-              attrs:
-                cycle_offset: "-10:00:00"
-                metatask: lbc
-            metataskdep_minus_11:
-              attrs:
-                cycle_offset: "-11:00:00"
-                metatask: lbc
+        or:
+          metataskdep_minus_00:
+            attrs:
+              cycle_offset: "-0:00:00"
+              metatask: lbc
+          metataskdep_minus_01:
+            attrs:
+              cycle_offset: "-1:00:00"
+              metatask: lbc
+          metataskdep_minus_02:
+            attrs:
+              cycle_offset: "-2:00:00"
+              metatask: lbc
+          metataskdep_minus_03:
+            attrs:
+              cycle_offset: "-3:00:00"
+              metatask: lbc
+          metataskdep_minus_04:
+            attrs:
+              cycle_offset: "-4:00:00"
+              metatask: lbc
+          metataskdep_minus_05:
+            attrs:
+              cycle_offset: "-5:00:00"
+              metatask: lbc
+          metataskdep_minus_06:
+            attrs:
+              cycle_offset: "-6:00:00"
+              metatask: lbc
+          metataskdep_minus_07:
+            attrs:
+              cycle_offset: "-7:00:00"
+              metatask: lbc
+          metataskdep_minus_08:
+            attrs:
+              cycle_offset: "-8:00:00"
+              metatask: lbc
+          metataskdep_minus_09:
+            attrs:
+              cycle_offset: "-9:00:00"
+              metatask: lbc
+          metataskdep_minus_10:
+            attrs:
+              cycle_offset: "-10:00:00"
+              metatask: lbc
+          metataskdep_minus_11:
+            attrs:
+              cycle_offset: "-11:00:00"
+              metatask: lbc
     task_jedivar:
       attrs:
         cycledefs: prod
@@ -780,18 +452,12 @@ workflow:
         HISTORY_INTERVAL: 1
         RESTART_INTERVAL: 99
       dependency:
-        and: # pointless?
-          datadep:
-            attrs:
-              age: "00:01:00"
-              task:
-                cyclestr:
-          datadep:
-            attrs:
-              age: "00:01:00"
-            value:
-              cyclestr:
-                value: "{{ common.outdir }}/stmp/@Y@m@d/{{ common.run }}_fcst_@H_{{ common.ver }}/{{ common.wgf }}/fcst_@H/diag.@Y-@m-@d_@H.@M.@S.nc"
+        datadep:
+          attrs:
+            age: "00:01:00"
+          value:
+            cyclestr:
+              value: "{{ common.outdir }}/stmp/@Y@m@d/{{ common.run }}_fcst_@H_{{ common.ver }}/{{ common.wgf }}/fcst_@H/diag.@Y-@m-@d_@H.@M.@S.nc"
     metatask_mpassit:
       var:
         group_index: "01"
@@ -820,10 +486,9 @@ workflow:
           GROUP_TOTAL_NUM: 1
           HISTORY_INTERVAL: 1
         dependency:
-          and: # pointless?
-            taskdep:
-              attrs:
-                task: save_fcst
+          taskdep:
+            attrs:
+              task: save_fcst
     metatask_upp:
       var:
         group_index: "01"
@@ -853,7 +518,6 @@ workflow:
           GROUP_TOTAL_NUM: 1
           HISTORY_INTERVAL: 1
         dependency:
-          and: # pointless?
-            metataskdep:
-              attrs:
-                metatask: mpassit
+          metataskdep:
+            attrs:
+              metatask: mpassit
