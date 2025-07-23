@@ -1,41 +1,33 @@
 
 GFS:
   ics:
-    prepare_grib_ics:
+    prepare_grib_ics: &prepare_grib_gfs
       ungrib:
         gribfiles:
           path: "{{ get_lbcs_data.rundir }}/gfs.t{cycle_hour:02d}z.pgrb2.0p25.f{forecast_hour:03d}"
         vtable: "{{ user.mpas_app }}/parm/ungrib/Vtable.GFS"
-    create_ics:
+    create_ics: &init_gfs
       mpas_init:
         namelist:
           update_values:
             dimensions:
-              config_nfglevels: 51
+              config_nfglevels: 57
               config_nfgsoillevels: 4
   lbcs:
     prepare_grib_lbcs:
-      ungrib:
-        gribfiles:
-          path: "{{ get_ics_data.rundir }}/gfs.t{cycle_hour:02d}z.pgrb2.0p25.f{forecast_hour:03d}"
-        vtable: "{{ user.mpas_app }}/parm/ungrib/Vtable.GFS"
+      <<: *prepare_grib_gfs
     create_lbcs:
-      mpas_init:
-        namelist:
-          update_values:
-            dimensions:
-              config_nfglevels: 51
-              config_nfgsoillevels: 4
+      <<: *init_gfs
 
 
 RAP:
   ics:
-    prepare_grib_ics:
+    prepare_grib_ics: &prepare_grib_rap
       ungrib:
         gribfiles:
           path: '{{ get_lbcs_data.rundir }}/rap.t{cycle_hour:02d}z.wrfnatf{forecast_hour:02d}.grib2'
         vtable: "{{ user.mpas_app }}/parm/ungrib/Vtable.raphrrr"
-    create_ics:
+    create_ics: &init_rap
       mpas_init:
         namelist:
           update_values:
@@ -44,15 +36,46 @@ RAP:
               config_nfgsoillevels: 9
   lbcs:
     prepare_grib_lbcs:
-      ungrib:
-        gribfiles:
-          path: '{{ get_lbcs_data.rundir }}/rap.t{cycle_hour:02d}z.wrfnatf{forecast_hour:02d}.grib2'
-        vtable: "{{ user.mpas_app }}/parm/ungrib/Vtable.raphrrr"
+      <<: *prepare_grib_rap
     create_lbcs:
+      <<: *init_rap
+
+RRFS:
+  ics:
+    workflow:
+      tasks:
+        task_get_ics_data:
+          memory: 30G
+    prepare_grib_ics: &prepare_grib_rrfs
+      ungrib:
+        execution:
+          batchargs:
+            walltime: 00:30:00
+            memory: 30G
+        gribfiles:
+          path: '{{ get_lbcs_data.rundir }}/rrfs.t{cycle_hour:02d}z.natlev.3km.f{forecast_hour:03d}.na.grib2'
+        vtable: "{{ user.mpas_app }}/parm/ungrib/Vtable.RRFS"
+      wgrib2:
+        budget_fields: '{{ data.mesh_files }}/budget_fields.txt'
+        neighbor_fields: '{{ data.mesh_files }}/neighbor_fields.txt'
+        grid_specs: "lambert:266:25.000000 234.862000:2000:3000.000000 18.281000:1450:3000.000000"
+        grid_vectors: "UGRD:VGRD:USTM:VSTM:VUCSH:VVCSH"
+    create_ics: &init_rrfs
       mpas_init:
         namelist:
           update_values:
             dimensions:
-              config_nfglevels: 51
+              config_nfglevels: 66
               config_nfgsoillevels: 9
-
+        files_to_link:
+          shdmax.{{ user.mesh_label }}.nc: "{{ platform.hrrr_fix }}/shdmax.{{ user.mesh_label }}.nc"
+          shdmin.{{ user.mesh_label }}.nc: "{{ platform.hrrr_fix }}/shdmin.{{ user.mesh_label }}.nc"
+  lbcs:
+    workflow:
+      tasks:
+        task_get_lbcs_data:
+          memory: 30G
+    prepare_grib_lbcs:
+      <<: *prepare_grib_rrfs
+    create_lbcs:
+      <<: *init_rrfs
