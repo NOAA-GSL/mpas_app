@@ -4,14 +4,14 @@ create_ics:
     execution:
       batchargs:
         cores: 1200
-        walltime: "00:03:00"
+        walltime: "00:10:00"
 
 forecast:
   mpas:
     execution:
       batchargs:
-        cores: 8000
-        walltime: "8:00:00"
+        cores: 9600
+        walltime: "05:15:00"
 
 post:
   mpassit:
@@ -19,4 +19,4 @@ post:
       batchargs:
         nodes: 24
         cores: 1200
-        walltime: "00:07:00"
+        walltime: "00:15:00"

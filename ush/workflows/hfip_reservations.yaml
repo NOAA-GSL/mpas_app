@@ -1,0 +1,55 @@
+platform:
+  account: rtgsd-fv3-dev
+get_ics_data:
+  execution:
+    walltime: 00:05:00
+prepare_grib_ics:
+  ungrib:
+    execution:
+      batchargs:
+        walltime: 00:05:00
+mpas_ics:
+  execution:
+    batchargs:
+      walltime:
+
+workflow:
+  tasks:
+    get_ics_data:
+      account: gsd-fv3-dev
+      dependency:
+        cyclestr:
+          attrs:
+            offset: 04:45:00
+          value: "@Y@m@d@H@M@S"
+    task_ungrib_ics:
+      native:
+        cyclestr:
+          value: --reservation=gsd_prep
+    task_mpas_ics:
+      native:
+        cyclestr:
+          value: --reservation=gsd_init
+    task_mpas:
+      native:
+        cyclestr:
+          value: --reservation=gsd_fcst
+    metatask_post:
+      task_mpassit_#fhr#:
+        native:
+          cyclestr:
+            value: --reservation=gsd_post1
+      task_upp_#fhr#:
+        native:
+          cyclestr:
+            value: --reservation=gsd_post1
+      task_combine_grib_#fhr#:
+        native:
+          cyclestr:
+            value: --reservation=gsd_post1
+    task_graphics:
+      native:
+        cyclestr:
+          value: --reservation=gsd_post2
+
+
