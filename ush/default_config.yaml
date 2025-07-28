@@ -54,7 +54,8 @@ prepare_grib_ics:
   ungrib:
     execution:
       batchargs:
-        cores: 1
+        nodes: 1
+        tasks_per_node: 1
         walltime: 00:15:00
       envcmds:
         - source {{ user.mpas_app }}/load_wflow_modules.sh {{ user.platform }}
@@ -62,7 +63,7 @@ prepare_grib_ics:
       executable: ungrib
     gribfiles:
       interval_hours: 1
-      max_leadtime: !int "{{ user.ics.offset_hours }}"
+      max_leadtime: 0
       offset: !int "{{ user.ics.offset_hours }}"
       path: /path/to/user/grib/files
     rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/ungrib_ics'
@@ -70,12 +71,18 @@ prepare_grib_ics:
   platform:
     account: '{{ platform.account }}'
     scheduler: '{{ platform.scheduler }}'
+  wgrib:
+    budget_fields: '{{ data.mesh_files }}/budget_fields.txt'
+    neighbor_fields: '{{ data.mesh_files }}/neighbor_fields.txt'
+    grid_specs: "lambert:266:25.000000 234.862000:2000:3000.000000 18.281000:1450:3000.000000"
+    grid_vectors: "UGRD:VGRD:USTM:VSTM:VUCSH:VVCSH"
 prepare_grib_lbcs:
   # ungrib settings follow UW Tools driver YAML
   ungrib:
     execution:
       batchargs:
-        cores: 1
+        nodes: 1
+        tasks_per_node: 1
         walltime: 00:15:00
       envcmds:
         - source {{ user.mpas_app }}/load_wflow_modules.sh {{ user.platform }}
@@ -131,6 +138,7 @@ create_ics:
       RRTMG_SW_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/RRTMG_SW_DATA.DBL"
       SOILPARM.TBL: "{{ user.mpas_app }}/src/MPAS-Model/SOILPARM.TBL"
       VEGPARM.TBL: "{{ user.mpas_app }}/src/MPAS-Model/VEGPARM.TBL"
+      QNWFA_QNIFA_SIGMA_MONTHLY.dat: "{{ data.mesh_files }}/QNWFA_QNIFA_SIGMA_MONTHLY.dat"
     namelist:
       base_file: "{{ user.mpas_app }}/src/MPAS-Model/namelist.init_atmosphere"
       update_values: &mpas_init_update_values

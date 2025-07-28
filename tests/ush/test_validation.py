@@ -15,7 +15,7 @@ MSG = SimpleNamespace(
     gt0="greater than 0",
     int="a valid integer",
     list="a valid list",
-    model="'GFS' or 'RAP'",
+    model="'GFS', 'RAP' or 'RRFS'",
     str="a valid string",
 )
 

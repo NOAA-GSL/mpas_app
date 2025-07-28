@@ -80,7 +80,7 @@ workflow:
         cyclestr:
           value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ prepare_grib_ics.ungrib.execution.batchargs.walltime }}"
-      cores: !int "{{ prepare_grib_ics.ungrib.execution.batchargs.cores }}"
+      nodes: "{{ prepare_grib_ics.ungrib.execution.batchargs.nodes }}:ppn={{ prepare_grib_ics.ungrib.execution.batchargs.tasks_per_node }}"
       dependency:
         taskdep:
           attrs:
@@ -97,7 +97,7 @@ workflow:
         cyclestr:
           value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ prepare_grib_lbcs.ungrib.execution.batchargs.walltime }}"
-      cores: !int "{{ prepare_grib_lbcs.ungrib.execution.batchargs.cores }}"
+      nodes: "{{ prepare_grib_lbcs.ungrib.execution.batchargs.nodes }}:ppn={{ prepare_grib_lbcs.ungrib.execution.batchargs.tasks_per_node }}"
       dependency:
         taskdep:
           attrs:
