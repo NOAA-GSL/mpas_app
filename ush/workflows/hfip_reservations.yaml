@@ -14,6 +14,14 @@ mpas_ics:
       walltime:
 
 workflow:
+  attrs:
+    realtime: true
+    cyclethrottle: 3
+  entities:
+    LOGDIR: "{{user.experiment_dir}}/log/@Y@m@d@H"
+  log:
+    cyclestr:
+      value: "{{ user.experiment_dir }}/log/workflow_@Y@m@d.log"
   tasks:
     get_ics_data:
       account: gsd-fv3-dev
