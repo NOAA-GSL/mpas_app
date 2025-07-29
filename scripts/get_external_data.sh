@@ -31,4 +31,5 @@ python -u ${MPAS_APP}/ush/retrieve_data.py \
     --fcst-hrs $fcst_hours \
     --filefmt grib2 \
     --output-path ${OUTPUT_PATH} \
-    "${additional_args[@]}"
+    --summary-file ${OUTPUT_PATH}/${ICS_or_LBCS}.yaml \
+    "${additional_args[@]}" 
