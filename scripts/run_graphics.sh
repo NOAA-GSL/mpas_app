@@ -36,9 +36,15 @@ done < <(uw config realize -i "${CONFIG_PATH}" --output-format sh --key-path gra
 
 
 set -x
-source $pygraf_path/../../load_wflow_modules.sh $platform
-conda activate pygraf
 cd $pygraf_path
+if [[ "$platform" == "ursa" ]] ; then
+  source $pygraf_path/../../load_wflow_modules.sh $platform
+  conda activate pygraf
+else
+  source pre.sh
+fi
+
+
 args=(
   maps
   -d "$input_data_location"

@@ -247,7 +247,7 @@ forecast:
     files_to_link:
       <<: *mpas_init_files_to_link
       CCN_ACTIVATE.BIN: "{{ platform.hrrr_fix }}/CCN_ACTIVATE.BIN"
-      CCN_ACTIVATE_DATA: "{{ platform.hrrr_fix }}/CCN_ACTIVATE_DATA"
+      CCN_ACTIVATE_DATA: "{{ user.mpas_app }}/src/MPAS-Model/CCN_ACTIVATE_DATA"
       COMPATIBILITY: "{{ user.mpas_app }}/src/MPAS-Model/src/core_atmosphere/physics/physics_wrf/files/COMPATIBILITY"
       MP_TEMPO_QRacrQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_QRacrQS_DATA.DBL"
       MP_TEMPO_freezeH2O_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_freezeH2O_DATA.DBL"
