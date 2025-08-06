@@ -1,10 +1,11 @@
 data:
   mesh_files: /scratch3/BMC/gsd-fv3-dev/mpas_dev/fix
 create_ics:
-  namelist:
-    update_values:
-      vertical_grid:
-        config_specified_zeta_levels: /scratch3/BMC/gsd-fv3-dev/mpas_dev/fix/L60.txt
+  mpas_init:
+    namelist:
+      update_values:
+        vertical_grid:
+          config_specified_zeta_levels: /scratch3/BMC/gsd-fv3-dev/mpas_dev/fix/L60.txt
 forecast:
   mpas:
     files_to_link:
