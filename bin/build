@@ -26,7 +26,7 @@ create_conda_env_mpas_app () {
     (
       source $CONDA_DIR/etc/profile.d/conda.sh
       conda activate
-      conda install -y -n mpas_app $(cat devpkgs)
+      conda install -y -n mpas_app $(cat pkgs.dev)
     )
   fi
 }
