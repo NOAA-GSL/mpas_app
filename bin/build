@@ -20,7 +20,7 @@ create_conda_env() {
     inform "Environment exists"
   else
     cmd="conda create -y -n $name $args"
-    inform "Running: $cmd"
+    inform "$cmd"
     condarun $cmd
   fi
 }
@@ -334,10 +334,10 @@ validate_and_update_vars () {
 inform "Starting"
 prepare_shell $@
 prepare_conda
-# if [[ $CONDA_ONLY == false ]]; then
-#   install_mpas init_atmosphere
-#   install_mpas atmosphere
-#   install_mpassit
-#   install_upp
-# fi
+if [[ $CONDA_ONLY == false ]]; then
+  install_mpas init_atmosphere
+  install_mpas atmosphere
+  install_mpassit
+  install_upp
+fi
 inform "Ready"
