@@ -10,7 +10,7 @@ create_conda_env() {
     conda activate
     if ! conda env list | grep -q "^$name\s"; then
       inform "Creating conda environment: $name"
-      cmd="conda create -y -n $name $args"
+      cmd="mamba create -y -n $name $args"
       echo " > $cmd"
       $cmd
     fi
