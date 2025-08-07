@@ -17,7 +17,7 @@ env:
 	./build.sh --conda-only
 
 format:
-	@./format
+	@./bin/format
 
 lint:
 	ruff check .
