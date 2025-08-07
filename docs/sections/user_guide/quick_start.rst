@@ -12,7 +12,7 @@ CONUS 3km Quick Start Guide
 
    .. code-block:: bash
 
-      ./build.sh -p <platform>
+      bin/build -p <platform>
 
 3. Load the ``mpas_app`` conda environment:
 
