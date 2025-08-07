@@ -2,29 +2,42 @@
 
 # Functions:
 
-create_conda_env() {
-  name=$1
-  args=$2
+condarun() {
   (
+    set -e
     source $CONDA_DIR/etc/profile.d/conda.sh
     conda activate
-    if ! conda env list | grep -q "^$name\s"; then
-      inform "Creating conda environment: $name"
-      cmd="mamba create -y -n $name $args"
-      echo " > $cmd"
-      $cmd
-    fi
+    ${*}
   )
 }
 
+create_conda_env() {
+  local arg cmd name
+  name=$1
+  args=$2
+  inform "Creating conda environment: $name"
+  if condarun conda env list | grep -q "^$name\s"; then
+    inform "Environment exists"
+  else
+    cmd="mamba create -y -n $name $args"
+    inform "Running: $cmd"
+    condarun $cmd
+  fi
+}
+
 create_conda_env_mpas_app () {
+  local name=mpas_app
   local args="-c ufs-community --file condapkgs"
-  test -n "$MPAS_APP_DEVENV" && args+=" --file condapkgs.dev"
-  create_conda_env mpas_app "$args"
+  if [[ -n "$MPAS_APP_DEVENV" ]]; then
+    condarun conda env remove -y -n $name
+    args+=" --file condapkgs.dev"
+  fi
+  create_conda_env $name "$args"
 }
 
 create_conda_env_pygraf () {
-  create_conda_env pygraf "--file ush/pygraf/environment.yml"
+  local pkgs="$($MPAS_APP_DIR/bin/envpkgs $MPAS_APP_DIR/ush/pygraf/environment.yml)"
+  create_conda_env pygraf "$pkgs"
 }
 
 create_conda_env_ungrib () {
@@ -165,7 +178,7 @@ prepare_conda () {
   install_conda
   create_conda_env_mpas_app
   test $CONDA_ONLY == true && return
-#   create_conda_env_pygraf
+  # create_conda_env_pygraf
   create_conda_env_ungrib
 }
 
