@@ -172,6 +172,16 @@ RAP:
     locations:
       - https://noaa-rap-pds.s3.amazonaws.com/rap.{{yyyymmdd}}
 
+RRFS:
+  filenames:
+    anl:
+      - rrfs.t{{ hh }}z.natlev.3km.f{{ "%03d" % fcst_hr }}.na.grib2
+    fcst:
+      - rrfs.t{{ hh }}z.natlev.3km.f{{ "%03d" % fcst_hr }}.na.grib2
+  aws:
+    locations:
+      - https://noaa-rrfs-pds.s3.amazonaws.com/rrfs_a/rrfs.{{ yyyymmdd }}/{{ hh }}
+
 HRRR:
   filenames: &hrrr_filenames
     anl:
