@@ -8,7 +8,7 @@ all:
 	$(error Valid targets are: $(TARGETS))
 
 devenv:
-	MPAS_APP_DEVENV=1 bin/build --conda-only
+	MPAS_APP_DEVENV=true bin/build --conda-only
 
 docs:
 	$(MAKE) -C docs docs

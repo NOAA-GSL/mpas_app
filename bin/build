@@ -15,11 +15,11 @@ create_conda_env() {
   local arg cmd name
   name=$1
   args=$2
-  inform "Creating conda environment: $name"
+  inform "Creating $name environment"
   if condarun conda env list | grep -q "^$name\s"; then
     inform "Environment exists"
   else
-    cmd="mamba create -y -n $name $args"
+    cmd="conda create -y -n $name $args"
     inform "Running: $cmd"
     condarun $cmd
   fi
@@ -29,7 +29,10 @@ create_conda_env_mpas_app () {
   local name=mpas_app
   local args="-c ufs-community --file condapkgs"
   if [[ -n "$MPAS_APP_DEVENV" ]]; then
-    condarun conda env remove -y -n $name
+    if condarun conda env list | grep -q "^$name\s"; then
+      inform "Removing old $name environment"
+      condarun conda env remove -y -n $name
+    fi
     args+=" --file condapkgs.dev"
   fi
   create_conda_env $name "$args"
