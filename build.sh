@@ -1,22 +1,42 @@
-#!/bin/bash -e
+#!/bin/bash -ae
 
 # Functions:
 
-create_conda_envs () {
-  source $CONDA_DIR/etc/profile.d/conda.sh
-  conda activate
-  if ! conda env list | grep -q "^mpas_app\s"; then
-    echo "=> Creating mpas_app conda environment"
-    make env
+announce() {
+  echo -e "=> ${*}"
+}
+
+create_conda_env() {
+  name=$1
+  args=$2
+  (
+    source $CONDA_DIR/etc/profile.d/conda.sh
+    conda activate
+    if ! conda env list | grep -q "^$name\s"; then
+      announce "Creating conda environment: $name\n"
+      set -x
+      conda create -y -n $name $args
+    fi
+  )
+}
+
+create_conda_env_mpas_app () {
+  create_conda_env mpas_app "--file environment.yml"
+  if [[ -n "$MPAS_APP_DEVENV" ]]; then
+    (
+      source $CONDA_DIR/etc/profile.d/conda.sh
+      conda activate
+      conda install -y -n mpas_app $(cat devpkgs)
+    )
   fi
-  if ! conda env list | grep -q "^ungrib\s"; then
-    echo "=> Creating ungrib conda environment"
-    mamba create -y -n ungrib -c maddenp ungrib
-  fi
-  if ! conda env list | grep -q "^pygraf\s"; then
-    echo "=> Creating pygraf conda environment"
-    mamba create -y -n pygraf --file ush/pygraf/environment.yml
-  fi
+}
+
+create_conda_env_pygraf () {
+  create_conda_env pygraf "--file ush/pygraf/environment.yml"
+}
+
+create_conda_env_ungrib () {
+  create_conda_env ungrib "-c maddenp ungrib"
 }
 
 export_var_defaults () {
@@ -51,7 +71,7 @@ fail () {
 
 install_conda () {
   test -d $CONDA_DIR && return
-  echo "=> Installing conda"
+  announce "Installing conda\n"
   (
     os=$(uname)
     test $os == Darwin && os=MacOSX
@@ -79,7 +99,7 @@ install_mpas () {
   elif [[ $CORE != atmosphere ]]; then
     fail "$errmsg"
   fi
-  echo "=> Building MPAS $CORE"
+  announce "Building MPAS $CORE\n"
   (
     cd $MPAS_APP_DIR/src/MPAS-Model
     source $MPAS_APP_DIR/etc/lmod-setup.sh $PLATFORM
@@ -111,7 +131,7 @@ install_mpas () {
 }
 
 install_mpassit () {
-  echo "=> Building MPASSIT"
+  announce "Building MPASSIT\n"
   (
     cd $MPAS_APP_DIR/src/MPASSIT
     module purge
@@ -124,7 +144,7 @@ install_mpassit () {
 }
 
 install_upp () {
-  echo "=> Building UPP"
+  announce "Building UPP\n"
   (
     source $MPAS_APP_DIR/etc/lmod-setup.sh $PLATFORM
     module purge
@@ -147,8 +167,10 @@ install_upp () {
 
 prepare_conda () {
   install_conda
-  test $CONDA_ONLY == true && exit 0
-  create_conda_envs
+  create_conda_env_mpas_app
+  test $CONDA_ONLY == true && return
+  create_conda_env_pygraf
+  create_conda_env_ungrib
 }
 
 prepare_shell () {
@@ -190,6 +212,7 @@ parse_cli_args () {
 
 show_settings () {
   cat << EOF
+
   Settings:
 
     ATMOS_ONLY=$ATMOS_ONLY
@@ -296,11 +319,13 @@ validate_and_update_vars () {
 
 # Top-level logic:
 
-echo "=> Building"
+announce "Starting"
 prepare_shell $@
 prepare_conda
-install_mpas init_atmosphere
-install_mpas atmosphere
-install_mpassit
-install_upp
-echo "=> Ready"
+if [[ $CONDA_ONLY == false ]]; then
+  install_mpas init_atmosphere
+  install_mpas atmosphere
+  install_mpassit
+  install_upp
+fi
+announce "Ready"

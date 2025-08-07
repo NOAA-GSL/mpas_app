@@ -1,27 +1,20 @@
-ACTIVATE = . conda/etc/profile.d/conda.sh && conda activate
-DEVPKGS  = $(shell cat devpkgs)
-ENVNAME  = mpas_app
-ENVPATH  = $(shell ls $(CONDA_PREFIX)/envs/$(ENVNAME) 2>/dev/null)
-REGTEST  = pytest --basetemp=$(PWD)/.pytest --verbose tests/regtest.py
-REMOTES  = hera|jet|ursa
-TARGETS  = conda devenv docs env format lint regtest regtest-data regtest-regen rmenv test typecheck unittest
+REGTEST = pytest --basetemp=$(PWD)/.pytest --verbose tests/regtest.py
+REMOTES = hera|jet|ursa
+TARGETS = devenv docs env format lint regtest regtest-data regtest-regen systest test typecheck unittest
 
 .PHONY: $(TARGETS)
 
 all:
 	$(error Valid targets are: $(TARGETS))
 
-conda:
-	./build.sh --conda-only
-
-devenv: env
-	$(ACTIVATE) && mamba install -y -n $(ENVNAME) $(DEVPKGS)
+devenv:
+	MPAS_APP_DEVENV=1 ./build.sh --conda-only
 
 docs:
 	$(MAKE) -C docs docs
 
-env: conda rmenv
-	$(ACTIVATE) && mamba env create -y -f environment.yml
+env:
+	./build.sh --conda-only
 
 format:
 	@./format
@@ -37,9 +30,6 @@ regtest: regtest-data
 regtest-regen:
 	$(REGTEST) --regen-all
 	@echo "*** To update baseline, run: dvc push --remote $(REMOTES)"
-
-rmenv:
-	$(if $(ENVPATH),conda env remove -y -n $(ENVNAME))
 
 systest:
 	pytest -k "systest" -n 5 tests/*
