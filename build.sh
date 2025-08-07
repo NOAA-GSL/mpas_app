@@ -16,6 +16,7 @@ create_conda_envs () {
   if ! conda env list | grep -q "^pygraf\s"; then
     echo "=> Creating pygraf conda environment"
     mamba create -y -n pygraf --file ush/pygraf/environment.yml
+    ln -fsv $CONDA_PREFIX/envs/pygraf/lib/libnsl.so.3.0.0 $CONDA_PREFIX/envs/pygraf/lib/libnsl.so.1
   fi
 }
 
