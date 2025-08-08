@@ -28,7 +28,7 @@ create_conda_env() {
 create_conda_env_mpas_app () {
   local args="-c ufs-community --file $MPAS_APP_DIR/condapkgs"
   local name=mpas_app
-  if [[ -n "$MPAS_APP_DEVENV" ]]; then
+  if [[ $DEVMODE == true ]]; then
     if condarun conda env list | grep -q "^$name\s"; then
       inform "Removing old $name environment"
       condarun conda env remove -y -n $name
@@ -60,6 +60,7 @@ export_var_defaults () {
   export CONDA_DIR=$MPAS_APP_DIR/conda
   export CONDA_ONLY=false
   export DEBUG=false
+  export DEVMODE=false
   export EXEC_DIR=$MPAS_APP_DIR/exec
   export GEN_F90=false
   export OPENMP=false
@@ -194,7 +195,7 @@ prepare_shell () {
 
 parse_cli_args () {
   local long name opts
-  long=atmos-only,build-jobs:,compiler:,conda-dir:,conda-only,debug,exec-dir:,gen-f90,help,openmp,platform:,single-precision,tau,timer-lib:,use-papi
+  long=atmos-only,build-jobs:,compiler:,conda-dir:,conda-only,debug,devmode,exec-dir:,gen-f90,help,openmp,platform:,single-precision,tau,timer-lib:,use-papi
   name=$(basename ${BASH_SOURCE[0]})
   opts=$(getopt -n $name -o c:hp:v -l $long -- "$@") || usage_error
   eval set -- $opts
@@ -207,6 +208,7 @@ parse_cli_args () {
       --conda-dir)        CONDA_DIR=$2 && shift  ;;
       --conda-only)       CONDA_ONLY=true        ;;
       --debug)            DEBUG=true             ;;
+      --devmode)          DEVMODE=true           ;;
       --exec-dir)         EXEC_DIR=$2 && shift   ;;
       --gen-f90)          GEN_F90=true           ;;
       --openmp)           OPENMP=true            ;;
@@ -233,6 +235,7 @@ show_settings () {
     CONDA_DIR=$CONDA_DIR
     CONDA_ONLY=$CONDA_ONLY
     DEBUG=$DEBUG
+    DEVMODE=$DEVMODE
     EXEC_DIR=$EXEC_DIR
     GEN_F90=$GEN_F90
     OPENMP=$OPENMP
@@ -269,6 +272,8 @@ OPTIONS
       install conda (not environments) and exit
   --debug
       build MPAS in debug mode
+  --devmode
+      create conda development environment
   --exec-dir EXEC_DIR
       install executables here (default: exec/ under MPAS App)
   --openmp
