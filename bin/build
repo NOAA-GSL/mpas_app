@@ -26,14 +26,14 @@ create_conda_env() {
 }
 
 create_conda_env_mpas_app () {
+  local args="-c ufs-community --file $MPAS_APP_DIR/condapkgs"
   local name=mpas_app
-  local args="-c ufs-community --file condapkgs"
   if [[ -n "$MPAS_APP_DEVENV" ]]; then
     if condarun conda env list | grep -q "^$name\s"; then
       inform "Removing old $name environment"
       condarun conda env remove -y -n $name
     fi
-    args+=" --file condapkgs.dev"
+    args+=" --file $MPAS_APP_DIR/condapkgs.dev"
   fi
   create_conda_env $name "$args"
 }
