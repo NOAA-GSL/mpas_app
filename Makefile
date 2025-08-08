@@ -29,7 +29,7 @@ regtest:
 
 regtest-regen:
 	$(REGTEST) --regen-all
-	@echo "*** To update baseline, run: dvc push --remote $(REMOTES)"
+	@echo '*** To update baseline, run: sg avidmgmt "umask 002 && dvc push --remote $(REMOTES)"'
 
 systest:
 	pytest -k "systest" -n 5 tests/*
