@@ -1,0 +1,9 @@
+#!/usr/bin/env python
+
+from pathlib import Path
+from yaml import safe_load
+import sys
+
+# Extract and print the dependency packages specified in a conda environment.yml file.
+
+print(" ".join(safe_load(Path(sys.argv[1]).open())["dependencies"]))

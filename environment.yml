@@ -1,8 +1,0 @@
-name: mpas_app
-channels:
-  - conda-forge
-  - ufs-community
-dependencies:
-  - metis==5.2.*
-  - pydantic==2.11.*
-  - uwtools >=2.8.1,<2.9

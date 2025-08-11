@@ -24,7 +24,7 @@ Jet and Hera are the only platforms fully supported on the ``main`` branch. To r
 
 .. code-block:: bash
 
-   ./build.sh -p <platform>
+   bin/build -p <platform>
 
 The app is partially supported on Ursa for the HFIP 2025 experiment configuration.
 
@@ -32,7 +32,7 @@ To view all build options, run:
 
 .. code-block:: bash
 
-   ./build.sh -h
+   bin/build -h
 
 This builds the MPAS-Model (based on MPAS release version ``8.2.2``) and installs Miniconda inside the local clone. The ``ungrib`` conda environment includes a pre-built WPS Ungrib package. The full build may take up to an hour.
 

@@ -1,45 +1,35 @@
-ACTIVATE = . conda/etc/profile.d/conda.sh && conda activate
-DEVPKGS  = $(shell cat devpkgs)
-ENVNAME  = mpas_app
-ENVPATH  = $(shell ls $(CONDA_PREFIX)/envs/$(ENVNAME) 2>/dev/null)
-REGTEST  = pytest --basetemp=$(PWD)/.pytest --verbose tests/regtest.py
-REMOTES  = hera|jet|ursa
-TARGETS  = conda devenv docs env format lint regtest regtest-data regtest-regen rmenv test typecheck unittest
+REGTEST = pytest --basetemp=$(PWD)/.pytest --verbose tests/regtest.py
+REMOTES = hera|jet|ursa
+TARGETS = devenv docs env format lint regtest regtest-regen systest test typecheck unittest
 
 .PHONY: $(TARGETS)
 
 all:
 	$(error Valid targets are: $(TARGETS))
 
-conda:
-	./build.sh --conda-only
-
-devenv: env
-	$(ACTIVATE) && mamba install -y -n $(ENVNAME) $(DEVPKGS)
+devenv:
+	bin/build --conda-only --devmode
 
 docs:
 	$(MAKE) -C docs docs
 
-env: conda rmenv
-	$(ACTIVATE) && mamba env create -y -f environment.yml
+env:
+	bin/build --conda-only
 
 format:
-	@./format
+	@./bin/format
 
 lint:
 	ruff check .
 
-regtest: regtest-data
+regtest:
 	@test -z "$(remote)" && echo 'Set remote=$(REMOTES)' && exit 1 || true
 	dvc pull --remote $(remote)
 	$(REGTEST)
 
 regtest-regen:
 	$(REGTEST) --regen-all
-	@echo "*** To update baseline, run: dvc push --remote $(REMOTES)"
-
-rmenv:
-	$(if $(ENVPATH),conda env remove -y -n $(ENVNAME))
+	@echo '*** To update baseline, run: sg avidmgmt "umask 002 && dvc push --remote $(REMOTES)"'
 
 systest:
 	pytest -k "systest" -n 5 tests/*
