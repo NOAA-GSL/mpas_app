@@ -1,28 +1,57 @@
-#!/bin/bash -e
+#!/bin/bash -ae
 
 # Functions:
 
-create_conda_envs () {
-  source $CONDA_DIR/etc/profile.d/conda.sh
-  conda activate
-  if ! conda env list | grep -q "^mpas_app\s"; then
-    echo "=> Creating mpas_app conda environment"
-    make env
+condarun() {
+  (
+    set -e
+    source $CONDA_DIR/etc/profile.d/conda.sh
+    conda activate
+    ${*}
+  )
+}
+
+create_conda_env() {
+  local arg cmd name
+  name=$1
+  args=$2
+  inform "Creating $name environment"
+  if condarun conda env list | grep -q "^$name\s"; then
+    inform "Environment exists"
+  else
+    cmd="conda create -y -n $name $args"
+    inform "$cmd"
+    condarun $cmd
   fi
-  if ! conda env list | grep -q "^ungrib\s"; then
-    echo "=> Creating ungrib conda environment"
-    mamba create -y -n ungrib -c maddenp ungrib
+}
+
+create_conda_env_mpas_app () {
+  local args="-c ufs-community --file $MPAS_APP_DIR/etc/condapkgs"
+  local name=mpas_app
+  if [[ $DEVMODE == true ]]; then
+    if condarun conda env list | grep -q "^$name\s"; then
+      inform "Removing old $name environment"
+      condarun conda env remove -y -n $name
+    fi
+    args+=" --file $MPAS_APP_DIR/etc/condapkgs.dev"
   fi
-  if ! conda env list | grep -q "^pygraf\s"; then
-    echo "=> Creating pygraf conda environment"
-    mamba create -y -n pygraf --file ush/pygraf/environment.yml
-    ln -fsv $CONDA_PREFIX/envs/pygraf/lib/libnsl.so.3.0.0 $CONDA_PREFIX/envs/pygraf/lib/libnsl.so.1
-  fi
+  create_conda_env $name "$args"
+}
+
+create_conda_env_pygraf () {
+  local pkgs="$($MPAS_APP_DIR/bin/envpkgs $MPAS_APP_DIR/ush/pygraf/environment.yml)"
+  create_conda_env pygraf "$pkgs"
+  # Note single quotes used below to prevent immediate expansion of $CONDA_PREFIX:
+  condarun 'ln -fsv $CONDA_PREFIX/envs/pygraf/lib/libnsl.so.3.0.0 $CONDA_PREFIX/envs/pygraf/lib/libnsl.so.1'
+}
+
+create_conda_env_ungrib () {
+  create_conda_env ungrib "-c maddenp ungrib"
 }
 
 export_var_defaults () {
 
-  export MPAS_APP_DIR=$(dirname $(readlink -f ${BASH_SOURCE[0]}))
+  export MPAS_APP_DIR=$(readlink -f $(dirname $(readlink -f ${BASH_SOURCE[0]}))/..)
   export MODULE_NAME=
 
   # Defaults for CLI options:
@@ -33,6 +62,7 @@ export_var_defaults () {
   export CONDA_DIR=$MPAS_APP_DIR/conda
   export CONDA_ONLY=false
   export DEBUG=false
+  export DEVMODE=false
   export EXEC_DIR=$MPAS_APP_DIR/exec
   export GEN_F90=false
   export OPENMP=false
@@ -50,9 +80,13 @@ fail () {
   exit 1
 }
 
+inform() {
+  echo -e "=> ${*}"
+}
+
 install_conda () {
   test -d $CONDA_DIR && return
-  echo "=> Installing conda"
+  inform "Installing conda"
   (
     os=$(uname)
     test $os == Darwin && os=MacOSX
@@ -80,7 +114,7 @@ install_mpas () {
   elif [[ $CORE != atmosphere ]]; then
     fail "$errmsg"
   fi
-  echo "=> Building MPAS $CORE"
+  inform "Building MPAS $CORE"
   (
     cd $MPAS_APP_DIR/src/MPAS-Model
     source $MPAS_APP_DIR/etc/lmod-setup.sh $PLATFORM
@@ -112,7 +146,7 @@ install_mpas () {
 }
 
 install_mpassit () {
-  echo "=> Building MPASSIT"
+  inform "Building MPASSIT"
   (
     cd $MPAS_APP_DIR/src/MPASSIT
     module purge
@@ -125,7 +159,7 @@ install_mpassit () {
 }
 
 install_upp () {
-  echo "=> Building UPP"
+  inform "Building UPP"
   (
     source $MPAS_APP_DIR/etc/lmod-setup.sh $PLATFORM
     module purge
@@ -148,8 +182,10 @@ install_upp () {
 
 prepare_conda () {
   install_conda
-  test $CONDA_ONLY == true && exit 0
-  create_conda_envs
+  create_conda_env_mpas_app
+  test $CONDA_ONLY == true && return
+  # create_conda_env_pygraf
+  create_conda_env_ungrib
 }
 
 prepare_shell () {
@@ -161,7 +197,7 @@ prepare_shell () {
 
 parse_cli_args () {
   local long name opts
-  long=atmos-only,build-jobs:,compiler:,conda-dir:,conda-only,debug,exec-dir:,gen-f90,help,openmp,platform:,single-precision,tau,timer-lib:,use-papi
+  long=atmos-only,build-jobs:,compiler:,conda-dir:,conda-only,debug,devmode,exec-dir:,gen-f90,help,openmp,platform:,single-precision,tau,timer-lib:,use-papi
   name=$(basename ${BASH_SOURCE[0]})
   opts=$(getopt -n $name -o c:hp:v -l $long -- "$@") || usage_error
   eval set -- $opts
@@ -174,6 +210,7 @@ parse_cli_args () {
       --conda-dir)        CONDA_DIR=$2 && shift  ;;
       --conda-only)       CONDA_ONLY=true        ;;
       --debug)            DEBUG=true             ;;
+      --devmode)          DEVMODE=true           ;;
       --exec-dir)         EXEC_DIR=$2 && shift   ;;
       --gen-f90)          GEN_F90=true           ;;
       --openmp)           OPENMP=true            ;;
@@ -191,6 +228,7 @@ parse_cli_args () {
 
 show_settings () {
   cat << EOF
+
   Settings:
 
     ATMOS_ONLY=$ATMOS_ONLY
@@ -199,6 +237,7 @@ show_settings () {
     CONDA_DIR=$CONDA_DIR
     CONDA_ONLY=$CONDA_ONLY
     DEBUG=$DEBUG
+    DEVMODE=$DEVMODE
     EXEC_DIR=$EXEC_DIR
     GEN_F90=$GEN_F90
     OPENMP=$OPENMP
@@ -235,6 +274,8 @@ OPTIONS
       install conda (not environments) and exit
   --debug
       build MPAS in debug mode
+  --devmode
+      create conda development environment
   --exec-dir EXEC_DIR
       install executables here (default: exec/ under MPAS App)
   --openmp
@@ -297,11 +338,13 @@ validate_and_update_vars () {
 
 # Top-level logic:
 
-echo "=> Building"
+inform "Starting"
 prepare_shell $@
 prepare_conda
-install_mpas init_atmosphere
-install_mpas atmosphere
-install_mpassit
-install_upp
-echo "=> Ready"
+if [[ $CONDA_ONLY == false ]]; then
+  install_mpas init_atmosphere
+  install_mpas atmosphere
+  install_mpassit
+  install_upp
+fi
+inform "Ready"

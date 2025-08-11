@@ -1,0 +1,6 @@
+outs:
+- md5: afdb562ca2bab11f10d999bfac1470fc.dir
+  size: 49963
+  nfiles: 2
+  hash: md5
+  path: regtest
