@@ -1,11 +1,9 @@
 data:
-  mesh_files: /scratch2/BMC/gsd-fv3-dev/mpas_dev/15km-conus/
+  mesh_files: /scratch3/BMC/gsd-fv3-dev/mpas_dev/fix
 platform:
   crtm_dir: /contrib/spack-stack/spack-stack-1.6.0/envs/unified-env-rocky8/install/intel/2021.5.0/crtm-fix-2.4.0.1_emc-zvwtu3t/fix
   scheduler: slurm
-  geog_data:
-    global: /scratch2/BMC/wrfruc/talcott/mpas/global/static/geog/
-  hrrr_fix: /scratch2/BMC/gsd-fv3-dev/mpas_dev/fix
+  hrrr_fix: /scratch3/BMC/gsd-fv3-dev/mpas_dev/fix
 forecast:
   mpas:
     execution:
