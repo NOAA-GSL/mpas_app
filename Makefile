@@ -1,6 +1,6 @@
 REGTEST = pytest --basetemp=$(PWD)/.pytest --verbose tests/regtest.py
 REMOTES = hera|jet|ursa
-TARGETS = devenv docs env format lint regtest regtest-regen systest test typecheck unittest
+TARGETS = devenv docs env format lint regtest regtest-data regtest-regen systest test typecheck unittest
 
 .PHONY: $(TARGETS)
 
@@ -22,10 +22,12 @@ format:
 lint:
 	ruff check .
 
-regtest:
+regtest: regtest-data
+	$(REGTEST)
+
+regtest-data:
 	@test -z "$(remote)" && echo 'Set remote=$(REMOTES)' && exit 1 || true
 	dvc pull --remote $(remote)
-	$(REGTEST)
 
 regtest-regen:
 	$(REGTEST) --regen-all
