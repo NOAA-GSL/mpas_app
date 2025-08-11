@@ -41,7 +41,8 @@ create_conda_env_mpas_app () {
 create_conda_env_pygraf () {
   local pkgs="$($MPAS_APP_DIR/bin/envpkgs $MPAS_APP_DIR/ush/pygraf/environment.yml)"
   create_conda_env pygraf "$pkgs"
-  ln -fsv $CONDA_PREFIX/envs/pygraf/lib/libnsl.so.3.0.0 $CONDA_PREFIX/envs/pygraf/lib/libnsl.so.1
+  # Note single quotes used below to prevent immediate expansion of $CONDA_PREFIX:
+  condarun 'ln -fsv $CONDA_PREFIX/envs/pygraf/lib/libnsl.so.3.0.0 $CONDA_PREFIX/envs/pygraf/lib/libnsl.so.1'
 }
 
 create_conda_env_ungrib () {
