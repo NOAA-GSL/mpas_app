@@ -293,7 +293,8 @@ def possible_hpss_configs(
         fs_copy_config: dict[str, str] = {}
         for member, lead_time, file_template in product(members, lead_times, file_templates):
             # Don't path join the next line because location won't be a path on disk
-            local_template = f'{data_type}-{cycle.strftime("%Y%m%d")}-{cycle.strftime("%H")}-f{int(lead_time.total_seconds() // 3600)}.grib2'
+            lead = int(lead_time.total_seconds() // 3600)
+            local_template = f"{data_type}-{cycle.strftime('%Y%m%d-%H')}-f{lead}.grib2"
             local_name = f"mem{member:03d}/{local_template}" if member != -999 else file_template
             file_item = get_yaml_config({local_name: f"{location}/{file_template}"})
             context = {
@@ -327,9 +328,10 @@ def prepare_fs_copy_config(
         for member, lead_time in product(members, lead_times):
             # Don't path join because location can be a url
             mem_prefix = f"mem{member:03d}/" if member != -999 else ""
+            lead = int(lead_time.total_seconds() // 3600)
+            local_fn = f"{data_type}-{cycle.strftime('%Y%m%d-%H')}-f{lead}.grib2"
             if isinstance(location, list):
                 if isinstance(file_templates, list) and len(file_templates) == len(location):
-                    local_fn = f'{data_type}-{cycle.strftime("%Y%m%d")}-{cycle.strftime("%H")}-f{int(lead_time.total_seconds() // 3600)}.grib2'
                     file_item = get_yaml_config(
                         {
                             f"{mem_prefix}{local_fn}": f"{loc}/{fn}"
@@ -337,7 +339,6 @@ def prepare_fs_copy_config(
                         }
                     )
             else:
-                local_fn = f'{data_type}-{cycle.strftime("%Y%m%d")}-{cycle.strftime("%H")}-f{int(lead_time.total_seconds() // 3600)}.grib2'
                 file_item = get_yaml_config(
                     {f"{mem_prefix}{local_fn}": f"{location}/{fn}" for fn in file_templates}
                 )

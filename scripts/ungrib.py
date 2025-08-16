@@ -6,14 +6,13 @@ The run script for ungrib.
 from __future__ import annotations
 
 import logging
-import os
 import sys
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))
 
 from iotaa import asset, external, task, tasks
-from uwtools.api.config import get_yaml_config, YAMLConfig
+from uwtools.api.config import get_yaml_config
 from uwtools.api.logging import use_uwtools_logger
 from uwtools.api.ungrib import Ungrib
 
@@ -126,10 +125,10 @@ def run_ungrib(config_file, cycle, key_path):
     ungrib_block = walk_key_path(config=expt_config, key_path=key_path)
     rundir = Path(ungrib_block["ungrib"]["rundir"]).parent / external_model
     summary = get_yaml_config(rundir / "ICS.yaml")
-    gribfiles = [Path(rundir, p) for p in summary.keys()]
+    gribfiles = [Path(rundir, p) for p in summary]
     if ics_or_lbcs == "lbcs":
         lbcs_summary = get_yaml_config(rundir / "LBCS.yaml")
-        gribfiles.extend(Path(rundir, p) for p in lbcs_summary.keys())
+        gribfiles.extend(Path(rundir, p) for p in lbcs_summary)
     ungrib_block["ungrib"]["gribfiles"] = [str(p) for p in gribfiles]
     driver = Ungrib(config=expt_config, cycle=cycle, key_path=key_path)
     yield [asset(x, x.is_file) for x in driver.output["paths"]]
