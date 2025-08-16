@@ -281,6 +281,7 @@ def possible_hpss_configs(
     archive_names: list[str],
     config: Config,
     cycle: datetime,
+    data_type: str,
     file_templates: list[str],
     lead_times: list[timedelta],
     members: list[int],
@@ -292,7 +293,8 @@ def possible_hpss_configs(
         fs_copy_config: dict[str, str] = {}
         for member, lead_time, file_template in product(members, lead_times, file_templates):
             # Don't path join the next line because location won't be a path on disk
-            local_name = f"mem{member:03d}/{file_template}" if member != -999 else file_template
+            local_template = f'{data_type}-{cycle.strftime("%Y%m%d")}-{cycle.strftime("%H")}-f{int(lead_time.total_seconds() // 3600)}.grib2'
+            local_name = f"mem{member:03d}/{local_template}" if member != -999 else file_template
             file_item = get_yaml_config({local_name: f"{location}/{file_template}"})
             context = {
                 "cycle": cycle,
@@ -314,6 +316,7 @@ def possible_hpss_configs(
 def prepare_fs_copy_config(
     config: Config,
     cycle: datetime,
+    data_type: str,
     file_templates: list[str],
     lead_times: list[timedelta],
     locations: list[list | Path | str],
@@ -326,15 +329,17 @@ def prepare_fs_copy_config(
             mem_prefix = f"mem{member:03d}/" if member != -999 else ""
             if isinstance(location, list):
                 if isinstance(file_templates, list) and len(file_templates) == len(location):
+                    local_fn = f'{data_type}-{cycle.strftime("%Y%m%d")}-{cycle.strftime("%H")}-f{int(lead_time.total_seconds() // 3600)}.grib2'
                     file_item = get_yaml_config(
                         {
-                            f"{mem_prefix}{fn}": f"{loc}/{fn}"
+                            f"{mem_prefix}{local_fn}": f"{loc}/{fn}"
                             for loc, fn in zip(location, file_templates)
                         }
                     )
             else:
+                local_fn = f'{data_type}-{cycle.strftime("%Y%m%d")}-{cycle.strftime("%H")}-f{int(lead_time.total_seconds() // 3600)}.grib2'
                 file_item = get_yaml_config(
-                    {f"{mem_prefix}{fn}": f"{location}/{fn}" for fn in file_templates}
+                    {f"{mem_prefix}{local_fn}": f"{location}/{fn}" for fn in file_templates}
                 )
             context = {
                 "cycle": cycle,
@@ -406,6 +411,7 @@ def retrieve_data(
             data_store=store,
             config=config,
             cycle=cycle,
+            data_type=data_type,
             file_templates=file_templates,
             lead_times=lead_times,
             locations=locations,
@@ -427,6 +433,7 @@ def try_data_store(
     config: Config,
     cycle: datetime,
     data_store: str,
+    data_type: str,
     file_templates: list[str],
     lead_times: list[timedelta],
     locations: list[list | Path | str],
@@ -452,6 +459,7 @@ def try_data_store(
             archive_names=archive_names,
             config=config,
             cycle=cycle,
+            data_type=data_type,
             file_templates=file_templates,
             lead_times=lead_times,
             members=members,
@@ -460,6 +468,7 @@ def try_data_store(
         fs_copy_configs = prepare_fs_copy_config(
             config=config,
             cycle=cycle,
+            data_type=data_type,
             file_templates=file_templates,
             lead_times=lead_times,
             locations=locations,
