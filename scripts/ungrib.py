@@ -125,9 +125,12 @@ def run_ungrib(config_file, cycle, key_path):
     yield f"run ungrib for {external_model} {ics_or_lbcs}"
     ungrib_block = walk_key_path(config=expt_config, key_path=key_path)
     rundir = Path(ungrib_block["ungrib"]["rundir"]).parent / external_model
-    summary = get_yaml_config(rundir / f"{ics_or_lbcs.upper()}.yaml")
-    gribfiles = sorted(Path(rundir, p) for p in summary.keys())
-    ungrib_block["ungrib"]["gribfiles"]["files"] = [str(p) for p in gribfiles]
+    summary = get_yaml_config(rundir / "ICS.yaml")
+    gribfiles = [Path(rundir, p) for p in summary.keys()]
+    if ics_or_lbcs == "lbcs":
+        lbcs_summary = get_yaml_config(rundir / "LBCS.yaml")
+        gribfiles.extend(Path(rundir, p) for p in lbcs_summary.keys())
+    ungrib_block["ungrib"]["gribfiles"] = [str(p) for p in gribfiles]
     driver = Ungrib(config=expt_config, cycle=cycle, key_path=key_path)
     yield [asset(x, x.is_file) for x in driver.output["paths"]]
     yield (
