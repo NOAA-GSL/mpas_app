@@ -161,8 +161,6 @@ create_ics:
           config_static_interp: false
         decomposition:
           config_block_decomp_file_prefix: "{{ user.mesh_label }}.graph.info.part."
-        interpolation_control:
-          config_extrap_airtemp: constant
     rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/mpas_ics'
     streams:
       input:
