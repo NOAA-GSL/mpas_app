@@ -162,10 +162,10 @@ def test_regrid_all(tmp_path, ungrib_driver):
 @mark.parametrize("outcome", ["pass", "fail"])
 def test_run_ungrib_gfs(outcome, tmp_path, ungrib_config):
     external_model = ungrib_config["user"]["ics"]["external_model"]
-    orig_rundir = Path(ungrib_config["ungrib_ics"]["ungrib"]["rundir"])
-    target_dir = orig_rundir.parent / external_model
-    target_dir.mkdir(parents=True, exist_ok=True)
-    (target_dir / "ICS.yaml").write_text(repr(get_yaml_config({"dst.grib2": "src.grib2"})))
+    rundir = Path(ungrib_config["ungrib_ics"]["ungrib"]["rundir"])
+    model_dir = rundir.parent / external_model
+    model_dir.mkdir(parents=True, exist_ok=True)
+    (model_dir / "ICS.yaml").write_text(repr(get_yaml_config({"dst.grib2": "src.grib2"})))
     config_file = tmp_path / "experiment.yaml"
     ungrib_config.dump(config_file)
     cycle = datetime(2025, 1, 1, 12, tzinfo=timezone.utc)
@@ -179,13 +179,13 @@ def test_run_ungrib_gfs(outcome, tmp_path, ungrib_config):
             assert not task_state.ready
 
 
-def test_run_ungrib_rrfs(tmp_path, ungrib_config):
+def test_run_ungrib_rrfs_ics(tmp_path, ungrib_config):
     ungrib_config.update_from({"user": {"ics": {"external_model": "RRFS"}}})
     external_model = ungrib_config["user"]["ics"]["external_model"]
-    orig_rundir = Path(ungrib_config["ungrib_ics"]["ungrib"]["rundir"])
-    target_dir = orig_rundir.parent / external_model
-    target_dir.mkdir(parents=True, exist_ok=True)
-    (target_dir / "ICS.yaml").write_text(repr(get_yaml_config({"dst.grib2": "src.grib2"})))
+    rundir = Path(ungrib_config["ungrib_ics"]["ungrib"]["rundir"])
+    model_dir = rundir.parent / external_model
+    model_dir.mkdir(parents=True, exist_ok=True)
+    (model_dir / "ICS.yaml").write_text(repr(get_yaml_config({"dst.grib2": "src.grib2"})))
     config_file = tmp_path / "experiment.yaml"
     ungrib_config.update_from({"user": {"ics": {"external_model": "RRFS"}}})
     ungrib_config.dump(config_file)
@@ -203,11 +203,11 @@ def test_run_ungrib_rrfs(tmp_path, ungrib_config):
 def test_run_ungrib_rrfs_lbcs(tmp_path, ungrib_config):
     ungrib_config.update_from({"user": {"lbcs": {"external_model": "RRFS"}}})
     external_model = ungrib_config["user"]["lbcs"]["external_model"]
-    orig_rundir = Path(ungrib_config["ungrib_lbcs"]["ungrib"]["rundir"])
-    target_dir = orig_rundir.parent / external_model
-    target_dir.mkdir(parents=True, exist_ok=True)
-    (target_dir / "ICS.yaml").write_text(repr(get_yaml_config({"dst_a.grib2": "src.grib2"})))
-    (target_dir / "LBCS.yaml").write_text(repr(get_yaml_config({"dst_b.grib2": "src.grib2"})))
+    rundir = Path(ungrib_config["ungrib_lbcs"]["ungrib"]["rundir"])
+    model_dir = rundir.parent / external_model
+    model_dir.mkdir(parents=True, exist_ok=True)
+    (model_dir / "ICS.yaml").write_text(repr(get_yaml_config({"dst_a.grib2": "src.grib2"})))
+    (model_dir / "LBCS.yaml").write_text(repr(get_yaml_config({"dst_b.grib2": "src.grib2"})))
     config_file = tmp_path / "experiment.yaml"
     ungrib_config.dump(config_file)
     cycle = datetime(2025, 1, 1, 12, tzinfo=timezone.utc)
