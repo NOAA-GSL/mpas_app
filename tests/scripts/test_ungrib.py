@@ -165,7 +165,7 @@ def test_run_ungrib_gfs(outcome, tmp_path, ungrib_config):
     rundir = Path(ungrib_config["ungrib_ics"]["ungrib"]["rundir"])
     model_dir = rundir.parent / external_model
     model_dir.mkdir(parents=True, exist_ok=True)
-    (model_dir / "ICS.yaml").write_text(repr(get_yaml_config({"dst.grib2": "src.grib2"})))
+    get_yaml_config({"dst.grib2": "src.grib2"}).dump(model_dir / "ICS.yaml")
     config_file = tmp_path / "experiment.yaml"
     ungrib_config.dump(config_file)
     cycle = datetime(2025, 1, 1, 12, tzinfo=timezone.utc)
