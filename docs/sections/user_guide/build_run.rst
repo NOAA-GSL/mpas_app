@@ -43,7 +43,7 @@ Default Configuration
 
 The ``user:`` section contains common high-level config options like cycle dates, platform, and tasks to run.
 
-- ``get_ics_data`` and ``get_lbcs_data`` define retrieval of data from AWS.
+- ``get_ics_data`` and ``get_lbcs_data`` define retrieval of data from AWS or disk.
 - ``prepare_grib_ics`` and ``prepare_grib_lbcs`` define GRIB processing with `ungrib <https://uwtools.readthedocs.io/en/main/sections/user_guide/yaml/components/ungrib.html>`_.
 - ``create_ics`` and ``create_lbcs`` define `mpas_init <https://uwtools.readthedocs.io/en/main/sections/user_guide/yaml/components/mpas_init.html>`_ setup.
 - ``forecast`` defines ``atmosphere_model`` config and can be extended for additional physics options.
