@@ -180,8 +180,8 @@ def test_run_ungrib_gfs(outcome, tmp_path, ungrib_config):
 
 
 def test_run_ungrib_rrfs_ics(tmp_path, ungrib_config):
-    ungrib_config.update_from({"user": {"ics": {"external_model": "RRFS"}}})
-    external_model = ungrib_config["user"]["ics"]["external_model"]
+    external_model = "RRFS"
+    ungrib_config.update_from({"user": {"ics": {"external_model": external_model}}})
     rundir = Path(ungrib_config["ungrib_ics"]["ungrib"]["rundir"])
     model_dir = rundir.parent / external_model
     model_dir.mkdir(parents=True, exist_ok=True)
