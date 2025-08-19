@@ -28,10 +28,6 @@ GFS:
 
 RAP:
   ics:
-    user:
-      ics:
-        file_templates: "{{ platform.data.rap.file_templates }}"
-        input_file_path: "{{ platform.data.rap.path }}"
     prepare_grib_ics: &prepare_grib_rap
       ungrib:
         vtable: "{{ user.mpas_app }}/parm/ungrib/Vtable.raphrrr"
@@ -43,10 +39,6 @@ RAP:
               config_nfglevels: 51
               config_nfgsoillevels: 9
   lbcs:
-    user:
-      lbcs:
-        file_templates: "{{ platform.data.rap.file_templates }}"
-        input_file_path: "{{ platform.data.rap.path }}"
     prepare_grib_lbcs:
       <<: *prepare_grib_rap
     create_lbcs:
