@@ -275,7 +275,7 @@ def test_prepare_fs_copy_config_gfs_grib2_aws(data_locations):
 @mark.parametrize("data_set", ["RAP", "GFS", "GDAS"])
 def test_retrieve_data(data_locations, data_set, tmp_path):
     data_stores = ["disk", "aws", "hpss"]
-    remove_args = ("data_stores", "filefmt", "fileset", "inpath", "summary_file")
+    remove_args = ("data_stores", "data_type", "filefmt", "fileset", "inpath", "summary_file")
 
     cycle = datetime.fromisoformat("2025-05-04T00").replace(tzinfo=timezone.utc)
     args = {
