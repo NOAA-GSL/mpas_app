@@ -235,7 +235,7 @@ def test_prepare_fs_copy_config_gefs_grib2_aws(data_locations):
     cycle = datetime.fromisoformat("2025-05-04T00").replace(tzinfo=timezone.utc)
     lead_times = [timedelta(hours=0)]
     expected = {
-        f"mem{mem:03d}/GEFS-{cycle.strftime('%Y%m%d-%H')}-f0.grib2": f"https://noaa-gefs-pds.s3.amazonaws.com/gefs.{cycle.strftime('%Y%m%d')}/{cycle.hour:02d}/atmos/{filelabel}p5/gep{mem:02d}.t00z.{filelabel}.0p50.f000"
+        f"mem{mem:03d}/GEFS-{cycle.strftime('%Y%m%d-%H')}-f000.grib2": f"https://noaa-gefs-pds.s3.amazonaws.com/gefs.{cycle.strftime('%Y%m%d')}/{cycle.hour:02d}/atmos/{filelabel}p5/gep{mem:02d}.t00z.{filelabel}.0p50.f000"
         for mem in members
         for filelabel in ("pgrb2a", "pgrb2b")
     }
@@ -256,7 +256,7 @@ def test_prepare_fs_copy_config_gfs_grib2_aws(data_locations):
     cycle = datetime.fromisoformat("2025-05-04T00").replace(tzinfo=timezone.utc)
     lead_times = [timedelta(hours=lead) for lead in leads]
     expected = {
-        f"GFS-{cycle.strftime('%Y%m%d')}-{cycle.hour:02d}-f{lead}.grib2": f"https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.{cycle.strftime('%Y%m%d')}/{cycle.hour:02d}/atmos/gfs.t{cycle.hour:02d}z.{level}f{lead:03d}.nc"
+        f"GFS-{cycle.strftime('%Y%m%d')}-{cycle.hour:02d}-f{lead:03d}.grib2": f"https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.{cycle.strftime('%Y%m%d')}/{cycle.hour:02d}/atmos/gfs.t{cycle.hour:02d}z.{level}f{lead:03d}.nc"
         for lead in leads
         for level in ("atm", "sfc")
     }
@@ -433,7 +433,7 @@ def test_try_data_store_disk_success(data_locations, tmp_path):
         members=[-999],
         outpath=output_path,
     )
-    expected = [f"GFS-{cycle.strftime('%Y%m%d-%H')}-f{h}.grib2" for h in (6, 12)]
+    expected = [f"GFS-{cycle.strftime('%Y%m%d-%H')}-f{h:03d}.grib2" for h in (6, 12)]
     assert all((output_path / f).is_file() for f in expected)
     assert success
 
