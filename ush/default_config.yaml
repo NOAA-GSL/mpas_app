@@ -61,8 +61,7 @@ prepare_grib_ics:
         - source {{ user.mpas_app }}/load_wflow_modules.sh {{ user.platform }}
         - conda activate ungrib
       executable: ungrib
-    gribfiles:
-      - /path/to/gribfile
+    gribfiles: [ do not edit ]
     start: !datetime '{{ user.first_cycle }}'
     step: !timedelta 6
     stop: !datetime '{{ user.first_cycle }}'
@@ -88,8 +87,7 @@ prepare_grib_lbcs:
         - source {{ user.mpas_app }}/load_wflow_modules.sh {{ user.platform }}
         - conda activate ungrib
       executable: ungrib
-    gribfiles:
-      - /path/to/gribfile
+    gribfiles: [ do not edit ]
     start: !datetime '{{ user.first_cycle }}'
     step: 6
     stop: !datetime '{{ user.last_cycle }}'
