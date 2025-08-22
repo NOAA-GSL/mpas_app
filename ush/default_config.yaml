@@ -17,9 +17,11 @@ user:
   first_cycle: !!timestamp 2023-09-15T00:00:00
   last_cycle: !!timestamp 2023-09-15T00:00:00
   ics:
+    data_stores: aws
     external_model: GFS
     offset_hours: 0
   lbcs:
+    data_stores: aws
     external_model: GFS
     interval_hours: 6
     offset_hours: 0
@@ -59,11 +61,10 @@ prepare_grib_ics:
         - source {{ user.mpas_app }}/load_wflow_modules.sh {{ user.platform }}
         - conda activate ungrib
       executable: ungrib
-    gribfiles:
-      interval_hours: 1
-      max_leadtime: 0
-      offset: !int "{{ user.ics.offset_hours }}"
-      path: /path/to/user/grib/files
+    gribfiles: [ do not edit ]
+    start: !datetime '{{ user.first_cycle }}'
+    step: !timedelta 6
+    stop: !datetime '{{ user.first_cycle }}'
     rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/ungrib_ics'
     vtable: /path/to/user/vtable
   platform:
@@ -86,11 +87,10 @@ prepare_grib_lbcs:
         - source {{ user.mpas_app }}/load_wflow_modules.sh {{ user.platform }}
         - conda activate ungrib
       executable: ungrib
-    gribfiles:
-      interval_hours: !int '{{ user.lbcs.interval_hours }}'
-      max_leadtime: !int "{{ forecast.mpas.length }}" 
-      offset: !int "{{ user.lbcs.offset_hours }}"
-      path: /path/to/user/grib/files
+    gribfiles: [ do not edit ]
+    start: !datetime '{{ user.first_cycle }}'
+    step: 6
+    stop: !datetime '{{ user.last_cycle }}'
     rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/ungrib_lbcs'
     vtable: /path/to/user/vtable
   platform:

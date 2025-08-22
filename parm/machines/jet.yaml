@@ -7,6 +7,10 @@ platform:
     global: /lfs5/BMC/wrfruc/Michael.Barlage/mpas/data/mpas_static
     raphrrr: /mnt/lfs5/BMC/wrfruc/HRRRv5/geog
   hrrr_fix: /misc/whome/role.wrfruc/HRRRv5/fix
+  data:
+    gfs:
+      path: /public/data/grids/gfs/0p25deg/grib2
+      file_templates: '@y@j@H00{{ "%04d" % fcst_hr }}'
 forecast:
   mpas:
     execution:

@@ -117,22 +117,29 @@ def run_ungrib(config_file, cycle, key_path):
     """
     Setup and run the ungrib driver.
     """
-
     expt_config = get_yaml_config(config_file)
+    expt_config.dereference(context={**expt_config, "cycle": cycle})
     ics_or_lbcs = "ics" if "ics" in ".".join(key_path) else "lbcs"
     external_model = expt_config["user"][ics_or_lbcs]["external_model"]
     yield f"run ungrib for {external_model} {ics_or_lbcs}"
-    ungrib_driver = Ungrib(config=config_file, cycle=cycle, key_path=key_path)
-    donefile = ungrib_driver.rundir / "runscript.ungrib.done"
-    yield asset(donefile, donefile.is_file)
+    ungrib_block = walk_key_path(config=expt_config, key_path=key_path)
+    rundir = Path(ungrib_block["ungrib"]["rundir"]).parent / external_model
+    summary = get_yaml_config(rundir / "ICS.yaml")
+    gribfiles = [Path(rundir, p) for p in summary]
+    if ics_or_lbcs == "lbcs":
+        lbcs_summary = get_yaml_config(rundir / "LBCS.yaml")
+        gribfiles.extend(Path(rundir, p) for p in lbcs_summary)
+    ungrib_block["ungrib"]["gribfiles"] = [str(p) for p in gribfiles]
+    driver = Ungrib(config=expt_config, cycle=cycle, key_path=key_path)
+    yield [asset(x, x.is_file) for x in driver.output["paths"]]
     yield (
-        regrid_all(ungrib_driver, walk_key_path(config=expt_config, key_path=key_path)["wgrib2"])
+        regrid_all(driver, walk_key_path(config=expt_config, key_path=key_path)["wgrib2"])
         if external_model == "RRFS"
         else None
     )
     # Run ungrib.
-    logging.info("Running %s in %s", Ungrib.__name__, ungrib_driver.rundir)
-    ungrib_driver.run()
+    logging.info("Running %s in %s", Ungrib.__name__, driver.rundir)
+    driver.run()
 
 
 def main():

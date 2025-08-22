@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
-from unittest.mock import ANY, call, patch
+from pathlib import Path
+from unittest.mock import ANY, Mock, call, patch
 
 import iotaa
 from pytest import fixture, mark
@@ -14,17 +15,27 @@ def ungrib_config(tmp_path):
     tmp_input.mkdir()
     return get_yaml_config(
         {
-            "user": {"ics": {"external_model": "GFS"}},
+            "user": {"ics": {"external_model": "GFS"}, "lbcs": {"external_model": "GFS"}},
             "ungrib_ics": {
                 "ungrib": {
                     "rundir": str(tmp_path),
                     "execution": {"executable": "/path/to/ungrib.exe"},
-                    "gribfiles": {
-                        "interval_hours": 1,
-                        "max_leadtime": 3,
-                        "offset": 0,
-                        "path": str(tmp_path / "input_data"),
-                    },
+                    "gribfiles": [str(tmp_input)],
+                    "start": "2025-07-31T00:00:00",
+                    "step": 6,
+                    "stop": "2025-07-31T00:00:00",
+                    "vtable": "/path/to/vtable",
+                },
+                "wgrib2": {},
+            },
+            "ungrib_lbcs": {
+                "ungrib": {
+                    "rundir": str(tmp_path),
+                    "execution": {"executable": "/path/to/ungrib.exe"},
+                    "gribfiles": [str(tmp_input)],
+                    "start": "2025-07-31T00:00:00",
+                    "step": 6,
+                    "stop": "2025-07-31T00:00:00",
                     "vtable": "/path/to/vtable",
                 },
                 "wgrib2": {},
@@ -138,13 +149,23 @@ def test_regrid_all(tmp_path, ungrib_driver):
     for label in ("AAA", "AAB", "AAC", "AAD"):
         grib_file = tmp_path / f"GRIBFILE.{label}"
         expected_calls.append(call(ungrib_driver, grib_file, {"wgrib2": {}}))
-    with patch.object(ungrib, "merge_vector_fields") as wgrib_task:
+    gribfiles = Mock()
+    gribfiles.ref = [tmp_path / f"GRIBFILE.{label}" for label in ("AAA", "AAB", "AAC", "AAD")]
+    with (
+        patch.object(ungrib.Ungrib, "gribfiles", return_value=gribfiles),
+        patch.object(ungrib, "merge_vector_fields") as wgrib_task,
+    ):
         ungrib.regrid_all(ungrib_driver, {"wgrib2": {}})
         assert expected_calls == wgrib_task.call_args_list
 
 
 @mark.parametrize("outcome", ["pass", "fail"])
 def test_run_ungrib_gfs(outcome, tmp_path, ungrib_config):
+    external_model = ungrib_config["user"]["ics"]["external_model"]
+    rundir = Path(ungrib_config["ungrib_ics"]["ungrib"]["rundir"])
+    model_dir = rundir.parent / external_model
+    model_dir.mkdir(parents=True, exist_ok=True)
+    get_yaml_config({"dst.grib2": "src.grib2"}).dump(model_dir / "ICS.yaml")
     config_file = tmp_path / "experiment.yaml"
     ungrib_config.dump(config_file)
     cycle = datetime(2025, 1, 1, 12, tzinfo=timezone.utc)
@@ -152,13 +173,19 @@ def test_run_ungrib_gfs(outcome, tmp_path, ungrib_config):
     with patch.object(ungrib.Ungrib, "run", side_effect=side_effect) as run:
         task_state = ungrib.run_ungrib(config_file, cycle, ["ungrib_ics"])
         if outcome == "pass":
-            assert task_state.ready
+            assert (tmp_path / "runscript.ungrib.done").exists()
         else:
             run.assert_called_once()
             assert not task_state.ready
 
 
-def test_run_ungrib_rrfs(tmp_path, ungrib_config):
+def test_run_ungrib_rrfs_ics(tmp_path, ungrib_config):
+    external_model = "RRFS"
+    ungrib_config.update_from({"user": {"ics": {"external_model": external_model}}})
+    rundir = Path(ungrib_config["ungrib_ics"]["ungrib"]["rundir"])
+    model_dir = rundir.parent / external_model
+    model_dir.mkdir(parents=True, exist_ok=True)
+    get_yaml_config({"dst.grib2": "src.grib2"}).dump(model_dir / "ICS.yaml")
     config_file = tmp_path / "experiment.yaml"
     ungrib_config.update_from({"user": {"ics": {"external_model": "RRFS"}}})
     ungrib_config.dump(config_file)
@@ -170,4 +197,25 @@ def test_run_ungrib_rrfs(tmp_path, ungrib_config):
     ):
         ungrib.run_ungrib(config_file, cycle, ["ungrib_ics"])
         regrid_all.assert_called_once_with(ANY, ungrib_config["ungrib_ics"]["wgrib2"])
+        run.assert_called_once()
+
+
+def test_run_ungrib_rrfs_lbcs(tmp_path, ungrib_config):
+    external_model = "RRFS"
+    ungrib_config.update_from({"user": {"lbcs": {"external_model": external_model}}})
+    rundir = Path(ungrib_config["ungrib_lbcs"]["ungrib"]["rundir"])
+    model_dir = rundir.parent / external_model
+    model_dir.mkdir(parents=True, exist_ok=True)
+    get_yaml_config({"dst.grib2": "src.grib2"}).dump(model_dir / "ICS.yaml")
+    get_yaml_config({"dst.grib2": "src.grib2"}).dump(model_dir / "LBCS.yaml")
+    config_file = tmp_path / "experiment.yaml"
+    ungrib_config.dump(config_file)
+    cycle = datetime(2025, 1, 1, 12, tzinfo=timezone.utc)
+
+    with (
+        patch.object(ungrib.Ungrib, "run") as run,
+        patch.object(ungrib, "regrid_all", wraps=noop) as regrid_all,
+    ):
+        ungrib.run_ungrib(config_file, cycle, ["ungrib_lbcs"])
+        regrid_all.assert_called_once_with(ANY, ungrib_config["ungrib_lbcs"]["wgrib2"])
         run.assert_called_once()
