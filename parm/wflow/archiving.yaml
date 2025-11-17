@@ -1,0 +1,96 @@
+workflow:
+  tasks:
+    metatask_archive_mpassit:
+      var:
+        day: "{% for h in range(1,(forecast.mpas['length']+23)//24+2) %}{{ ' %d' % h }}{% endfor %}"
+      task_archive_mpassit_day#day#:
+        command:
+          cyclestr:
+            value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; &&
+              cd {{ user.experiment_dir }} &&
+              &MPAS_APP;/scripts/archive_mpassit.sh #day# @Y@m@d@H "$ARCHIVE_DIR"'
+        account: "{{ platform.account }}"
+        partition: "{{ platform.service_partition }}"
+        join:
+          cyclestr:
+            value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H_day#day#.log'
+        walltime: "{{ archiving.mpassit.execution.walltime }}"
+        cores: 1
+        envars:
+          ARCHIVE_DIR:
+            cyclestr:
+              value: '{{ user.hpss_archive_dir }}'
+        dependency:
+          metataskdep:
+            attrs:
+              metatask: post
+
+    task_archive_upp:
+      command:
+        cyclestr:
+          value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; &&
+            cd {{ user.experiment_dir }} &&
+            &MPAS_APP;/scripts/archive_upp.sh @Y@m@d@H "$ARCHIVE_DIR"'
+      account: "{{ platform.account }}"
+      partition: "{{ platform.service_partition }}"
+      join:
+        cyclestr:
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+      walltime: "{{ archiving.upp.execution.walltime }}"
+      cores: 1
+      envars:
+        ARCHIVE_DIR:
+          cyclestr:
+            value: '{{ user.hpss_archive_dir }}'
+      dependency:
+        metataskdep:
+          attrs:
+            metatask: post
+
+    task_archive_tracker:
+      command:
+        cyclestr:
+          value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; &&
+            cd {{ user.experiment_dir }} &&
+            &MPAS_APP;/scripts/archive_tracker.sh @Y@m@d@H "$ARCHIVE_DIR"'
+      account: "{{ platform.account }}"
+      partition: "{{ platform.service_partition }}"
+      join:
+        cyclestr:
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+      walltime: "{{ archiving.tracker.execution.walltime }}"
+      cores: 1
+      envars:
+        ARCHIVE_DIR:
+          cyclestr:
+            value: '{{ user.hpss_archive_dir }}'
+      dependency:
+        taskdep:
+          attrs:
+            task: tracker
+
+    task_archive_init:
+      command:
+        cyclestr:
+          value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; &&
+            cd {{ user.experiment_dir }} &&
+            &MPAS_APP;/scripts/archive_init.sh @Y@m@d@H "$ARCHIVE_DIR"'
+      account: "{{ platform.account }}"
+      partition: "{{ platform.service_partition }}"
+      join:
+        cyclestr:
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+      walltime: "{{ archiving.init.execution.walltime }}"
+      cores: 1
+      envars:
+        ARCHIVE_DIR:
+          cyclestr:
+            value: '{{ user.hpss_archive_dir }}'
+      dependency:
+        or:
+          taskdep:
+            attrs:
+              task: mpas
+          metataskdep:
+            attrs:
+              metatask: post
