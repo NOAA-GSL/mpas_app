@@ -1,0 +1,23 @@
+workflow:
+  tasks:
+    task_archive_tracker:
+      command:
+        cyclestr:
+          value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; &&
+            cd {{ user.experiment_dir }} &&
+            &MPAS_APP;/scripts/archive_tracker.sh @Y@m@d@H "$ARCHIVE_DIR"'
+      account: "{{ platform.account }}"
+      partition: "{{ platform.service_partition }}"
+      join:
+        cyclestr:
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+      walltime: "{{ archiving.tracker.execution.walltime }}"
+      cores: 1
+      envars:
+        ARCHIVE_DIR:
+          cyclestr:
+            value: '{{ user.hpss_archive_dir }}'
+      dependency:
+        taskdep:
+          attrs:
+            task: tracker
