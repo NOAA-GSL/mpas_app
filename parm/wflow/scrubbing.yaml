@@ -14,17 +14,9 @@ workflow:
           cyclestr:
             value: "{{ user.experiment_dir }}/@Y@m@d@H/"
       dependency:
-        and:
-          taskdep:
-            attrs:
-              task: tracker
-          and:
-            metataskdep:
-              attrs:
-                metatask: post
-            taskdep:
-              attrs:
-                task: graphics
+        metataskdep:
+          attrs:
+            metatask: post
     task_scrub_mpas_ics:
       command: 'set -xue ; cd "$SCRUB_PARENT" ; rm -rf mpas_ics'
       account: "{{ platform.account }}"
@@ -39,16 +31,9 @@ workflow:
           cyclestr:
             value: "{{ user.experiment_dir }}/@Y@m@d@H/"
       dependency:
-        and:
-          taskdep_tracker:
-            attrs:
-              task: tracker
-          metataskdep_post:
-            attrs:
-              metatask: post
-          taskdep_graphics:
-            attrs:
-              task: graphics
+        metataskdep_post:
+          attrs:
+            metatask: post
     task_scrub_mpassit:
       command: 'set -xue ; cd "$SCRUB_PARENT" ; rm -rf mpassit'
       account: "{{ platform.account }}"
