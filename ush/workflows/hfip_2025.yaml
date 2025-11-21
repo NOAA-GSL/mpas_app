@@ -8,6 +8,8 @@ user:
     - cold_start.yaml
     - post.yaml
     - graphics.yaml
+    - scrubbing.yaml
+    - archiving.yaml
 
 workflow:
   tasks:
