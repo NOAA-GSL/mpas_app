@@ -3,6 +3,7 @@ user:
     - prepare_grib_ics.ungrib
     - create_ics.mpas_init
     - forecast.mpas
+    - post.upp
   mesh_label: x5.8060930
   workflow_blocks:
     - cold_start.yaml
@@ -17,6 +18,8 @@ workflow:
     task_ungrib_lbcs: !remove
     task_mpas_lbcs: !remove
     task_mpas:
+      cores: !remove
+      nodes: "{{ forecast.mpas.execution.batchargs.nodes }}:ppn={{ forecast.mpas.execution.batchargs.tasks_per_node }}"
       dependency:
         taskdep:
           attrs:
@@ -30,12 +33,12 @@ workflow:
 create_ics:
   mpas_init: &mpas_init
     files_to_copy:
-      QNWFA_QNIFA_SIGMA_MONTHLY.dat: "{{ platform.hrrr_fix }}/../QNWFA_QNIFA_SIGMA_MONTHLY.dat"
       stream_list.atmosphere.diag_ugwp: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.diag_ugwp"
       stream_list.atmosphere.diagnostics: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.diagnostics"
       stream_list.atmosphere.output: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.output"
       stream_list.atmosphere.surface: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.surface"
     files_to_link:
+      QNWFA_QNIFA_SIGMA_MONTHLY.dat: "{{ platform.hrrr_fix }}/../QNWFA_QNIFA_SIGMA_MONTHLY.dat"
       "{{ user.mesh_label }}.ugwp_oro_data.nc": "{{ platform.hrrr_fix }}/{{ user.mesh_label }}.ugwp_oro_data.nc" 
     namelist:
       update_values:
@@ -63,8 +66,9 @@ forecast:
       stream_list.atmosphere.surface: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.surface"
     files_to_link:
       CCN_ACTIVATE.BIN: !remove
+      QNWFA_QNIFA_SIGMA_MONTHLY.dat: "{{ platform.hrrr_fix }}/../QNWFA_QNIFA_SIGMA_MONTHLY.dat"
       "{{ user.mesh_label }}.ugwp_oro_data.nc": "{{ platform.hrrr_fix }}/{{ user.mesh_label }}.ugwp_oro_data.nc" 
-      "NoahmpTable.TBL": "{{ user.mpas_app }}/src/MPAS-Model/NoahmpTable.TBL"
+      # switching to noah - "NoahmpTable.TBL": "{{ user.mpas_app }}/src/MPAS-Model/NoahmpTable.TBL"
     namelist:
       update_values:
         nhyd_model:
@@ -79,7 +83,7 @@ forecast:
           config_rayleigh_damp_u_timescale_days: 2.5
         io:
           config_pio_num_iotasks: 64
-          config_pio_stride: 125
+          config_pio_stride: 150
         limited_area:
           config_apply_lbcs: false
         physics:
@@ -89,12 +93,14 @@ forecast:
           config_gvf_update: true
           config_convection_scheme: cu_grell_freitas
           config_tempo_ml_nc_pbl: true
-          config_lsm_scheme: sf_noahmp
+          config_lsm_scheme: sf_noah
           num_soil_layers: 4
-          config_gfl_sub3d: 1
         physics_lsm_noahmp:
           config_noahmp_iopt_crs: 2
           config_noahmp_iopt_stc: 3
+        printout:
+          config_print_global_minmax_vel: false
+          config_print_detailed_minmax_vel: false
     streams:
       ugwp_oro_data_in:
         filename_template: "{{ user.mesh_label }}.ugwp_oro_data.nc"
@@ -113,6 +119,14 @@ forecast:
         output_interval: 06:00:00
         files:
           - stream_list.atmosphere.diag_ugwp
+      restart:
+        mutable: false
+        type: "input;output"
+        filename_template: "restart.$Y-$M-$D_$h.$m.$s.nc"
+        io_type: "pnetcdf,cdf5"
+        input_interval: initial_only
+        output_interval: "06:00:00"
+        clobber_mode: overwrite
       surface: !remove
       lbc_in: !remove
 
