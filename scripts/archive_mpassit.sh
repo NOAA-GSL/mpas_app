@@ -20,7 +20,7 @@ archive="$archive_dir/$archive_basename"
 listing=$( ls -1 $YMDH/mpassit/*/"$day_prefix"* )
 
 sleep $(( RANDOM / 30000 )).$(( RANDOM % 10000 ))
-hsi mkdir "$archive_dir" || true
+hsi mkdir -p "$archive_dir" || true
 
 htar -hcpvf "$archive" $listing
 

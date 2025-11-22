@@ -17,7 +17,7 @@ copy_to_hpss() {
 }
 
 sleep $(( RANDOM / 30000 )).$(( RANDOM % 10000 ))
-hsi mkdir "$archive_dir" || true
+hsi mkdir -p "$archive_dir" || true
 
 # This file is too large for HTAR so we copy it to HPSS via an "hsi put"
 
