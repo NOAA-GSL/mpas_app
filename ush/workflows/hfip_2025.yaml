@@ -58,7 +58,7 @@ create_ics:
 forecast:
   mpas:
     domain: global
-    length: 120
+    length: 12
     files_to_copy:
       stream_list.atmosphere.diag_ugwp: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.diag_ugwp"
       stream_list.atmosphere.diagnostics: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.diagnostics"
@@ -125,7 +125,7 @@ forecast:
         filename_template: "restart.$Y-$M-$D_$h.$m.$s.nc"
         io_type: "pnetcdf,cdf5"
         input_interval: initial_only
-        output_interval: "06:00:00"
+        output_interval: "1_00:00:00"
         clobber_mode: overwrite
       surface: !remove
       lbc_in: !remove
