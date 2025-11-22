@@ -17,7 +17,15 @@ day_prefix=$( date +"MPAS-A_out.%Y-%m-%d" -d "${YYYY}-${MM}-${DD}t00:00:00 UTC+0
 archive_basename=${YMDH}-mpassit-$( date +"%Y%m%d" -d "${YYYY}-${MM}-${DD}t00:00:00 UTC+0 + $skip_hours hours" ).tar
 
 archive="$archive_dir/$archive_basename"
+
+set +e
 listing=$( ls -1 $YMDH/mpassit/*/"$day_prefix"* )
+set -e
+
+if [[ "${listing:-Q}" == Q ]] ; then
+    echo "No files to archive for day $day_prefix this cycle"
+    exit 0
+fi
 
 sleep $(( RANDOM / 30000 )).$(( RANDOM % 10000 ))
 hsi mkdir -p "$archive_dir" || true
