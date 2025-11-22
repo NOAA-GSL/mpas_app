@@ -58,7 +58,6 @@ create_ics:
 forecast:
   mpas:
     domain: global
-    length: 12
     files_to_copy:
       stream_list.atmosphere.diag_ugwp: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.diag_ugwp"
       stream_list.atmosphere.diagnostics: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.diagnostics"
