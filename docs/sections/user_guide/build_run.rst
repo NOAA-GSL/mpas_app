@@ -170,7 +170,13 @@ Scrubbing (see ``parm/wflow/scrubbing.yaml``) is split by file purpose:
 - task ``scrub_mpassit`` - Deletes the mpassit directories.
 - task ``scrub_init`` - Deletes the init file from the forecast directory.
 
-To disable certain archiving or scrubbing steps, we recommend you edit the relevant file to disable them.
-These are ``parm/wflow/archiving.yaml`` for archiving and ``parm/wflow/scrubbing.yaml`` for scrubbing.
-It is possible to achieve this through ``!remove`` statements, but the dependencies for scrubbing will
-not update if an archiving step is removed.
+To disable scrubbing steps, use the ``!remove`` feature. For example, this disables scrubbing the forecast directory:
+
+.. code-block: yaml
+   workflow:
+     tasks:
+       task_scrub_forecast: !remove
+
+See ``parm/wflow/scrubbing.yaml`` for a list of tasks.
+
+Removing archiving steps has two steps. First, use ``!remove`` to remove tasks (see ``parm/wflow/archiving.yaml`` for a list). Then edit ``parm/wflow/scrubbing.yaml`` to remove any dependencies on the task.
