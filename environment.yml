@@ -3,6 +3,6 @@ channels:
   - conda-forge
   - ufs-community
 dependencies:
-  - metis ==5.1.0.*
+  - metis==5.1.0.*
   - pydantic==2.11.*
   - uwtools==2.9.*
