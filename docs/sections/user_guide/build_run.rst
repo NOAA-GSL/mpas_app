@@ -127,3 +127,50 @@ Post-Processing
 ---------------
 
 ``MPASSIT`` and ``UPP`` are included as submodules on Jet and Hera. Configure them via the user YAML using the same nested structure as above.
+
+Archiving and Scrubbing
+-----------------------
+
+For any experiment of non-trivial size, automatically scrubbing the data is a good practice.
+Presently, archiving and scrubbing must be used at the same time; this may be changed in a future release.
+The reason scrubbing can't be run alone is that the workflow has no way to determine when you're
+done with the data, except by archiving it.
+
+To enable both archiving and scrubbing, add these lines:
+
+.. code-block: yaml
+   user:
+     hpss_archive_dir: /a/path/on/hpss
+     workflow_blocks:
+       - archiving.yaml
+       - scrubbing.yaml
+  
+
+You must replace ``/a/path/on/hpss`` with a valid path on an HPSS archiving system.
+The scripts will use ``hsi`` and ``htar`` to write the data. If the directory doesn't exist,
+the scripts will try to create it.
+
+Archives are split by purpose. In these scripts, ``{CYCLE_YMDH}`` corresponds to the cycle date and time in ten digits; November 14, 2025 at 18:00 UTC would be 2025091418. The ``{FORECAST_YMD}` corresponds to the forecast date as eight digits; November 14, 2025 would be 20250914.
+
+- ``{CYCLE_YMDH}-upp.tar`` - All grib files output by UPP and all small control files input to it. Excludes the combined grib since that is simply the concatenation of UPP output.
+- ``{CYCLE_YMDH}-mpassit-{FORECAST_YMD}.tar`` - All mpassit files from forecast lead times on a given day. This is split by day because of limitations of HTAR.
+- ``init*.nc`` - Not an archive; it is copied directly due to limitations of HTAR. This is the initial state from the forecast directory.
+- ``init*.nc.md5`` - An md5sum of the init file.
+
+Archiving (see ``parm/wflow/archiving.yaml``) is split into one job per archive:
+
+- task ``archive_upp`` - archives UPP output to ``{CYCLE_YMDH}-upp.tar``
+- metatask of ``archive_mpassit_dayN`` - archives mpassit output to ``{CYCLE_YMDH}-mpassit-{FORECAST_YMD}.tar``
+- task ``archive_init`` - archives the init file from the forecast directory and calculates its md5sum
+
+Scrubbing (see ``parm/wflow/scrubbing.yaml``) is split by file purpose:
+
+- task ``scrub_forecast`` - Deletes all diag, history, and restart files from the forecast directory.
+- task ``scrub_mpas_ics`` - Deltes the mpas_ics directory.
+- task ``scrub_mpassit`` - Deletes the mpassit directories.
+- task ``scrub_init`` - Deletes the init file from the forecast directory.
+
+To disable certain archiving or scrubbing steps, we recommend you edit the relevant file to disable them.
+These are ``parm/wflow/archiving.yaml`` for archiving and ``parm/wflow/scrubbing.yaml`` for scrubbing.
+It is possible to achieve this through ``!remove`` statements, but the dependencies for scrubbing will
+not update if an archiving step is removed.
