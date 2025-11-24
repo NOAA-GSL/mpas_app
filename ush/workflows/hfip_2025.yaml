@@ -62,7 +62,6 @@ forecast:
       CCN_ACTIVATE.BIN: !remove
       QNWFA_QNIFA_SIGMA_MONTHLY.dat: "{{ platform.hrrr_fix }}/../QNWFA_QNIFA_SIGMA_MONTHLY.dat"
       "{{ user.mesh_label }}.ugwp_oro_data.nc": "{{ platform.hrrr_fix }}/{{ user.mesh_label }}.ugwp_oro_data.nc" 
-      # switching to noah - "NoahmpTable.TBL": "{{ user.mpas_app }}/src/MPAS-Model/NoahmpTable.TBL"
     namelist:
       update_values:
         nhyd_model:
