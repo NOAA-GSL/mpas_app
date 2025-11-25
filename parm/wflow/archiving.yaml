@@ -4,7 +4,7 @@ workflow:
   tasks:
     metatask_archive_mpassit:
       var:
-        day: "{% for h in range(1,(forecast.mpas['length']+23)//24+2) %}{{ ' %d' % h }}{% endfor %}"
+        day: "{% for h in range(1,(forecast.mpas.length+23)//24+2) %}{{ ' %d' % h }}{% endfor %}"
       task_archive_mpassit_day#day#:
         command:
           cyclestr:
@@ -17,7 +17,7 @@ workflow:
           cyclestr:
             value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H_day#day#.log'
         walltime: "{{ archiving.mpassit.execution.walltime }}"
-        cores: 1
+        cores: !int "{{ archiving.mpassit.execution.cores }}"
         dependency:
           metataskdep:
             attrs:
@@ -35,7 +35,7 @@ workflow:
         cyclestr:
           value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ archiving.upp.execution.walltime }}"
-      cores: 1
+      cores: !int "{{ archiving.upp.execution.cores }}"
       dependency:
         metataskdep:
           attrs:
@@ -53,7 +53,7 @@ workflow:
         cyclestr:
           value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ archiving.init.execution.walltime }}"
-      cores: 1
+      cores: !int "{{ archiving.init.execution.cores }}"
       dependency:
         or:
           taskdep:

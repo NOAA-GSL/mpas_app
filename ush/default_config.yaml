@@ -338,9 +338,6 @@ forecast:
     account: '{{ platform.account }}'
     scheduler: '{{ platform.scheduler }}'
 post:
-  # The output_frequency_check is for the dependency of the first job in the post metatask.
-  # The post won't submit until it sees output this many forecast hours after the time to process.
-  output_frequency_check: "{{ user.forecast.output_interval }}"
   # combined_files is a simple tasks that concatenates grib files. Please see
   # parm/wflow/post.yaml for information on the task.
   compbined_files:
@@ -490,18 +487,22 @@ archiving:
   mpassit:
     execution:
       walltime: 02:59:00
+      cores: 1
   upp:
     execution:
       walltime: 02:59:00
+      cores: 1
   tracker:
     execution:
       walltime: 00:29:00
+      cores: 1
   init:
     execution:
       walltime: 02:59:00
+      cores: 1
 
 scrubber:
   execution:
     cores: 1
     walltime: 00:10:00
-  rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}'
+
