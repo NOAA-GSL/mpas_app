@@ -1,7 +1,9 @@
 workflow:
   tasks:
     task_scrub_forecast:
-      command: 'set -xue ; cd "$SCRUB_PARENT" ; rm -f forecast/diag*nc forecast/history*nc forecast/restart*nc'
+      command:
+        cyclestr:
+          value: 'set -xue ; rm -f "{{ user.experiment_dir }}/@Y@m@d@H/forecast"/{diag,history,restart}*nc'
       account: "{{ platform.account }}"
       partition: "{{ platform.service_partition }}"
       join:
@@ -9,16 +11,14 @@ workflow:
           value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ scrubber.execution.walltime }}"
       cores: !int "{{ scrubber.execution.cores }}"
-      envars:
-        SCRUB_PARENT:
-          cyclestr:
-            value: "{{ user.experiment_dir }}/@Y@m@d@H/"
       dependency:
         metataskdep:
           attrs:
             metatask: post
     task_scrub_mpas_ics:
-      command: 'set -xue ; cd "$SCRUB_PARENT" ; rm -rf mpas_ics'
+      command:
+        cyclestr:
+          value: 'set -xue ; rm -rf "{{ user.experiment_dir }}/@Y@m@d@H/mpas_ics"'
       account: "{{ platform.account }}"
       partition: "{{ platform.service_partition }}"
       join:
@@ -26,16 +26,14 @@ workflow:
           value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ scrubber.execution.walltime }}"
       cores: !int "{{ scrubber.execution.cores }}"
-      envars:
-        SCRUB_PARENT:
-          cyclestr:
-            value: "{{ user.experiment_dir }}/@Y@m@d@H/"
       dependency:
         metataskdep_post:
           attrs:
             metatask: post
     task_scrub_mpassit:
-      command: 'set -xue ; cd "$SCRUB_PARENT" ; rm -rf mpassit'
+      command:
+        cyclestr:
+          value: 'set -xue ; rm -rf "{{ user.experiment_dir }}/@Y@m@d@H/mpassit"'
       account: "{{ platform.account }}"
       partition: "{{ platform.service_partition }}"
       join:
@@ -43,10 +41,6 @@ workflow:
           value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ scrubber.execution.walltime }}"
       cores: !int "{{ scrubber.execution.cores }}"
-      envars:
-        SCRUB_PARENT:
-          cyclestr:
-            value: "{{ user.experiment_dir }}/@Y@m@d@H/"
       dependency:
         and:
           metataskdep_post:
@@ -56,7 +50,9 @@ workflow:
             attrs:
               metatask: archive_mpassit
     task_scrub_init:
-      command: 'set -xue ; cd "$SCRUB_PARENT" ; rm -f forecast/*init*nc'
+      command:
+        cyclestr:
+          value: 'set -xue ; rm -rf "{{ user.experiment_dir }}/@Y@m@d@H/forecast"/*init*nc'
       account: "{{ platform.account }}"
       partition: "{{ platform.service_partition }}"
       join:
@@ -64,10 +60,6 @@ workflow:
           value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ scrubber.execution.walltime }}"
       cores: !int "{{ scrubber.execution.cores }}"
-      envars:
-        SCRUB_PARENT:
-          cyclestr:
-            value: "{{ user.experiment_dir }}/@Y@m@d@H/"
       dependency:
         and:
           metataskdep:
