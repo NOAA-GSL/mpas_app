@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 forecast_dir="$1"
 start_time="$2"
