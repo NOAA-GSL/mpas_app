@@ -42,7 +42,7 @@ workflow:
                 shell: /bin/bash
               command:
                 cyclestr:
-                  value: '{{ user.mpas_app }}/ush/output_is_available_for.sh {{ user.experiment_dir }}/@Y@m@d@H/forecast @Y-@m-@d_@H:00:00 #fhr# {{ post.output_frequency_check }}'
+                  value: '{{ user.mpas_app }}/ush/output_is_available_for.sh {{ user.experiment_dir }}/@Y@m@d@H/forecast @Y-@m-@d_@H:00:00 #fhr# {{ user.forecast.output_interval }}'
 
       task_upp_#fhr#:
         command:
