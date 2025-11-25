@@ -22,7 +22,7 @@ set +e
 listing=$( ls -1 $YMDH/mpassit/*/"$day_prefix"* )
 set -e
 
-if [[ "${listing:-Q}" == Q ]] ; then
+if [[ -z "${listing:-}" ]] ; then
     echo "No files to archive for day $day_prefix this cycle"
     exit 0
 fi
