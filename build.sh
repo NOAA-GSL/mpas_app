@@ -146,6 +146,21 @@ install_upp () {
   )
 }
 
+install_tracker () {
+  echo "=> Building the GFDL Vortex Tracker"
+  (
+    cd "$MPAS_APP_DIR/src/GFDL-VortexTracker/src/"
+    if [[ "$DEBUG" == false ]] ; then
+      export BUILD_TYPE=Release
+    else
+      export BUILD_TYPE=Debug
+    fi
+    ./build_all_cmake.sh
+    mkdir "$MPAS_APP_DIR/exec"
+    cp -v ../exec/*.x "$MPAS_APP_DIR/exec/."
+  )
+}
+
 prepare_conda () {
   install_conda
   test $CONDA_ONLY == true && exit 0
@@ -304,4 +319,5 @@ install_mpas init_atmosphere
 install_mpas atmosphere
 install_mpassit
 install_upp
+install_tracker
 echo "=> Ready"
