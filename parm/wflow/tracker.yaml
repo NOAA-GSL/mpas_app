@@ -3,8 +3,14 @@ workflow:
     task_tracker:
       command:
         cyclestr:
-          value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; &&
-            cd {{ user.experiment_dir }}/@Y@m@d@H &&
+          value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; &amp;&amp;
+            cd {{ user.experiment_dir }}/@Y@m@d@H &amp;&amp;
+            /usr/bin/env TRACKER_DIR="&MPAS_APP;"
+                         MPISERIAL="{{ tracker.execution.mpiserial }}"
+                         SYNDAT_PREFIX="{{ tracker.execution.syndat_prefix }}"
+                         MPICMD="{{ tracker.execution.mpicmd }}
+                         FHOUR_STEP="{{ tracker.execution.fhour_step }}"
+                         FORECAST_LENGTH="{{ forecast.mpas.length }}"
             &MPAS_APP;/scripts/run_tracker.sh @Y@m@d@H'
       account: "{{ platform.account }}"
       join:
@@ -14,25 +20,6 @@ workflow:
       nodes: "{{ tracker.execution.batchargs.nodes }}:ppn={{ tracker.execution.batchargs.tasks_per_node }}"
       exclusive: "True"
       partition: "{{ post.upp.execution.batchargs.partition }}"
-      envars:
-        TRACKER_DIR:
-          cyclestr:
-            value: '{{ tracker.execution.tracker_dir }}'
-        MPISERIAL:
-          cyclestr:
-            value: '{{ tracker.execution.mpiserial }}'
-        SYNDAT_PREFIX:
-          cyclestr:
-            value: '{{ tracker.execution.syndat_prefix }}'
-        MPICMD:
-          cyclestr:
-            value: '{{ tracker.execution.mpicmd }}'
-        FHOUR_STEP:
-          cyclestr:
-            value: '{{ tracker.execution.fhour_step }}'
-        FORECAST_LENGTH:
-          cyclestr:
-            value: '{{ forecast.mpas.length }}'
       dependency:
         metataskdep:
           attrs:
