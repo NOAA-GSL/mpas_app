@@ -2,16 +2,16 @@
 
 set -xue
 
-YMDH=$1
+yyyymmddhh=$1
 archive_dir=$2
 
 hsi mkdir -p "$archive_dir" || true
 
-archive="$archive_dir"/${YMDH}-upp.tar
+archive="$archive_dir"/${yyyymmddhh}-upp.tar
 
 listing=$(
-    ls -1 $YMDH/upp/*/*GrbF* $YMDH/upp/*/itag \
-          $YMDH/upp/000/*dat $YMDH/upp/000/*txt $YMDH/upp/000/*xml $YMDH/upp/000/params_grib2_tbl_new \
+    ls -1 $yyyymmddhh/upp/*/*GrbF* $yyyymmddhh/upp/*/itag \
+          $yyyymmddhh/upp/000/*dat $yyyymmddhh/upp/000/*txt $yyyymmddhh/upp/000/*xml $yyyymmddhh/upp/000/params_grib2_tbl_new \
  )
 
 htar -chpvf "$archive" $listing
