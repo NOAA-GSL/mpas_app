@@ -27,7 +27,6 @@ if [[ "${listing:-Q}" == Q ]] ; then
     exit 0
 fi
 
-sleep $(( RANDOM / 30000 )).$(( RANDOM % 10000 ))
 hsi mkdir -p "$archive_dir" || true
 
 htar -hcpvf "$archive" $listing
