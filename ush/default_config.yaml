@@ -62,12 +62,12 @@ prepare_grib_ics:
         - source {{ user.mpas_app }}/load_wflow_modules.sh {{ user.platform }}
         - conda activate ungrib
       executable: ungrib
-    rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/ungrib_ics'
-    vtable: /path/to/user/vtable
     gribfiles: [ do not edit ]
     start: !datetime '{{ cycle }}'
     step: !timedelta 6
     stop: !datetime '{{ cycle }}'
+    rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/ungrib_ics'
+    vtable: /path/to/user/vtable
   platform:
     account: '{{ platform.account }}'
     scheduler: '{{ platform.scheduler }}'
