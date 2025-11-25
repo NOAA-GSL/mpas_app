@@ -156,7 +156,7 @@ install_tracker () {
       export BUILD_TYPE=Debug
     fi
     ./build_all_cmake.sh
-    mkdir "$MPAS_APP_DIR/exec"
+    test -d "$MPAS_APP_DIR/exec" || mkdir "$MPAS_APP_DIR/exec"
     cp -v ../exec/*.x "$MPAS_APP_DIR/exec/."
   )
 }
