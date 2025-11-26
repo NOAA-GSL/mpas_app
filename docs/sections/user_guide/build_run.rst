@@ -142,7 +142,6 @@ To enable both archiving and scrubbing, add these lines:
        - archiving.yaml
        - scrubbing.yaml
   
-
 You must replace ``/a/path/on/hpss`` with a valid path on an HPSS archiving system. The scripts will use ``hsi`` and ``htar`` to write the data. If the directory doesn't exist, the scripts will try to create it.
 
 Archives are split by purpose. In these scripts, ``{CYCLE_YMDH}`` corresponds to the cycle date and time in ten digits; November 14, 2025 at 18:00 UTC would be 2025091418. The ``{FORECAST_YMD}`` corresponds to the forecast date as eight digits; November 14, 2025 would be 20250914.
