@@ -145,7 +145,7 @@ To enable both archiving and scrubbing, add these lines:
 
 You must replace ``/a/path/on/hpss`` with a valid path on an HPSS archiving system. The scripts will use ``hsi`` and ``htar`` to write the data. If the directory doesn't exist, the scripts will try to create it.
 
-Archives are split by purpose. In these scripts, ``{CYCLE_YMDH}`` corresponds to the cycle date and time in ten digits; November 14, 2025 at 18:00 UTC would be 2025091418. The ``{FORECAST_YMD}` corresponds to the forecast date as eight digits; November 14, 2025 would be 20250914.
+Archives are split by purpose. In these scripts, ``{CYCLE_YMDH}`` corresponds to the cycle date and time in ten digits; November 14, 2025 at 18:00 UTC would be 2025091418. The ``{FORECAST_YMD}`` corresponds to the forecast date as eight digits; November 14, 2025 would be 20250914.
 
 - ``{CYCLE_YMDH}-upp.tar`` - All grib files output by UPP and all small control files input to it. Excludes the combined grib since that is simply the concatenation of UPP output.
 - ``{CYCLE_YMDH}-mpassit-{FORECAST_YMD}.tar`` - All mpassit files from forecast lead times on a given day. This is split by day because of limitations of HTAR.
