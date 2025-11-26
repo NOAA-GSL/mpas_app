@@ -469,3 +469,22 @@ graphics:
     wait_between_output: 25
     zip_file_path: "{{ user.experiment_dir }}/${CYCLE}/nclprd"
 
+archiving:
+  mpassit:
+    execution:
+      walltime: 02:59:00
+      cores: 1
+  upp:
+    execution:
+      walltime: 02:59:00
+      cores: 1
+  init:
+    execution:
+      walltime: 02:59:00
+      cores: 1
+
+scrubber:
+  execution:
+    cores: 1
+    walltime: 00:10:00
+

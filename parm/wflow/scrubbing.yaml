@@ -1,0 +1,70 @@
+workflow:
+  tasks:
+    task_scrub_forecast:
+      command:
+        cyclestr:
+          value: 'set -xue ; rm -f "{{ user.experiment_dir }}/@Y@m@d@H/forecast"/{diag,history,restart}*nc'
+      account: "{{ platform.account }}"
+      partition: "{{ platform.service_partition }}"
+      join:
+        cyclestr:
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+      walltime: "{{ scrubber.execution.walltime }}"
+      cores: !int "{{ scrubber.execution.cores }}"
+      dependency:
+        metataskdep:
+          attrs:
+            metatask: post
+    task_scrub_mpas_ics:
+      command:
+        cyclestr:
+          value: 'set -xue ; rm -rf "{{ user.experiment_dir }}/@Y@m@d@H/mpas_ics"'
+      account: "{{ platform.account }}"
+      partition: "{{ platform.service_partition }}"
+      join:
+        cyclestr:
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+      walltime: "{{ scrubber.execution.walltime }}"
+      cores: !int "{{ scrubber.execution.cores }}"
+      dependency:
+        metataskdep_post:
+          attrs:
+            metatask: post
+    task_scrub_mpassit:
+      command:
+        cyclestr:
+          value: 'set -xue ; rm -rf "{{ user.experiment_dir }}/@Y@m@d@H/mpassit"'
+      account: "{{ platform.account }}"
+      partition: "{{ platform.service_partition }}"
+      join:
+        cyclestr:
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+      walltime: "{{ scrubber.execution.walltime }}"
+      cores: !int "{{ scrubber.execution.cores }}"
+      dependency:
+        and:
+          metataskdep_post:
+            attrs:
+              metatask: post
+          metataskdep_mpassit:
+            attrs:
+              metatask: archive_mpassit
+    task_scrub_init:
+      command:
+        cyclestr:
+          value: 'set -xue ; rm -rf "{{ user.experiment_dir }}/@Y@m@d@H/forecast"/*init*nc'
+      account: "{{ platform.account }}"
+      partition: "{{ platform.service_partition }}"
+      join:
+        cyclestr:
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+      walltime: "{{ scrubber.execution.walltime }}"
+      cores: !int "{{ scrubber.execution.cores }}"
+      dependency:
+        and:
+          metataskdep:
+            attrs:
+              metatask: post
+          taskdep:
+            attrs:
+              task: archive_init
