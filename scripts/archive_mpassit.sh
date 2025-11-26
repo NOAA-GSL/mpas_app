@@ -8,13 +8,12 @@ archive_dir=$3
 
 skip_hours=$(( ( day - 1 ) * 24 ))
 
-YYYY=${yyyymmddhh:0:4}
-MM=${yyyymmddhh:4:2}
-DD=${yyyymmddhh:6:2}
-HH=${yyyymmddhh:8:2}
+yyyy=${yyyymmddhh:0:4}
+mm=${yyyymmddhh:4:2}
+dd=${yyyymmddhh:6:2}
 
-day_prefix=$( date +"MPAS-A_out.%Y-%m-%d" -d "${YYYY}-${MM}-${DD}t00:00:00 UTC+0 + $skip_hours hours" )
-archive_basename=${yyyymmddhh}-mpassit-$( date +"%Y%m%d" -d "${YYYY}-${MM}-${DD}t00:00:00 UTC+0 + $skip_hours hours" ).tar
+day_prefix=$( date +"MPAS-A_out.%Y-%m-%d" -d "${yyyy}-${mm}-${dd}t00:00:00 UTC+0 + $skip_hours hours" )
+archive_basename=${yyyymmddhh}-mpassit-$( date +"%Y%m%d" -d "${yyyy}-${mm}-${dd}t00:00:00 UTC+0 + $skip_hours hours" ).tar
 
 archive="$archive_dir/$archive_basename"
 
