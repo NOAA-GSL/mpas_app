@@ -446,6 +446,19 @@ post:
         nampgb:
           numx: 2
     rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/upp/{{ "%03d" % (leadtime.total_seconds() / 3600) }}'
+tracker:
+  execution:
+    batchargs:
+      walltime: 00:12:00
+      nodes: 1
+      tasks_per_node: 1
+      exclusive: true
+latlon_regrid:
+  new_grid: "latlon -100:3333:0.03 -10:2666:0.03"
+  execution:
+    batchargs:
+      walltime: 00:12:00
+      cores: 12
 graphics:
   # the graphics task calls a bash run script that runs pygraf
   execution:
@@ -468,4 +481,27 @@ graphics:
     tiles: full
     wait_between_output: 25
     zip_file_path: "{{ user.experiment_dir }}/${CYCLE}/nclprd"
+
+archiving:
+  mpassit:
+    execution:
+      walltime: 02:59:00
+      cores: 1
+  upp:
+    execution:
+      walltime: 02:59:00
+      cores: 1
+  tracker:
+    execution:
+      walltime: 00:29:00
+      cores: 1
+  init:
+    execution:
+      walltime: 02:59:00
+      cores: 1
+
+scrubber:
+  execution:
+    cores: 1
+    walltime: 00:10:00
 
