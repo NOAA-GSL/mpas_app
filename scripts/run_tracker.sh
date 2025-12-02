@@ -1,98 +1,71 @@
-#! /bin/bash
+#!/bin/bash
 
-set -ue
+set -uex
 
+ymdh="$1"
+syndat_prefix="$2"
+mpicmd="$3"
+fhour_step="$4"
+fhour_last="$5"
+mpas_app="$6"
+
+set +x
 module purge
-module use "$TRACKER_DIR/modulefiles"
+module use "$mpas_app/src/GFDL-VortexTracker/modulefiles"
 module load ursa
 module load wgrib2
 module load grib-util
 module list
-
 set -x
 
-ymdh="$1"
 mpas_upp=../upp
-syndat_prefix="$SYNDAT_PREFIX"
 fhour_start=0
-fhour_step="$FHOUR_STEP"
-fhour_last="$FORECAST_LENGTH"
-grid="-new_grid latlon -100:3333:0.03 -10:2666:0.03"
-tracker="$TRACKER_DIR/exec/gettrk.x"
-mpiserial="$MPISERIAL"
-mpicmd="$MPICMD"
 
-rm -rf tracker
-mkdir tracker
+tracker="$mpas_app/exec/gettrk.x"
+basin_list="L" # FIXME: MOVE TO YAML
+
+#rm -rf tracker
+#mkdir tracker
 cd tracker
+
+rm -f fort.*
+rm -f *.atcfunix
+rm -f allvit tcvit_rsmc_storms.txt tracker.log
 
 ####
 
 ulimit -s unlimited
 
-CC=${ymdh:0:2}
-YY=${ymdh:2:2}
-MM=${ymdh:4:2}
-DD=${ymdh:6:2}
-HH=${ymdh:8:2}
+cc=${ymdh:0:2}
+yy=${ymdh:2:2}
+mm=${ymdh:4:2}
+dd=${ymdh:6:2}
+hh=${ymdh:8:2}
 
-syndat=${syndat_prefix}.$CC$YY
-if ( ! grep -E "^.....[0-49][0-9]L ......... $CC$YY$MM$DD $HH"  $syndat > allvit ) ; then
-    echo "No Atlantic storms. There is nothing to track."
+syndat=${syndat_prefix}.$cc$yy
+if ( ! grep -E "^.....[0-49][0-9][$basin_list] ......... $cc$yy$mm$dd $hh"  $syndat > allvit ) ; then
+    echo "No storms in basin list \"$basin_list\". There is nothing to track."
     echo "Delivering an empty track."
     cat /dev/null >  mpas.trak.atcfunix
     exit 0
 fi
+
 ln -sf allvit tcvit_rsmc_storms.txt
-
-opts='-set_grib_type c2 -new_grid_winds grid -new_grid_vectors "UGRD:VGRD" -new_grid_interpolation neighbor'
-
-PARMlistp1="UGRD:850|UGRD:700|UGRD:500|VGRD:850|VGRD:700|VGRD:500|UGRD:10 m a|VGRD:10 m a|ABSV:850|ABSV:700|MSLET|MSLP|MSLMA|mean sea|sea level"
-PARMlistp2="HGT:900|HGT:850|HGT:800|HGT:750|HGT:700|HGT:650|HGT:600|HGT:550|HGT:500|HGT:450|HGT:400"
-PARMlistp3="HGT:350|HGT:300|HGT:250|HGT:200|TMP:500|TMP:450|TMP:400|TMP:350|TMP:300|TMP:250|TMP:200"
-PARMlist=${PARMlistp1}"|"${PARMlistp2}"|"${PARMlistp3}
-
-rm -f ../fort.15 # list of forecast minutes
 
 i=0
 for fhr in $( seq $fhour_start $fhour_step $fhour_last ) ; do
     i=$(( i + 1 ))
     fmin=$(( fhr * 60 ))
     printf '%4d %5d\n' $i $fmin >> fort.15
-    
-    grib2d=$( printf "%s/%03d/%s%02d" "$mpas_upp" $fhr "2DFLD.GrbF" $fhr )
-    gribprs=$( printf "%s/%03d/%s%02d" "$mpas_upp" $fhr "PRSLEV.GrbF" $fhr )
-
-    if [[ ! -s "$grib2d" || ! -s "$gribprs" ]] ; then
-        echo "No file at time $fhr" 1>&2
-        break
-    fi
-
-    latlon2d=$( printf latlon_2d_%03d.grb2 $fhr )
-    latlonprs=$( printf latlon_prs_%03d.grb2 $fhr )
-    final=$( printf mpas.trak.all.$CC$YY$MM$DD$HH.f$( printf %05d $fmin ) )
-    
-    echo wgrib2 -s $grib2d \| grep -E "'$PARMlist'" \| wgrib2 -i $grib2d $opts -new_grid latlon -100:3333:0.03 -10:2666:0.03 $latlon2d >> cmdfile1
-    echo wgrib2 -s $gribprs \| grep -E "'$PARMlist'" \| wgrib2 -i $gribprs $opts -new_grid latlon -100:3333:0.03 -10:2666:0.03 $latlonprs >> cmdfile1
-
-    echo "cat $latlon2d $latlonprs > $final ; grb2index $final $final.ix" >> cmdfile2
 done
-
-# Subset the grib files:
-time $mpicmd "$mpiserial" -m cmdfile1 < /dev/null
-
-# Merge 2d and pressure grib files. Generate index files.
-time $mpicmd "$mpiserial" -m cmdfile2 < /dev/null
-
-rm -f latlon_2d* latlon_prs*
 
 cat<<EOF > namelist.gettrk
 &datein
-    inp%bcc = ${CC}
-    inp%byy = ${YY}
-    inp%bmm = ${MM}
-    inp%bdd = ${DD}
-    inp%bhh = ${HH}
+    inp%bcc = ${cc}
+    inp%byy = ${yy}
+    inp%bmm = ${mm}
+    inp%bdd = ${dd}
+    inp%bhh = ${hh}
     inp%model = 17
     inp%modtyp = 'regional'
     inp%lt_units = 'hours'
@@ -103,7 +76,7 @@ cat<<EOF > namelist.gettrk
 &atcfinfo
     atcfnum = 81
     atcfname = 'MPAS'
-    atcfymdh = ${CC}${YY}${MM}${DD}${HH}
+    atcfymdh = ${cc}${yy}${mm}${dd}${hh}
     atcffreq = 100
 /
 

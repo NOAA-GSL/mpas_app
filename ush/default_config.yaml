@@ -447,19 +447,18 @@ post:
           numx: 2
     rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/upp/{{ "%03d" % (leadtime.total_seconds() / 3600) }}'
 tracker:
-  control_file: "{{ user.mpas_app }}/parm/upp/postxconfig-NT-rrfs_mpas.txt"
   execution:
     batchargs:
       walltime: 00:12:00
       nodes: 1
-      tasks_per_node: 32
-      fhour_step: 6
-      native:
-        - --exclusive
-    tracker_dir: /scratch3/BMC/wrfruc/Samuel.Trahan/mpashfip/tracker-hafs-211
-    mpiserial: /scratch3/BMC/gsd-fv3-dev/role.rtgsd-fv3-dev/merge-hafs-and-gfs/mpiserial/mpiserial
-    syndat_prefix: /scratch3/HFIP/hwrfv3/noscrub/input/SYNDAT-PLUS/syndat_tcvitals
-    mpicmd: 'srun -l'
+      tasks_per_node: 1
+      exclusive: true
+latlon_regrid:
+  new_grid: "latlon -100:3333:0.03 -10:2666:0.03"
+  execution:
+    batchargs:
+      walltime: 00:12:00
+      cores: 12
 graphics:
   # the graphics task calls a bash run script that runs pygraf
   execution:
