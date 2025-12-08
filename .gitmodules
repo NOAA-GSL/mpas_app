@@ -10,3 +10,7 @@
 [submodule "ush/pygraf"]
 	path = ush/pygraf
 	url = https://github.com/NOAA-GSL/pygraf.git
+[submodule "src/GFDL-VortexTracker"]
+	path = src/GFDL-VortexTracker
+	url = https://github.com/hafs-community/gfdl-tracker
+	branch = feature/hafsv2p2_baseline
