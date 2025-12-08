@@ -13,7 +13,8 @@ workflow:
                       "{{ platform.mpicmd }}"
                       "#fhr#"
                       "{{ latlon_regrid.new_grid }}"
-                      "&MPAS_APP;"'
+                      "&MPAS_APP;"
+                      '
         join:
           cyclestr:
               value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
@@ -28,7 +29,11 @@ workflow:
     task_tracker:
       command:
         cyclestr:
-          value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; &amp;&amp;
+          value: '
+            source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; &amp;&amp;
+            module purge &amp;&amp;
+            module use &MPAS_APP;/src/GFDL-VortexTracker/modulefiles &amp;&amp;
+            module load &PLATFORM; &amp;&amp;
             cd {{ user.experiment_dir }}/@Y@m@d@H &amp;&amp;
             &MPAS_APP;/scripts/run_tracker.sh
               @Y@m@d@H
@@ -36,7 +41,14 @@ workflow:
               "{{ platform.mpicmd }}"
               "{{ user.forecast.output_interval }}"
               "{{ forecast.mpas.length }}"
-              "&MPAS_APP;"'
+              "&MPAS_APP;"
+              "{{ tracker.eastbd }}"
+              "{{ tracker.westbd }}"
+              "{{ tracker.northbd }}"
+              "{{ tracker.southbd }}"
+              "{{ tracker.atcfname }}"
+              "{{ tracker.basin_list }}"
+              '
       account: "{{ platform.account }}"
       join:
         cyclestr:

@@ -5,28 +5,54 @@ set -uex
 ymdh="$1"
 syndat_prefix="$2"
 mpicmd="$3"
-fhour_step="$4"
-fhour_last="$5"
+fhour_step="$4" # 6
+fhour_last="$5" # 120
 mpas_app="$6"
-
-set +x
-module purge
-module use "$mpas_app/src/GFDL-VortexTracker/modulefiles"
-module load ursa
-module load wgrib2
-module load grib-util
-module list
-set -x
+eastbd="$7" # 3313
+westbd="$8" # 20
+northbd="$9" # 2646
+southbd="${10}" # 20
+atcfname="${11}" # MPAS
+basin_list="${12}" # L
+platform="${13}" # ursa
 
 mpas_upp=../upp
 fhour_start=0
 
 tracker="$mpas_app/exec/gettrk.x"
-basin_list="L" # FIXME: MOVE TO YAML
 
-#rm -rf tracker
-#mkdir tracker
 cd tracker
+
+valid_basins='ABCELPQSW'
+if [[ ! "$basin_list" =~ [$valid_basins] ]] ; then
+    set +x
+    echo "Invalid basin in list \"$basin_list\". Valid basins are: \"$valid_basins\" (Q is exceptionally rare)."
+    exit 2
+fi
+
+# Some sanity checks. More could be added, but these detected my mistakes.
+min_width_height=80
+if ! [[ "$eastbd$westbd$northbd$southbd" =~ [0-9]+ ]] ; then
+    set +x
+    echo "Bounds must all be positive numbers. Got: east=$eastbd west=$westbd north=$northbd south=$southbd"
+    exit 2
+elif (( eastbd < westbd )) ; then
+    set +x
+    echo "East and west bound are probably switched. East bound ($eastbd) is less than west bound ($westbd)"
+    exit 2
+elif (( eastbd < westbd+min_width_height )) ; then
+    set +x
+    echo "East and west bound are close together ($eastbd vs $westbd). Recommend at least $min_width_height points."
+    exit 2
+elif (( northbd < southbd )) ; then
+    set +x
+    echo "North and south bound are probably switched. North bound ($northbd) is less than south bound ($southbd)."
+    exit 2
+elif (( northbd < southbd+min_width_height )) ; then
+    set +x
+    echo "North and south bound are close together. Recommend at least $min_width_height points."
+    exit 2
+fi
 
 rm -f fort.*
 rm -f *.atcfunix
@@ -75,16 +101,16 @@ cat<<EOF > namelist.gettrk
 
 &atcfinfo
     atcfnum = 81
-    atcfname = 'MPAS'
+    atcfname = '$atcfname'
     atcfymdh = ${cc}${yy}${mm}${dd}${hh}
     atcffreq = 100
 /
 
 &trackerinfo
-    trkrinfo%eastbd = 3313,
-    trkrinfo%westbd = 20,
-    trkrinfo%northbd = 2646,
-    trkrinfo%southbd = 20,
+    trkrinfo%eastbd = $eastbd,
+    trkrinfo%westbd = $westbd,
+    trkrinfo%northbd = $northbd,
+    trkrinfo%southbd = $southbd,
     trkrinfo%contint = 100.0
     trkrinfo%type = 'tracker'
     trkrinfo%mslpthresh = 0.0015

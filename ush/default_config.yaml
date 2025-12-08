@@ -447,6 +447,12 @@ post:
           numx: 2
     rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/upp/{{ "%03d" % (leadtime.total_seconds() / 3600) }}'
 tracker:
+  basin_list: "L"
+  eastbd: 3313
+  westbd: 20
+  northbd: 2646
+  southbd: 20
+  atcfname: "MPAS"
   execution:
     batchargs:
       walltime: 00:12:00

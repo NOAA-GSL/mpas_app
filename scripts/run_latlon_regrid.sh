@@ -5,14 +5,10 @@ set -uex
 ymdh="$1"
 mpicmd="$2"
 fhr=$(( "10#$3" ))
-#new_grid="latlon -100:3333:0.03 -10:2666:0.03"
 new_grid="$4"
 mpas_app="$5"
 
 set +x
-module purge
-module use "$mpas_app/src/GFDL-VortexTracker/modulefiles"
-module load ursa
 module load wgrib2
 module load grib-util
 module list
@@ -57,6 +53,3 @@ $mpicmd -n 1 wgrib2 -i "$gribprs" $opts -new_grid $new_grid "$latlonprs" < "$lat
 
 cat "$latlon2d" "$latlonprs" > "$final"
 grb2index "$final" "$final.ix"
-
-#rm -f "$latlon2d"
-#rm -f "$latlonprs"
