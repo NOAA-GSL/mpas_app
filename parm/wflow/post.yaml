@@ -37,12 +37,12 @@ workflow:
             taskdep:
               attrs:
                 task: mpas
-            sh_find_files:
+            sh_output_is_available_for:
               attrs:
                 shell: /bin/bash
               command:
                 cyclestr:
-                  value: 'fh=$((10##fhr# + 6 )) ; timestamp=$(date -d "@H:@M:@S @Y-@m-@d +$fh hour" "+%F_%T" ) ; find {{ user.experiment_dir }}/@Y@m@d@H/forecast/[dh]*.${timestamp}.nc 2>/dev/null |  test $(wc -l) == 2'
+                  value: '{{ user.mpas_app }}/ush/output_is_available_for.sh {{ user.experiment_dir }}/@Y@m@d@H/forecast @Y-@m-@dt@H:00:00 #fhr# {{ user.forecast.output_interval }}'
 
       task_upp_#fhr#:
         command:
