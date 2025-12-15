@@ -11,12 +11,12 @@ from iotaa import asset, task, tasks
 
 from uwtools.config.formats.yaml import YAMLConfig
 from uwtools.config.formats.nml import NMLConfig
-from uwtools.drivers.driver import DriverCycleBased
+from uwtools.drivers.driver import Assets, DriverCycleBased
 from uwtools.strings import STR
 from uwtools.utils.file import writable
 from uwtools.utils.processing import execute
 from uwtools.utils.tasks import file, symlink
-
+from ush.validation import TrackerNamelist
 
 
 class GFDLTracker(DriverCycleBased):
@@ -83,7 +83,7 @@ class GFDLTracker(DriverCycleBased):
     @task
     def input_vitals(self):
         """
-        Theh TC vitals input data
+        The TC vitals input data
         """
         fn = "allvit"
         yield self.taskname("TC vitals input file {fn}")
@@ -92,18 +92,18 @@ class GFDLTracker(DriverCycleBased):
         tcvitals = Path(self.config["tcvitals"])
         yield file(tcvitals)
         datestr = self.cycle.strftime("%Y%m%d %H")
-        data = {}
+        basins = self.config["basins"]
+        storms = []
         with open(tcvitals, "r", encoding="utf-8") as f:
             for line in f:
                 if datestr in line:
-                    match = re.match(r'^(.{19})(.*)$', line)
-                    if match:
-                        key = match.group(1)
-                        value = f"{match.group(1)}{match.group(2)}"
-                        data[key] = value
-        content = [data[k] for k in sorted(data)]
+                    # Get all the storms in the required basins
+                    # Matches: NHC  13L MELISSA   20251021 1200 143N 0713W 280 062.....
+                    pattern = r'^.{5}[0-49][0-9][%s].{11}%s.*$' % (basins, datestr)
+                    match = re.match(pattern, line)
+                    storms.append(match.group(0)
         with writable(path) as f:
-            f.write("\n".join(content))
+            f.write("\n".join(storms))
 
     @task
     def input_vitals_other_names(self):
@@ -196,3 +196,18 @@ class GFDLTracker(DriverCycleBased):
                )
             filemap[fhr] = configobj["filepath"]
         return filemap
+
+    def _validate(self) -> None:
+        """
+        Perform all necessary schema and pydantic validation.
+
+        :raises: UWConfigError if validation fails.
+        """
+        Assets._validate(self) # noqa: SLF001
+        validate_internal(
+            schema_name=STR.platform,
+            desc="platform config",
+            config_data=self._config_intermediate,
+        )
+        TrackerNamelist(self.config["namelist"]["update_values"])
+

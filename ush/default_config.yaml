@@ -447,11 +447,49 @@ post:
           numx: 2
     rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/upp/{{ "%03d" % (leadtime.total_seconds() / 3600) }}'
 tracker:
+  gfdltracker:
+    execution:
+      batchargs:
+        tasks_per_node: 32
+        nodes: 1
+        walltime: 00:30:00
+      envcmds:
+        - module use {{ user.mpas_app }}/src/gfdl-tracker/modulefiles
+        - module load {{ user.platform }}
+        - ulimit -s unlimited
+      executable: "{{ user.mpas_app }}/exec/gettrk.x"
+      mpicmd: srun -l
+    input_files:
+      endhour: !int "{{ forecast.mpas.length }}"
+      filefreq: 6
+      filepath: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/upp/COMBINED.GrbF{{ "%02d" % (leadtime.total_seconds() / 3600) }}'
+    namelist:
+      base_file: "{{ user.mpas_app }}/parm/tracker/namelist.gettrk"
+      basins: L
+      update_values:
+        datein:
+          inp:
+            bcc: !int "{{ cycle.strftime('%Y')[:2] }}"
+            byy: !int "{{ cycle.strftime('%y') }}"
+            bmm: !int "{{ cycle.strftime('%m') }}"
+            bdd: !int "{{ cycle.strftime('%d') }}"
+            bhh: !int "{{ cycle.strftime('%H') }}"
+        atcfinfo:
+          atcfname: MPAS
+          atcfymdh: !int "{{ cycle.strftime('%Y%m%d%H') }}"
+        trackerinfo:
+          trkrinfo:
+            eastbd: 3313
+            westbd: 20
+            northbd: 2646
+            southbd: 20
+    rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/tracker'
+    tcvitals: "{{ platform.data.syndat_tcvitals }}/syndat_tcvitals.{{ cycle.strftime('%Y') }}"
+  platform:
+    account: '{{ platform.account }}'
+    scheduler: '{{ platform.scheduler }}'
+graphics:
   basin_list: "L"
-  eastbd: 3313
-  westbd: 20
-  northbd: 2646
-  southbd: 20
   atcfname: "MPAS"
   execution:
     batchargs:

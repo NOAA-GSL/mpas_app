@@ -3,6 +3,10 @@
     "gfdltracker": {
       "additionalProperaties": false,
       "properties": {
+        "basins": {
+          "type": "string",
+          "pattern": "^[ABCELPQSW]$"
+        },
         "execution": {
           "$ref": "urn:uwtools:execution-serial"
         },

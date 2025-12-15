@@ -3,7 +3,6 @@ data:
 platform:
   crtm_dir: /contrib/spack-stack/spack-stack-1.9.1/envs/ue-oneapi-2024.2.1/install/oneapi/2024.2.1/crtm-fix-2.4.0.1_emc-t5jym6r/fix
   hrrr_fix: /scratch3/BMC/wrfruc/cholt/MPAS-Model/fix
-  syndat_prefix: /scratch3/HFIP/hwrfv3/noscrub/input/SYNDAT-PLUS/syndat_tcvitals
   scheduler: slurm
   mpicmd: "srun -l"
   geog_data:
@@ -13,6 +12,7 @@ platform:
     gfs:
       path: /public/data/grids/gfs/0p25deg/grib2
       file_templates: '@y@j@H00{{ "%04d" % fcst_hr }}'
+    syndat_tcvitals: /scratch3/HFIP/hwrfv3/noscrub/input/SYNDAT-PLUS/syndat_tcvitals
 create_ics:
   mpas_init:
     execution:
