@@ -14,8 +14,8 @@ module load grib-util
 module list
 set -x
 
-mkdir tracker || true
-cd tracker
+mkdir latlon || true
+cd latlon
 
 cc=${ymdh:0:2}
 yy=${ymdh:2:2}

@@ -27,36 +27,20 @@ workflow:
             attrs:
               task: upp_#fhr#
     task_tracker:
-      command:
-        cyclestr:
-          value: '
-            source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; &amp;&amp;
-            module purge &amp;&amp;
-            module use &MPAS_APP;/src/GFDL-VortexTracker/modulefiles &amp;&amp;
-            module load &PLATFORM; &amp;&amp;
-            cd {{ user.experiment_dir }}/@Y@m@d@H &amp;&amp;
-            &MPAS_APP;/scripts/run_tracker.sh
-              @Y@m@d@H
-              "{{ platform.syndat_prefix }}"
-              "{{ platform.mpicmd }}"
-              "{{ user.forecast.output_interval }}"
-              "{{ forecast.mpas.length }}"
-              "&MPAS_APP;"
-              "{{ tracker.eastbd }}"
-              "{{ tracker.westbd }}"
-              "{{ tracker.northbd }}"
-              "{{ tracker.southbd }}"
-              "{{ tracker.atcfname }}"
-              "{{ tracker.basin_list }}"
-              '
+      command: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; ; python &MPAS_APP;/scripts/tracker.py'
       account: "{{ platform.account }}"
       join:
         cyclestr:
           value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
-      walltime: "{{ tracker.execution.batchargs.walltime }}"
-      nodes: "{{ tracker.execution.batchargs.nodes }}:ppn={{ tracker.execution.batchargs.tasks_per_node }}"
+      walltime: "{{ tracker.gfdltracker.execution.batchargs.walltime }}"
+      nodes: "{{ tracker.gfdltracker.execution.batchargs.nodes }}:ppn={{ tracker.gfdltracker.execution.batchargs.tasks_per_node }}"
       exclusive: "{{ tracker.execution.batchargs.exclusive }}"
-      partition: "{{ post.upp.execution.batchargs.partition }}"
+      partition: "{{ tracker.gfdltracker.execution.batchargs.partition }}"
+      envars:
+        CONFIG_PATH: '&EXPERIMENT_CONFIG;'
+        CYCLE:
+          cyclestr:
+            value: "@Y-@m-@dT@H:@M:@S"
       dependency:
         metataskdep:
           attrs:
