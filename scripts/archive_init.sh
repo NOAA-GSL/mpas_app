@@ -1,8 +1,8 @@
-#! /bin/bash
+#!/bin/bash
 
 set -xue
 
-YMDH=$1
+yyyymmddhh=$1
 archive_dir=$2
 
 pwd
@@ -20,8 +20,8 @@ hsi mkdir -p "$archive_dir" || true
 
 # This file is too large for HTAR so we copy it to HPSS via an "hsi put"
 
-init_nc=$( ls -1 $YMDH/forecast/*init.nc | head -1 )
-init_nc_hpss="$archive_dir"/${YMDH}-$( basename ${init_nc} )
+init_nc=$( ls -1 $yyyymmddhh/forecast/*init.nc | head -1 )
+init_nc_hpss="$archive_dir"/${yyyymmddhh}-$( basename ${init_nc} )
 
 md5_nc="$init_nc".md5
 md5_nc_hpss="$init_nc_hpss".md5

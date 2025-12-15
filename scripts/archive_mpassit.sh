@@ -1,28 +1,27 @@
-#! /bin/bash
+#!/bin/bash
 
 set -xue
 
 day=$1
-YMDH=$2
+yyyymmddhh=$2
 archive_dir=$3
 
 skip_hours=$(( ( day - 1 ) * 24 ))
 
-YYYY=${YMDH:0:4}
-MM=${YMDH:4:2}
-DD=${YMDH:6:2}
-HH=${YMDH:8:2}
+yyyy=${yyyymmddhh:0:4}
+mm=${yyyymmddhh:4:2}
+dd=${yyyymmddhh:6:2}
 
-day_prefix=$( date +"MPAS-A_out.%Y-%m-%d" -d "${YYYY}-${MM}-${DD}t00:00:00 UTC+0 + $skip_hours hours" )
-archive_basename=${YMDH}-mpassit-$( date +"%Y%m%d" -d "${YYYY}-${MM}-${DD}t00:00:00 UTC+0 + $skip_hours hours" ).tar
+day_prefix=$( date +"MPAS-A_out.%Y-%m-%d" -d "${yyyy}-${mm}-${dd}t00:00:00 UTC+0 + $skip_hours hours" )
+archive_basename=${yyyymmddhh}-mpassit-$( date +"%Y%m%d" -d "${yyyy}-${mm}-${dd}t00:00:00 UTC+0 + $skip_hours hours" ).tar
 
 archive="$archive_dir/$archive_basename"
 
 set +e
-listing=$( ls -1 $YMDH/mpassit/*/"$day_prefix"* )
+listing=$( ls -1 $yyyymmddhh/mpassit/*/"$day_prefix"* )
 set -e
 
-if [[ "${listing:-Q}" == Q ]] ; then
+if [[ -z "${listing:-}" ]] ; then
     echo "No files to archive for day $day_prefix this cycle"
     exit 0
 fi
