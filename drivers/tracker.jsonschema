@@ -1,0 +1,78 @@
+{
+  "properties": {
+    "gfdltracker": {
+      "additionalProperaties": false,
+      "properties": {
+        "execution": {
+          "$ref": "urn:uwtools:execution-serial"
+        },
+        "input_files": {
+          "additionalProperties": false,
+          "properties": {
+            "endhour": {
+              "type": "number"
+            },
+            "filefreq": {
+              "type": "number"
+            },
+            "filepath": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "namelist": {
+          "additionalProperties": false,
+          "anyOf": [
+            {
+              "required": [
+                "base_file"
+              ]
+            },
+            {
+              "required": [
+                "update_values"
+              ]
+            }
+          ],
+          "properties": {
+            "base_file": {
+              "type": "string"
+            },
+            "update_values": {
+              "type": "object"
+            },
+            "validate": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        "rundir": {
+          "type": "string"
+        },
+        "tcvitals": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "execution",
+        "input_files",
+        "namelist",
+        "rundir",
+        "tcvitals"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "gfdltracker"
+  ],
+  "type": "object"
+}
+
+
+
+
+
+
