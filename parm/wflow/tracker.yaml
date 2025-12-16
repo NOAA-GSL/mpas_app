@@ -1,0 +1,67 @@
+workflow:
+  tasks:
+    metatask_latlon_regrid:
+      var:
+        fhr: "{% for h in range(0, forecast.mpas['length'] + 1, 6) %}{{ ' %03d' % h }}{% endfor %}"
+      task_latlon_regrid_#fhr#:
+        command:
+          cyclestr:
+            value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; &amp;&amp;
+                    cd {{ user.experiment_dir }}/@Y@m@d@H &amp;&amp;
+                    "&MPAS_APP;/scripts/run_latlon_regrid.sh"
+                      @Y@m@d@H
+                      "{{ platform.mpicmd }}"
+                      "#fhr#"
+                      "{{ latlon_regrid.new_grid }}"
+                      "&MPAS_APP;"
+                      '
+        join:
+          cyclestr:
+              value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+        walltime: "{{ latlon_regrid.execution.batchargs.walltime }}"
+        cores: !int "{{ latlon_regrid.execution.batchargs.cores }}"
+        partition: "{{ post.upp.execution.batchargs.partition }}"
+        account: "{{ platform.account }}"
+        dependency:
+          taskdep:
+            attrs:
+              task: upp_#fhr#
+    task_tracker:
+      command:
+        cyclestr:
+          value: '
+            source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; &amp;&amp;
+            module purge &amp;&amp;
+            module use &MPAS_APP;/src/GFDL-VortexTracker/modulefiles &amp;&amp;
+            module load &PLATFORM; &amp;&amp;
+            cd {{ user.experiment_dir }}/@Y@m@d@H &amp;&amp;
+            &MPAS_APP;/scripts/run_tracker.sh
+              @Y@m@d@H
+              "{{ platform.syndat_prefix }}"
+              "{{ platform.mpicmd }}"
+              "{{ user.forecast.output_interval }}"
+              "{{ forecast.mpas.length }}"
+              "&MPAS_APP;"
+              "{{ tracker.eastbd }}"
+              "{{ tracker.westbd }}"
+              "{{ tracker.northbd }}"
+              "{{ tracker.southbd }}"
+              "{{ tracker.atcfname }}"
+              "{{ tracker.basin_list }}"
+              '
+      account: "{{ platform.account }}"
+      join:
+        cyclestr:
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+      walltime: "{{ tracker.execution.batchargs.walltime }}"
+      nodes: "{{ tracker.execution.batchargs.nodes }}:ppn={{ tracker.execution.batchargs.tasks_per_node }}"
+      exclusive: "{{ tracker.execution.batchargs.exclusive }}"
+      envars:
+        CONFIG_PATH: '&EXPERIMENT_CONFIG;'
+        CYCLE:
+          cyclestr:
+            value: "@Y-@m-@dT@H:@M:@S"
+      dependency:
+        metataskdep:
+          attrs:
+            metatask: latlon_regrid
