@@ -14,14 +14,17 @@ northbd="$9" # 2646
 southbd="${10}" # 20
 atcfname="${11}" # MPAS
 basin_list="${12}" # L
-platform="${13}" # ursa
 
 mpas_upp=../upp
 fhour_start=0
 
 tracker="$mpas_app/exec/gettrk.x"
 
+rm -rf tracker
+mkdir tracker
 cd tracker
+
+ln -s ../latlon/mpas.trak.all.* .
 
 valid_basins='ABCELPQSW'
 if [[ ! "$basin_list" =~ [$valid_basins] ]] ; then
