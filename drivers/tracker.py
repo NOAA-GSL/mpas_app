@@ -156,17 +156,6 @@ class GFDLTracker(DriverCycleBased):
             self.runscript(),
         ]
 
-    @task
-    def runscript(self):
-        """
-        The runscript.
-        """
-        path = self._runscript_path
-        yield self.taskname(path.name)
-        yield asset(path, path.is_file)
-        yield None
-        self._write_runscript(path=path)
-
     # Private helper methods
 
     @classmethod

@@ -5,7 +5,7 @@
       "properties": {
         "basins": {
           "type": "string",
-          "pattern": "^[ABCELPQSW]$"
+          "pattern": "^[ABCELPQSW]+$"
         },
         "execution": {
           "$ref": "urn:uwtools:execution-serial"
