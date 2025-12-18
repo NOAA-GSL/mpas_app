@@ -448,6 +448,7 @@ post:
     rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/upp/{{ "%03d" % (leadtime.total_seconds() / 3600) }}'
 tracker:
   gfdltracker:
+    basins: L
     execution:
       batchargs:
         tasks_per_node: 32
@@ -465,7 +466,6 @@ tracker:
       filepath: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/upp/COMBINED.GrbF{{ "%02d" % (leadtime.total_seconds() / 3600) }}'
     namelist:
       base_file: "{{ user.mpas_app }}/parm/tracker/namelist.gettrk"
-      basins: L
       update_values:
         datein:
           inp:

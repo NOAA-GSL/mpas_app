@@ -11,6 +11,7 @@ from ush import validation
 
 MSG = SimpleNamespace(
     dt="a valid datetime",
+    float="a valid number",
     ge0="greater than or equal to 0",
     gt0="greater than 0",
     int="a valid integer",
@@ -19,7 +20,80 @@ MSG = SimpleNamespace(
     str="a valid string",
 )
 
+
 # Tests
+
+
+@mark.parametrize(
+    ("param", "error_start"),
+    [
+        ("westbd", "East and west"),
+        ("southbd", "North and south"),
+    ],
+)
+def test_validate__trackernamelist_param_order_switched(tracker_config, param, error_start):
+    keys = ["trackerinfo", "trkrinfo"]
+    with raises(ValidationError) as e:
+        validation.TrackerNamelist(**with_set(tracker_config, 100000, *[*keys, param]))
+    check(e, keys, f"Value error, {error_start} bounds are probably switched.")
+
+
+@mark.parametrize(
+    ("param", "error_start"),
+    [
+        ("eastbd", "East and west"),
+        ("northbd", "North and south"),
+    ],
+)
+def test_validate__trackernamelist_param_size_too_small(tracker_config, param, error_start):
+    keys = ["trackerinfo", "trkrinfo"]
+    with raises(ValidationError) as e:
+        validation.TrackerNamelist(**with_set(tracker_config, 30, *[*keys, param]))
+    check(e, keys, f"Value error, {error_start} bounds (30.0, 20.0) are close together.")
+
+
+@mark.parametrize(
+    ("keys", "msg", "val"),
+    [
+        (["eastbd"], MSG.ge0, -1),
+        (["eastbd"], MSG.float, None),
+        (["westbd"], MSG.ge0, -1),
+        (["westbd"], MSG.float, None),
+        (["northbd"], MSG.ge0, -1),
+        (["northbd"], MSG.float, None),
+        (["southbd"], MSG.ge0, -1),
+        (["southbd"], MSG.float, None),
+    ],
+)
+def test_validate__trackernamelist_fail_values_bad(tracker_config, keys, msg, val):
+    keys = ["trackerinfo", "trkrinfo", *keys]
+    with raises(ValidationError) as e:
+        validation.TrackerNamelist(**with_set(tracker_config, val, *keys))
+    check(e, keys, f"Input should be {msg}")
+
+
+@mark.parametrize(
+    "keys",
+    [
+        ["eastbd"],
+        ["westbd"],
+        ["northbd"],
+        ["southbd"],
+    ],
+)
+def test_validate__trackernamelist_fail_values_missing(tracker_config, keys):
+    keys = ["trackerinfo", "trkrinfo", *keys]
+    with raises(ValidationError) as e:
+        validation.TrackerNamelist(**with_del(tracker_config, *keys))
+    check(e, keys, "Field required")
+
+
+def test_validate__trackernamelist_pass(tracker_config):
+    validated = validation.TrackerNamelist(**tracker_config)
+    assert validated.trackerinfo.trkrinfo.eastbd == 3310.0
+    assert validated.trackerinfo.trkrinfo.westbd == 20.0
+    assert validated.trackerinfo.trkrinfo.northbd == 2646.0
+    assert validated.trackerinfo.trkrinfo.westbd == 20.0
 
 
 def test_validate__user_driver_validation_blocks(config):
@@ -145,6 +219,20 @@ def config(tmp_path):
             "platform": "big_computer",
             "workflow_blocks": ["cold_start.yaml", "post.yaml"],
         }
+    }
+
+
+@fixture
+def tracker_config():
+    return {
+        "trackerinfo": {
+            "trkrinfo": {
+                "eastbd": 3310.0,
+                "westbd": 20.0,
+                "northbd": 2646.0,
+                "southbd": 20.0,
+            },
+        },
     }
 
 

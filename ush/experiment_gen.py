@@ -185,7 +185,8 @@ def validate_driver_blocks(validated_blocks: list[str], workflow_config: YAMLCon
             # 0 is an arbitrary number for validation purposes.
             kwargs["leadtime"] = timedelta(hours=0)
         # Driver is validated when instantiated.
-        driver = driver_class(**kwargs)
+        driver_class(**kwargs)
+
 
 if __name__ == "__main__":
     main()  # pragma: no cover

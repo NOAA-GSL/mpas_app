@@ -1,32 +1,30 @@
 """
 A driver for GFDL's Cyclone Tracker
 """
-import json
+
 import re
 from datetime import timedelta
-from itertools import chain
 from pathlib import Path
 
 from iotaa import asset, task, tasks
-
-from uwtools.config.formats.yaml import YAMLConfig
 from uwtools.config.formats.nml import NMLConfig
+from uwtools.config.formats.yaml import YAMLConfig
+from uwtools.config.validator import validate_internal
 from uwtools.drivers.driver import Assets, DriverCycleBased
 from uwtools.strings import STR
 from uwtools.utils.file import writable
-from uwtools.utils.processing import execute
+from uwtools.utils.processing import run_shell_cmd
 from uwtools.utils.tasks import file, symlink
+
 from ush.validation import TrackerNamelist
 
 
 class GFDLTracker(DriverCycleBased):
-
     """
     A driver for the GFDL Tracker
     """
 
     # Workflow tasks
-
 
     @task
     def input_fcst_minutes(self):
@@ -38,7 +36,7 @@ class GFDLTracker(DriverCycleBased):
         path = self.rundir / fn
         yield asset(path, path.is_file)
         yield [self.input_files(), self.input_index_files()]
-        content_list = [f"{i+1:4d} {fhr*60:5d}" for i, fhr in enumerate(self._input_file_map())]
+        content_list = [f"{i + 1:4d} {fhr * 60:5d}" for i, fhr in enumerate(self._input_file_map())]
         with writable(path) as f:
             f.write("\n".join(content_list))
 
@@ -52,10 +50,11 @@ class GFDLTracker(DriverCycleBased):
         symlinks = {}
         for fhr, target in upp_files.items():
             linkname = f"mpas.trak.all.{self.cycle.strftime('%Y%m%d%H')}.f{fhr * 60:05d}"
-            target = Path(target)
             symlinks[target] = linkname
-        yield [symlink(target=t, linkname=self.rundir / l) for t, l in symlinks.items()]
-
+        yield [
+            symlink(target=Path(target), linkname=self.rundir / link)
+            for target, link in symlinks.items()
+        ]
 
     @task
     def input_index_files(self):
@@ -65,20 +64,21 @@ class GFDLTracker(DriverCycleBased):
         yield self.taskname("input index files")
         index_files = {}
         for fhr in self._input_file_map():
-            infile = str(self.rundir /
-                    f"mpas.trak.all.{self.cycle.strftime('%Y%m%d%H')}.f{fhr * 60:05d}")
+            infile = str(
+                self.rundir / f"mpas.trak.all.{self.cycle.strftime('%Y%m%d%H')}.f{fhr * 60:05d}"
+            )
             indexfile = f"{infile}.ix"
             index_files[infile] = str(self.rundir / indexfile)
-        yield [file(Path(idx)) for idx in index_files.values()]
-        yield self.input_files()
+        yield [asset(Path(idx), Path(idx).is_file) for idx in index_files.values()]
+        yield [self.input_files()]
         self.rundir.mkdir(exist_ok=True)
         envcmds = self.config["execution"]["envcmds"]
         for infile, idx in index_files.items():
-            execute(
+            run_shell_cmd(
                 cmd=f"{' && '.join(envcmds)} && grb2index {infile} {idx}",
                 cwd=self.rundir,
                 log_output=True,
-                )
+            )
 
     @task
     def input_vitals(self):
@@ -94,14 +94,15 @@ class GFDLTracker(DriverCycleBased):
         datestr = self.cycle.strftime("%Y%m%d %H")
         basins = self.config["basins"]
         storms = []
-        with open(tcvitals, "r", encoding="utf-8") as f:
+        with tcvitals.open() as f:
             for line in f:
                 if datestr in line:
                     # Get all the storms in the required basins
                     # Matches: NHC  13L MELISSA   20251021 1200 143N 0713W 280 062.....
-                    pattern = r'^.{5}[0-49][0-9][%s].{11}%s.*$' % (basins, datestr)
+                    pattern = r"^.{5}[0-49][0-9][%s].{11}%s.*$" % (basins, datestr)
                     match = re.match(pattern, line)
-                    storms.append(match.group(0)
+                    if match:
+                        storms.append(match.group(0))
         with writable(path) as f:
             f.write("\n".join(storms))
 
@@ -116,7 +117,7 @@ class GFDLTracker(DriverCycleBased):
         yield [asset(path, path.is_file) for path in paths]
         yield self.input_vitals()
         for path in paths:
-            symlink(target=self.rundir/ "allvit", linkname=path)
+            symlink(target=self.rundir / "allvit", linkname=path)
 
     @task
     def namelist_file(self):
@@ -132,7 +133,7 @@ class GFDLTracker(DriverCycleBased):
         if base_file := namelist.get(STR.basefile):
             input_files.append(base_file)
         yield [file(Path(input_file)) for input_file in input_files]
-        self._create_user_updated_config(
+        self.create_user_updated_config(
             config_class=NMLConfig,
             config_values=namelist,
             path=path,
@@ -143,7 +144,7 @@ class GFDLTracker(DriverCycleBased):
         """
         Run directory provisioned with all required content.
         """
-        yield self.taskname(f"provisioned run directory: {str(self.rundir)}")
+        yield self.taskname(f"provisioned run directory: {self.rundir}")
         self.rundir.mkdir(exist_ok=True)
         yield [
             self.input_fcst_minutes(),
@@ -154,7 +155,6 @@ class GFDLTracker(DriverCycleBased):
             self.namelist_file(),
             self.runscript(),
         ]
-
 
     @task
     def runscript(self):
@@ -169,8 +169,8 @@ class GFDLTracker(DriverCycleBased):
 
     # Private helper methods
 
-    @property
-    def driver_name(self) -> str:
+    @classmethod
+    def driver_name(cls) -> str:
         """
         Returns the name of this driver.
         """
@@ -188,12 +188,12 @@ class GFDLTracker(DriverCycleBased):
             leadtime = timedelta(hours=fhr)
             configobj = YAMLConfig(infiles)
             configobj.dereference(
-               context={
-                   "cycle": self.cycle,
-                   "leadtime": leadtime,
-                   **self.config_full,
-                   }
-               )
+                context={
+                    "cycle": self.cycle,
+                    "leadtime": leadtime,
+                    **self.config_full,
+                }
+            )
             filemap[fhr] = configobj["filepath"]
         return filemap
 
@@ -203,11 +203,10 @@ class GFDLTracker(DriverCycleBased):
 
         :raises: UWConfigError if validation fails.
         """
-        Assets._validate(self) # noqa: SLF001
+        Assets._validate(self)  # noqa: SLF001
         validate_internal(
             schema_name=STR.platform,
             desc="platform config",
             config_data=self._config_intermediate,
         )
-        TrackerNamelist(self.config["namelist"]["update_values"])
-
+        TrackerNamelist(**self.config["namelist"]["update_values"])

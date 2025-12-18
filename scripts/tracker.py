@@ -1,44 +1,35 @@
+#!/usr/bin/env python3
 """
-The run script for UPP
+The run script for the GFDL Vortex Tracker.
 """
 
-import os
 import sys
-from datetime import datetime, timedelta
 from pathlib import Path
 
-from uwtools.api import config as uwconfig
-from uwtools.api.driver import execute
+sys.path.append(str(Path(__file__).parent.parent))
+
+from uwtools.api.config import get_yaml_config
+from uwtools.api.logging import use_uwtools_logger
+
+from drivers.tracker import GFDLTracker
+from scripts.common import parse_args, run_component
 
 
-# Load the YAML config
-CONFIG_PATH = os.environ["CONFIG_PATH"]
-CYCLE = os.environ["CYCLE"]
+def main():
+    args = parse_args()
+    use_uwtools_logger()
+    expt_config = get_yaml_config(args.config_file)
+    driver_dir = Path(expt_config["user"]["mpas_app"], "drivers")
 
-cycle = datetime.fromisoformat(CYCLE)
-key_path = "tracker"
+    # Run the tracker
+    run_component(
+        driver_class=GFDLTracker,
+        config_file=args.config_file,
+        cycle=args.cycle,
+        key_path=args.key_path,
+        schema_file=driver_dir / "tracker.jsonschema",
+    )
 
-# Extract driver config from experiment config
-expt_config = uwconfig.get_yaml_config(CONFIG_PATH)
-expt_config.dereference(context={"cycle": cycle, **expt_config})
 
-driver_dir = Path(expt_config["user"]["mpas_app"], "drivers")
-
-driver_config = expt_config[key_path]["gfdltracker"]
-rundir = Path(driver_config["rundir"])
-print(f"Will run in {rundir}")
-
-# Run the tracker
-execute(
-    module=driver_dir / "tracker.py",
-    classname="GFDLTracker",
-    task="run",
-    schema_file=driver_dir / "tracker.jsonschema",
-    config=CONFIG_PATH,
-    cycle=cycle,
-    key_path=[key_path],
-)
-
-if not (rundir / "runscript.gfdltracker.done").is_file():
-    print("Error occurred running the GFDL Vortex Tracker. Please see component error logs.")
-    sys.exit(1)
+if __name__ == "__main__":
+    main()  # pragma: no cover

@@ -4,11 +4,19 @@ from datetime import datetime  # noqa: TC003
 from pathlib import Path  # noqa: TC003
 from typing import Literal
 
-from pydantic import BaseModel, Field, NonNegativeInt, PositiveInt, model_validator
+from pydantic import (
+    BaseModel,
+    Field,
+    NonNegativeFloat,
+    NonNegativeInt,
+    PositiveInt,
+    model_validator,
+)
 from uwtools.api.driver import yaml_keys_to_classes
 
 Model = Literal["GFS", "RAP", "RRFS"]
 MIN_WIDTH_HEIGHT = 80
+
 
 class Config(BaseModel):
     user: User
@@ -24,62 +32,60 @@ class LBCs(BaseModel):
     interval_hours: PositiveInt
     offset_hours: NonNegativeInt
 
+
 class TrackerInfo(BaseModel):
     trkrinfo: TrkrInfo
+
 
 class TrackerNamelist(BaseModel):
     trackerinfo: TrackerInfo
 
-class TrkrInfo(BaseModel):
-    eastbd: float
-    westbd: float
-    northbd: float
-    southbd: float
 
-    @model_validator(mode="after")
-    def positive_values(self):
-        for val in (self.eastbd, self.westbd, self.northbd, self.southbd):
-            if val < 0:
-                msg = f"Bounds must all be positive numbers. Got: {self.model_dump()}"
-                raise ValueError(msg)
-        return self
+class TrkrInfo(BaseModel):
+    eastbd: NonNegativeFloat
+    westbd: NonNegativeFloat
+    northbd: NonNegativeFloat
+    southbd: NonNegativeFloat
 
     @model_validator(mode="after")
     def east_west_order(self):
         if self.eastbd < self.westbd:
-            msg = "East and west bounds are probably switched. East bound
-            ({self.eastbd}) < west bound ({self.westbd})."
+            msg = (
+                "East and west bounds are probably switched. East bound "
+                f"({self.eastbd}) < west bound ({self.westbd})."
+            )
             raise ValueError(msg)
         return self
-
 
     @model_validator(mode="after")
     def east_west_size(self):
         if self.eastbd < (self.westbd + MIN_WIDTH_HEIGHT):
-            msg = f"East and west bounds ({self.eastbd}, {self.westbd}) are close together. Recommend at least
-            {MIN_WIDTH_HEIGHT} points."
+            msg = (
+                f"East and west bounds ({self.eastbd}, {self.westbd}) are "
+                f"close together. Recommend at least {MIN_WIDTH_HEIGHT} points."
+            )
             raise ValueError(msg)
         return self
-
 
     @model_validator(mode="after")
     def north_south_order(self):
         if self.northbd < self.southbd:
-            msg = "North and south bounds are probably switched. North bound
-            ({self.northbd}) < south bound ({self.southbd})."
+            msg = (
+                "North and south bounds are probably switched. North bound"
+                f"({self.northbd}) < south bound ({self.southbd})."
+            )
             raise ValueError(msg)
         return self
-
 
     @model_validator(mode="after")
     def north_south_size(self):
         if self.northbd < (self.southbd + MIN_WIDTH_HEIGHT):
-            msg = f"North and south bounds ({self.northbd}, {self.southbd}) are close together. Recommend at least
-            {MIN_WIDTH_HEIGHT} points."
+            msg = (
+                f"North and south bounds ({self.northbd}, {self.southbd}) "
+                f"are close together. Recommend at least {MIN_WIDTH_HEIGHT} points."
+            )
             raise ValueError(msg)
         return self
-
-
 
 
 class User(BaseModel):

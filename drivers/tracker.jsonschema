@@ -60,6 +60,7 @@
         }
       },
       "required": [
+        "basins",
         "execution",
         "input_files",
         "namelist",
