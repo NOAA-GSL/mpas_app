@@ -489,8 +489,6 @@ tracker:
     account: '{{ platform.account }}'
     scheduler: '{{ platform.scheduler }}'
 graphics:
-  basin_list: "L"
-  atcfname: "MPAS"
   execution:
     batchargs:
       walltime: 00:12:00
