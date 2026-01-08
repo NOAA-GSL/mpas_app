@@ -34,10 +34,10 @@ workflow:
       join:
         cyclestr:
           value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
-      walltime: "{{ tracker.execution.batchargs.walltime }}"
-      nodes: "{{ tracker.execution.batchargs.nodes }}:ppn={{ tracker.execution.batchargs.tasks_per_node }}"
-      exclusive: "{{ tracker.execution.batchargs.exclusive }}"
-      partition: "{{ tracker.upp.execution.batchargs.partition }}"
+      walltime: "{{ tracker.gfdltracker.execution.batchargs.walltime }}"
+      nodes: "{{ tracker.gfdltracker.execution.batchargs.nodes }}:ppn={{ tracker.gfdltracker.execution.batchargs.tasks_per_node }}"
+      exclusive: "{{ tracker.gfdltracker.execution.batchargs.exclusive }}"
+      partition: "{{ tracker.gfdltracker.execution.batchargs.partition }}"
       dependency:
         metataskdep:
           attrs:

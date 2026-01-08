@@ -49,3 +49,9 @@ graphics:
   execution:
     batchargs:
       partition: u1-compute
+tracker:
+  gfdltracker:
+    execution:
+      batchargs:
+        partition: u1-compute
+
