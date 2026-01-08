@@ -86,7 +86,7 @@ class GFDLTracker(DriverCycleBased):
         The TC vitals input data
         """
         fn = "allvit"
-        yield self.taskname("TC vitals input file {fn}")
+        yield self.taskname(f"TC vitals input file {fn}")
         path = self.rundir / fn
         yield asset(path, path.is_file)
         tcvitals = Path(self.config["tcvitals"])
@@ -112,7 +112,7 @@ class GFDLTracker(DriverCycleBased):
         TC Vitals file named differently.
         """
         fns = ["tcvit_rsmc_storms.txt", "fort.12"]
-        yield self.taskname("TC vitals input file {' & '.join(fns)}")
+        yield self.taskname(f"TC vitals input file {' & '.join(fns)}")
         paths = [self.rundir / fn for fn in fns]
         yield [asset(path, path.is_file) for path in paths]
         yield self.input_vitals()

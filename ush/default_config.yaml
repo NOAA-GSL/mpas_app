@@ -455,15 +455,15 @@ tracker:
         nodes: 1
         walltime: 00:30:00
       envcmds:
-        - module use {{ user.mpas_app }}/src/gfdl-tracker/modulefiles
+        - module use {{ user.mpas_app }}/src/GFDL-VortexTracker/modulefiles
         - module load {{ user.platform }}
+        - module load grib-util
         - ulimit -s unlimited
       executable: "{{ user.mpas_app }}/exec/gettrk.x"
-      mpicmd: srun -l
     input_files:
       endhour: !int "{{ forecast.mpas.length }}"
       filefreq: 6
-      filepath: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/upp/COMBINED.GrbF{{ "%02d" % (leadtime.total_seconds() / 3600) }}'
+      filepath: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/latlon/mpas.trak.all.{{ cycle.strftime("%Y%m%d%H") }}.f{{ "%05d" % (leadtime.total_seconds() / 60) }}'
     namelist:
       base_file: "{{ user.mpas_app }}/parm/tracker/namelist.gettrk"
       update_values:
