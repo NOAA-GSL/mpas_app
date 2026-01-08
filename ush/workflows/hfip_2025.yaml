@@ -54,6 +54,9 @@ create_ics:
         preproc_stages:
           config_aerosol_climo: true
 
+tracker:
+  basin_list: "L"
+
 forecast:
   mpas:
     domain: global

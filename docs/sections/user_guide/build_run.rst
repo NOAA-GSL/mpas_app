@@ -131,10 +131,7 @@ Post-Processing
 Archiving and Scrubbing
 -----------------------
 
-For any experiment of non-trivial size, automatically scrubbing the data is a good practice.
-Presently, archiving and scrubbing must be used at the same time; this may be changed in a future release.
-The reason scrubbing can't be run alone is that the workflow has no way to determine when you're
-done with the data, except by archiving it.
+For any experiment of non-trivial size, automatically scrubbing the data is a good practice. Presently, archiving and scrubbing must be used at the same time; this may be changed in a future release. The reason scrubbing can't be run alone is that the workflow has no way to determine when you're done with the data, except by archiving it.
 
 To enable both archiving and scrubbing, add these lines:
 
@@ -145,12 +142,9 @@ To enable both archiving and scrubbing, add these lines:
        - archiving.yaml
        - scrubbing.yaml
   
+You must replace ``/a/path/on/hpss`` with a valid path on an HPSS archiving system. The scripts will use ``hsi`` and ``htar`` to write the data. If the directory doesn't exist, the scripts will try to create it.
 
-You must replace ``/a/path/on/hpss`` with a valid path on an HPSS archiving system.
-The scripts will use ``hsi`` and ``htar`` to write the data. If the directory doesn't exist,
-the scripts will try to create it.
-
-Archives are split by purpose. In these scripts, ``{CYCLE_YMDH}`` corresponds to the cycle date and time in ten digits; November 14, 2025 at 18:00 UTC would be 2025091418. The ``{FORECAST_YMD}` corresponds to the forecast date as eight digits; November 14, 2025 would be 20250914.
+Archives are split by purpose. In these scripts, ``{CYCLE_YMDH}`` corresponds to the cycle date and time in ten digits; November 14, 2025 at 18:00 UTC would be 2025091418. The ``{FORECAST_YMD}`` corresponds to the forecast date as eight digits; November 14, 2025 would be 20250914.
 
 - ``{CYCLE_YMDH}-upp.tar`` - All grib files output by UPP and all small control files input to it. Excludes the combined grib since that is simply the concatenation of UPP output.
 - ``{CYCLE_YMDH}-mpassit-{FORECAST_YMD}.tar`` - All mpassit files from forecast lead times on a given day. This is split by day because of limitations of HTAR.
@@ -166,7 +160,7 @@ Archiving (see ``parm/wflow/archiving.yaml``) is split into one job per archive:
 Scrubbing (see ``parm/wflow/scrubbing.yaml``) is split by file purpose:
 
 - task ``scrub_forecast`` - Deletes all diag, history, and restart files from the forecast directory.
-- task ``scrub_mpas_ics`` - Deltes the mpas_ics directory.
+- task ``scrub_mpas_ics`` - Deletes the mpas_ics directory.
 - task ``scrub_mpassit`` - Deletes the mpassit directories.
 - task ``scrub_init`` - Deletes the init file from the forecast directory.
 

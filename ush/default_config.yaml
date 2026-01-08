@@ -495,6 +495,7 @@ graphics:
       nodes: 1
       tasks_per_node: 1
       exclusive: true
+  atcfname: MPAS
 latlon_regrid:
   new_grid: "latlon -100:3333:0.03 -10:2666:0.03"
   execution:
