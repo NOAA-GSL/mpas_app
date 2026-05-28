@@ -9,6 +9,13 @@ from uwtools.api.config import get_yaml_config
 from scripts import ungrib
 
 
+@iotaa.task
+def empty(*args):  # noqa: ARG001
+    yield "Test"
+    yield iotaa.Asset(None, lambda: True)
+    yield None
+
+
 @fixture
 def ungrib_config(tmp_path):
     tmp_input = tmp_path / "input_data"
@@ -53,13 +60,13 @@ def ungrib_driver(ungrib_config):
 @iotaa.external
 def noop(*_args, **_kwargs):
     yield "No op"
-    yield iotaa.asset(None, lambda: True)
+    yield iotaa.Asset(None, lambda: True)
 
 
 @iotaa.external
 def noop_not_ready(*_args, **_kwargs):
     yield "No op not ready"
-    yield iotaa.asset(None, lambda: False)
+    yield iotaa.Asset(None, lambda: False)
 
 
 def test_file__missing(tmp_path):
@@ -128,9 +135,10 @@ def test_regrid_input(ungrib_driver, tmp_path):
     grib_file.touch()
     infile = tmp_path / "GRIBFILE.AAA"
     infile.symlink_to(grib_file)
+
     with (
         patch.object(ungrib, "run_shell_cmd") as run_shell_cmd,
-        patch.object(ungrib.Ungrib, "gribfiles") as gribfiles,
+        patch.object(ungrib.Ungrib, "gribfiles", side_effect=empty) as gribfiles,
     ):
         ungrib.regrid_input(ungrib_driver, infile, wgrib_config)
         gribfiles.assert_called_once()
@@ -153,7 +161,7 @@ def test_regrid_all(tmp_path, ungrib_driver):
     gribfiles.ref = [tmp_path / f"GRIBFILE.{label}" for label in ("AAA", "AAB", "AAC", "AAD")]
     with (
         patch.object(ungrib.Ungrib, "gribfiles", return_value=gribfiles),
-        patch.object(ungrib, "merge_vector_fields") as wgrib_task,
+        patch.object(ungrib, "merge_vector_fields", side_effect=empty) as wgrib_task,
     ):
         ungrib.regrid_all(ungrib_driver, {"wgrib2": {}})
         assert expected_calls == wgrib_task.call_args_list
