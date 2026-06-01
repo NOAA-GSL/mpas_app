@@ -107,7 +107,7 @@ install_mpas () {
     make $target CORE=$CORE $opts
     mkdir -pv $EXEC_DIR
     cp -v ${CORE}_model $EXEC_DIR
-    if [[ $CORE == atmosphere ]]
+    if [[ $CORE == atmosphere ]] ; then
       if [[ -x ./build_tables_tempo ]] ; then
         ./build_tables_tempo
       else
