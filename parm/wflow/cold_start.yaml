@@ -16,7 +16,7 @@ workflow:
     PLATFORM: "{{ user.platform }}"
   tasks:
     task_get_ics_data:
-      command: '&MPAS_APP;/scripts/get_external_data.sh'
+      command: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; && &MPAS_APP;/scripts/get_external_data.sh'
       account: "{{ platform.account }}"
       partition: "{{ platform.service_partition }}"
       join:

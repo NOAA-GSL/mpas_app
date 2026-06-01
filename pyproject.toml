@@ -5,7 +5,7 @@ show_missing = true
 skip_covered = true
 
 [tool.coverage.run]
-source = ["scripts", "ush"]
+source = ["drivers", "scripts", "ush"]
 
 [tool.mypy]
 check_untyped_defs = true
@@ -31,6 +31,7 @@ ignore = [
   "FBT002",  # boolean-default-value-positional-argument
   "LOG015",  # root-logger-call
   "PLR0912", # too-many-branches
+  "PLR0913", # too-many-arguments
   "PLR2004", # magic-value-comparison
   "PTH207",  # glob
   "S101",    # assert

@@ -10,12 +10,13 @@ from scripts import common
 @fixture
 def test_driver():
     class Driver:
-        def __init__(self, config, cycle, key_path, leadtime=None):
+        def __init__(self, config, cycle, key_path, leadtime=None, schema_file=None):
             config = {"rundir": "/some/rundir"}
             self.config = config
             self.cycle = cycle
             self.key_path = key_path
             self.leadtime = leadtime
+            self.schema_file = schema_file
 
         def run(self):
             pass
