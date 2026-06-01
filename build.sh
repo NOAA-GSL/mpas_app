@@ -114,7 +114,7 @@ install_mpas () {
         curl -sSLO https://github.com/ufs-community/MPAS-Model/releases/download/MPAS-v8.3.1-2.14/tempo_data.tar
         tar -xvf tempo_data.tar
         rm -v tempo_data.tar
-
+      fi
     fi
   )
 }
