@@ -107,7 +107,15 @@ install_mpas () {
     make $target CORE=$CORE $opts
     mkdir -pv $EXEC_DIR
     cp -v ${CORE}_model $EXEC_DIR
-    test $CORE == atmosphere && ./build_tables_tempo || true
+    if [[ $CORE == atmosphere ]]
+      if [[ -x ./build_tables_tempo ]] ; then
+        ./build_tables_tempo
+      else
+        curl -sSLO https://github.com/ufs-community/MPAS-Model/releases/download/MPAS-v8.3.1-2.14/tempo_data.tar
+        tar -xvf tempo_data.tar
+        rm -v tempo_data.tar
+
+    fi
   )
 }
 
