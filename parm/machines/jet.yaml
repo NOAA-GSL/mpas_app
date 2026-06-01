@@ -2,6 +2,7 @@ data:
   mesh_files: "{{ platform.hrrr_fix }}"
 platform:
   scheduler: slurm
+  mpicmd: "srun -l"
   crtm_dir: /misc/contrib/spack-stack/spack-stack-1.6.0/envs/unified-env-rocky8/install/intel/2021.5.0/crtm-fix-2.4.0.1_emc-bscege4/fix
   geog_data:
     global: /lfs5/BMC/wrfruc/Michael.Barlage/mpas/data/mpas_static
@@ -11,6 +12,8 @@ platform:
     gfs:
       path: /public/data/grids/gfs/0p25deg/grib2
       file_templates: '@y@j@H00{{ "%04d" % fcst_hr }}'
+    syndat_tcvitals: /lfs5/HFIP/hwrf-data/hwrf-input/SYNDAT-PLUS
+
 forecast:
   mpas:
     execution:
