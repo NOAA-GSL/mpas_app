@@ -1,8 +1,8 @@
 data:
-  mesh_files: /scratch3/BMC/wrfruc/cholt/MPAS-Model/fix
+  mesh_files: /scratch3/BMC/rtwrfruc/RRFSv2X/code/rrfs-workflow.20260603/fix/{{ user.mesh_label }}
 platform:
   crtm_dir: /contrib/spack-stack/spack-stack-1.9.1/envs/ue-oneapi-2024.2.1/install/oneapi/2024.2.1/crtm-fix-2.4.0.1_emc-t5jym6r/fix
-  hrrr_fix: /scratch3/BMC/wrfruc/cholt/MPAS-Model/fix
+  hrrr_fix: /scratch3/BMC/rtwrfruc/RRFSv2X/code/rrfs-workflow.20260603/fix
   scheduler: slurm
   geog_data:
     global: /scratch2/BMC/wrfruc/talcott/mpas/global/static/geog/
@@ -10,7 +10,7 @@ platform:
   data:
     gfs:
       path: /public/data/grids/gfs/0p25deg/grib2
-      file_templates: '@y@j@H00{{ "%04d" % fcst_hr }}'
+      file_templates: '@y@j@H00{forecast_hr:04d}'
 create_ics:
   mpas_init:
     execution:

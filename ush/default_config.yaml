@@ -28,7 +28,7 @@ user:
   forecast:
     output_interval: 6
     length: !timedelta "{{ forecast.mpas.length }}"
-  mesh_label: hrrrv5
+  mesh_label: conus3km
   platform: big_computer
   workflow_blocks:
     - cold_start.yaml
@@ -36,6 +36,7 @@ user:
 data:
   # Known locations to mesh_files are updated from parm/machines/*.yaml files
   mesh_files: /path/to/nonstandard/location
+  graphinfo_filename: "graphinfo/{{ user.mesh_label }}.graph.info"
 platform:
   # Supported scheduler options include Slurm, PBSPro, and LSF
   scheduler: slurm
@@ -113,6 +114,8 @@ create_ics:
         - ulimit -s unlimited || true
         - module use {{ user.mpas_app }}/modulefiles
         - module load build_{{ user.platform }}_intel
+        - module load impi-collective-settings/1.0.0
+        - export I_MPI_COLL_INTRANODE=pt2pt
       executable: "{{ user.mpas_app }}/exec/init_atmosphere_model"
       mpiargs:
         - "--ntasks={{ create_ics.mpas_init.execution.batchargs.cores }}"
@@ -120,9 +123,9 @@ create_ics:
     files_to_copy: &mpas_init_files_to_copy
       "{{ user.mesh_label }}.static.nc": "{{ data.mesh_files }}/{{ user.mesh_label }}.static.nc"
       "{{ user.mesh_label }}.graph.info.part.{{create_ics.mpas_init.execution.batchargs.cores }}": '{{ user.experiment_dir }}/{{ user.mesh_label }}.graph.info.part.{{ create_ics.mpas_init.execution.batchargs.cores }}'
-      stream_list.atmosphere.diagnostics: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.diagnostics"
-      stream_list.atmosphere.output: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.output"
-      stream_list.atmosphere.surface: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.surface"
+      stream_list.atmosphere.diagnostics: "{{ user.mpas_app }}/parm/mpas/hrrrv5/stream_list.atmosphere.diagnostics"
+      stream_list.atmosphere.output: "{{ user.mpas_app }}/parm/mpas/hrrrv5/stream_list.atmosphere.output"
+      stream_list.atmosphere.surface: "{{ user.mpas_app }}/parm/mpas/hrrrv5/stream_list.atmosphere.surface"
     files_to_link: &mpas_init_files_to_link
       CAM_ABS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/CAM_ABS_DATA.DBL"
       CAM_AEROPT_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/CAM_AEROPT_DATA.DBL"
@@ -137,7 +140,6 @@ create_ics:
       RRTMG_SW_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/RRTMG_SW_DATA.DBL"
       SOILPARM.TBL: "{{ user.mpas_app }}/src/MPAS-Model/SOILPARM.TBL"
       VEGPARM.TBL: "{{ user.mpas_app }}/src/MPAS-Model/VEGPARM.TBL"
-      QNWFA_QNIFA_SIGMA_MONTHLY.dat: "{{ data.mesh_files }}/QNWFA_QNIFA_SIGMA_MONTHLY.dat"
     namelist:
       base_file: "{{ user.mpas_app }}/src/MPAS-Model/namelist.init_atmosphere"
       update_values: &mpas_init_update_values
@@ -154,7 +156,7 @@ create_ics:
         vertical_grid:
           config_blend_bdy_terrain: true
           config_ztop: 25878.712
-          config_specified_zeta_levels: '{{ platform.hrrr_fix }}/L60.txt'
+          config_specified_zeta_levels: '{{ platform.hrrr_fix }}/vert_levels/L60.txt'
         preproc_stages:
           config_native_gwd_static: false
           config_static_interp: false
@@ -229,31 +231,35 @@ forecast:
     domain: regional
     execution:
       batchargs:
-        cores: 800
+        nodes: 5
+        tasks_per_node: 160
+        cores: !int "{{ forecast.mpas.execution.batchargs.tasks_per_node * forecast.mpas.execution.batchargs.nodes }}"
         walltime: 02:30:00
       envcmds:
         - ulimit -s unlimited || true
         - module use {{ user.mpas_app }}/modulefiles
         - module load build_{{ user.platform }}_intel
+        - module load impi-collective-settings/1.0.0
+        - export I_MPI_COLL_INTRANODE=pt2pt
       executable: "{{ user.mpas_app }}/exec/atmosphere_model"
       mpiargs:
         - "--ntasks={{ forecast.mpas.execution.batchargs.cores }}"
       mpicmd: srun
     files_to_copy:
+      "{{ user.mesh_label }}.graph.info.part.{{ forecast.mpas.execution.batchargs.cores }}": '{{ user.experiment_dir }}/{{ user.mesh_label }}.graph.info.part.{{ forecast.mpas.execution.batchargs.cores }}'
+      stream_list.atmosphere.diagnostics: "{{ user.mpas_app }}/parm/mpas/hrrrv5/stream_list.atmosphere.diagnostics"
+      stream_list.atmosphere.output: "{{ user.mpas_app }}/parm/mpas/hrrrv5/stream_list.atmosphere.output"
+      stream_list.atmosphere.surface: "{{ user.mpas_app }}/parm/mpas/hrrrv5/stream_list.atmosphere.surface"
+    files_to_hardlink:
       "{{ user.mesh_label }}.init.nc": "{{ create_ics.mpas_init.rundir }}/{{ user.mesh_label }}.init.nc"
-      "{{ user.mesh_label }}.graph.info.part.{{forecast.mpas.execution.batchargs.cores }}": '{{ user.experiment_dir }}/{{ user.mesh_label }}.graph.info.part.{{forecast.mpas.execution.batchargs.cores }}'
-      stream_list.atmosphere.diagnostics: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.diagnostics"
-      stream_list.atmosphere.output: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.output"
-      stream_list.atmosphere.surface: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.surface"
     files_to_link:
       <<: *mpas_init_files_to_link
-      CCN_ACTIVATE.BIN: "{{ platform.hrrr_fix }}/CCN_ACTIVATE.BIN"
+      ccn_activate.bin: "{{ platform.hrrr_fix }}/physics/hrrrv5/ccn_activate.bin"
+      freeze_water_data_tempo_v3: "{{ user.mpas_app }}/src/MPAS-Model/freeze_water_data_tempo_v3"
+      qr_acr_qs_data_tempo_v3: "{{ user.mpas_app }}/src/MPAS-Model/qr_acr_qs_data_tempo_v3"
+      qr_acr_qg_data_tempo_v3: "{{ user.mpas_app }}/src/MPAS-Model/qr_acr_qg_data_tempo_v3"
       CCN_ACTIVATE_DATA: "{{ user.mpas_app }}/src/MPAS-Model/CCN_ACTIVATE_DATA"
       COMPATIBILITY: "{{ user.mpas_app }}/src/MPAS-Model/src/core_atmosphere/physics/physics_wrf/files/COMPATIBILITY"
-      MP_TEMPO_QRacrQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_QRacrQS_DATA.DBL"
-      MP_TEMPO_freezeH2O_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_freezeH2O_DATA.DBL"
-      MP_TEMPO_QIautQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_QIautQS_DATA.DBL"
-      MP_TEMPO_HAILAWARE_QRacrQG_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_HAILAWARE_QRacrQG_DATA.DBL"
     lateral_boundary_conditions:
       interval_hours: !int "{{ user.lbcs.interval_hours }}"
       offset: 0
@@ -278,8 +284,6 @@ forecast:
           config_radtsw_interval: '00:15:00'
           config_bucket_update: 'none'
           config_physics_suite: 'hrrrv5'
-          config_tempo_aerosolaware: true
-          config_tempo_hailaware: true
           config_gwdo_scheme: 'bl_ugwp_gwdo'
           config_lsm_scheme: 'sf_ruc'
           num_soil_layers: 9
@@ -349,8 +353,8 @@ post:
     execution:
       batchargs:
         walltime: 00:30:00
-        cores: 768
-        nodes: 24
+        tasks_per_node: 160
+        nodes: 1
         native:
           - --exclusive
     fixdir: /path/to/fix/files
