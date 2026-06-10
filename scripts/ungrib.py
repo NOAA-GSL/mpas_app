@@ -102,6 +102,10 @@ def merge_vector_fields(driver: Ungrib, infile: Path, wgrib_config: dict):
         outfile.unlink()
 
 
+def regrid(driver: Ungrib, wgrib2_config: dict):
+    regrid_all(driver, wgrib2_config)
+
+
 @collection
 def regrid_all(driver: Ungrib, wgrib2_config: dict):
     """
@@ -110,6 +114,7 @@ def regrid_all(driver: Ungrib, wgrib2_config: dict):
     yield "Regridding winds with wgrib2"
     gribfiles = driver.gribfiles()
     yield [merge_vector_fields(driver, ingrib, wgrib2_config) for ingrib in gribfiles.ref]
+
 
 @task
 def run_ungrib(config_file, cycle, key_path):
@@ -131,11 +136,9 @@ def run_ungrib(config_file, cycle, key_path):
     ungrib_block["ungrib"]["gribfiles"] = [str(p) for p in gribfiles]
     driver = Ungrib(config=ungrib_block, cycle=cycle)
     yield [Asset(x, x.is_file) for x in driver.output["paths"]]
-    yield (
-        regrid_all(driver, ungrib_block["wgrib2"])
-        if external_model == "RRFS"
-        else driver.run()
-    )
+    if external_model == "RRFS":
+        regrid(driver, ungrib_block["wgrib2"])
+    yield driver.run()
 
 
 def main():

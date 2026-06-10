@@ -9,13 +9,6 @@ from uwtools.api.config import get_yaml_config
 from scripts import ungrib
 
 
-@iotaa.task
-def empty(*args):  # noqa: ARG001
-    yield "Test"
-    yield iotaa.Asset(None, lambda: True)
-    yield None
-
-
 @fixture
 def ungrib_config(tmp_path):
     tmp_input = tmp_path / "input_data"
@@ -138,7 +131,7 @@ def test_regrid_input(ungrib_driver, tmp_path):
 
     with (
         patch.object(ungrib, "run_shell_cmd") as run_shell_cmd,
-        patch.object(ungrib.Ungrib, "gribfiles", side_effect=empty) as gribfiles,
+        patch.object(ungrib.Ungrib, "gribfiles", side_effect=noop) as gribfiles,
     ):
         ungrib.regrid_input(ungrib_driver, infile, wgrib_config)
         gribfiles.assert_called_once()
@@ -161,7 +154,7 @@ def test_regrid_all(tmp_path, ungrib_driver):
     gribfiles.ref = [tmp_path / f"GRIBFILE.{label}" for label in ("AAA", "AAB", "AAC", "AAD")]
     with (
         patch.object(ungrib.Ungrib, "gribfiles", return_value=gribfiles),
-        patch.object(ungrib, "merge_vector_fields", side_effect=empty) as wgrib_task,
+        patch.object(ungrib, "merge_vector_fields", side_effect=noop) as wgrib_task,
     ):
         ungrib.regrid_all(ungrib_driver, {"wgrib2": {}})
         assert expected_calls == wgrib_task.call_args_list
@@ -178,7 +171,7 @@ def test_run_ungrib_gfs(outcome, tmp_path, ungrib_config):
     ungrib_config.dump(config_file)
     cycle = datetime(2025, 1, 1, 12, tzinfo=timezone.utc)
     side_effect = (tmp_path / "runscript.ungrib.done").touch() if outcome == "pass" else None
-    with patch.object(ungrib.Ungrib, "run", side_effect=side_effect) as run:
+    with patch.object(ungrib.Ungrib, "run", side_effect=side_effect, wraps=noop) as run:
         task_state = ungrib.run_ungrib(config_file, cycle, ["ungrib_ics"])
         if outcome == "pass":
             assert (tmp_path / "runscript.ungrib.done").exists()
@@ -200,7 +193,7 @@ def test_run_ungrib_rrfs_ics(tmp_path, ungrib_config):
     cycle = datetime(2025, 1, 1, 12, tzinfo=timezone.utc)
 
     with (
-        patch.object(ungrib.Ungrib, "run") as run,
+        patch.object(ungrib.Ungrib, "run", wraps=noop) as run,
         patch.object(ungrib, "regrid_all", wraps=noop) as regrid_all,
     ):
         ungrib.run_ungrib(config_file, cycle, ["ungrib_ics"])
@@ -221,7 +214,7 @@ def test_run_ungrib_rrfs_lbcs(tmp_path, ungrib_config):
     cycle = datetime(2025, 1, 1, 12, tzinfo=timezone.utc)
 
     with (
-        patch.object(ungrib.Ungrib, "run") as run,
+        patch.object(ungrib.Ungrib, "run", wraps=noop) as run,
         patch.object(ungrib, "regrid_all", wraps=noop) as regrid_all,
     ):
         ungrib.run_ungrib(config_file, cycle, ["ungrib_lbcs"])
