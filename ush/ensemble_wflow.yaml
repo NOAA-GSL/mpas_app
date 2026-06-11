@@ -8,25 +8,9 @@ user:
     - create_lbcs.mpas_init
     - forecast.mpas
     - post.upp
-data:
-  mesh_files: /scratch3/BMC/wrfruc/gge/rrfs2/ursa_test/rrfs-workflow.20250617/fix
-  graphinfo_filename: graphinfo/{{ user.mesh_label }}.graph.info
-platform:
-  hrrr_fix: /scratch3/BMC/rtwrfruc/RRFSv2X/code/rrfs-workflow.20260423/fix
-create_ics:
-  mpas_init:
-    files_to_copy:
-      "{{ user.mesh_label }}.static.nc": "{{ data.mesh_files }}/meshes/{{ user.mesh_label }}.static.nc"
-    files_to_link:
-      QNWFA_QNIFA_SIGMA_MONTHLY.dat: !remove
-    namelist:
-      update_values:
-        vertical_grid:
-          config_specified_zeta_levels: '{{ platform.hrrr_fix }}/vert_levels/L60.txt'
 create_lbcs:
   mpas_init:
     files_to_copy:
-      "{{ user.mesh_label }}.static.nc": "{{ data.mesh_files }}/meshes/{{ user.mesh_label }}.static.nc"
       "{{ user.mesh_label }}.init.nc": !remove
     files_to_hardlink:
       "{{ user.mesh_label }}.init.nc": "{{ create_ics.mpas_init['rundir'] }}/{{ user.mesh_label }}.init.nc"
@@ -35,9 +19,6 @@ forecast:
   mpas:
     execution:
       batchargs:
-        nodes: 5
-        tasks_per_node: 160
-        cores: 800
         walltime: "1:10:00"
     files_to_copy:
       "{{ user.mesh_label }}.init.nc": !remove
@@ -45,35 +26,10 @@ forecast:
     files_to_link:
       init.nc: /scratch3/BMC/wrfruc/cholt/mpas_app_work/rrfs_v2_ensemble/rt_run/20260526/rrfs_prep_ic_18_v2.1.3/enkf/mem0{{ "MEM" | env }}/mpasout.nc
       invariant.nc: "{{ platform.hrrr_fix }}/conus3km/conus3km.invariant.nc_L60_GEFS"
-      freeze_water_data_tempo_v3: "{{ user.mpas_app }}/src/MPAS-Model/freeze_water_data_tempo_v3"
-      qr_acr_qs_data_tempo_v3: "{{ user.mpas_app }}/src/MPAS-Model/qr_acr_qs_data_tempo_v3"
-      qr_acr_qg_data_tempo_v3: "{{ user.mpas_app }}/src/MPAS-Model/qr_acr_qg_data_tempo_v3"
-      CAM_ABS_DATA.DBL: "{{ platform.hrrr_fix }}/physics/hrrrv5/CAM_ABS_DATA.DBL"
-      CAM_AEROPT_DATA.DBL: "{{ platform.hrrr_fix }}/physics/hrrrv5/CAM_AEROPT_DATA.DBL"
-      CCN_ACTIVATE_DATA: "{{ platform.hrrr_fix }}/physics/hrrrv5/CCN_ACTIVATE_DATA"
-      MP_TEMPO_HAILAWARE_QRacrQG_DATA.DBL: "{{ platform.hrrr_fix }}/physics/hrrrv5/MP_TEMPO_HAILAWARE_QRacrQG_DATA.DBL"
-      MP_TEMPO_QIautQS_DATA.DBL: "{{ platform.hrrr_fix }}/physics/hrrrv5/MP_TEMPO_QIautQS_DATA.DBL"
-      MP_TEMPO_QRacrQG_DATA.DBL: "{{ platform.hrrr_fix }}/physics/hrrrv5/MP_TEMPO_QRacrQG_DATA.DBL"
-      MP_TEMPO_QRacrQS_DATA.DBL: "{{ platform.hrrr_fix }}/physics/hrrrv5/MP_TEMPO_QRacrQS_DATA.DBL"
-      MP_TEMPO_freezeH2O_DATA.DBL: "{{ platform.hrrr_fix }}/physics/hrrrv5/MP_TEMPO_freezeH2O_DATA.DBL"
-      MP_THOMPSON_QIautQS_DATA.DBL: "{{ platform.hrrr_fix }}/physics/hrrrv5/MP_THOMPSON_QIautQS_DATA.DBL"
-      MP_THOMPSON_QRacrQG_DATA.DBL: "{{ platform.hrrr_fix }}/physics/hrrrv5/MP_THOMPSON_QRacrQG_DATA.DBL"
-      MP_THOMPSON_QRacrQS_DATA.DBL: "{{ platform.hrrr_fix }}/physics/hrrrv5/MP_THOMPSON_QRacrQS_DATA.DBL"
-      MP_THOMPSON_freezeH2O_DATA.DBL: "{{ platform.hrrr_fix }}/physics/hrrrv5/MP_THOMPSON_freezeH2O_DATA.DBL"
-      CAM_ABS_DATA.DBL: "{{ platform.hrrr_fix }}/physics/hrrrv5/CAM_ABS_DATA.DBL"
-      CAM_AEROPT_DATA.DBL: "{{ platform.hrrr_fix }}/physics/hrrrv5/CAM_AEROPT_DATA.DBL"
-      GENPARM.TBL: "{{ platform.hrrr_fix }}/physics/hrrrv5/GENPARM.TBL"
-      LANDUSE.TBL: "{{ platform.hrrr_fix }}/physics/hrrrv5/LANDUSE.TBL"
-      OZONE_DAT.TBL: "{{ platform.hrrr_fix }}/physics/hrrrv5/OZONE_DAT.TBL"
-      OZONE_LAT.TBL: "{{ platform.hrrr_fix }}/physics/hrrrv5/OZONE_LAT.TBL"
-      OZONE_PLEV.TBL: "{{ platform.hrrr_fix }}/physics/hrrrv5/OZONE_PLEV.TBL"
-      RRTMG_LW_DATA: "{{ platform.hrrr_fix }}/physics/hrrrv5/RRTMG_LW_DATA"
-      RRTMG_LW_DATA.DBL: "{{ platform.hrrr_fix }}/physics/hrrrv5/RRTMG_LW_DATA.DBL"
-      RRTMG_SW_DATA: "{{ platform.hrrr_fix }}/physics/hrrrv5/RRTMG_SW_DATA"
-      RRTMG_SW_DATA.DBL: "{{ platform.hrrr_fix }}/physics/hrrrv5/RRTMG_SW_DATA.DBL"
-      SOILPARM.TBL: "{{ platform.hrrr_fix }}/physics/hrrrv5/SOILPARM.TBL"
-      VEGPARM.TBL: "{{ platform.hrrr_fix }}/physics/hrrrv5/VEGPARM.TBL"
-      QNWFA_QNIFA_SIGMA_MONTHLY.dat: !remove
+      MP_THOMPSON_QIautQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_THOMPSON_QIautQS_DATA.DBL"
+      MP_THOMPSON_QRacrQG_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_THOMPSON_QRacrQG_DATA.DBL"
+      MP_THOMPSON_QRacrQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_THOMPSON_QRacrQS_DATA.DBL"
+      MP_THOMPSON_freezeH2O_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_THOMPSON_freezeH2O_DATA.DBL"
     namelist:
       base_file: /scratch3/BMC/wrfruc/cholt/mpas_app_work/rrfs_v2_ensemble/rt_run/namelist.atmosphere
       update_values:
