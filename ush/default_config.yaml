@@ -114,8 +114,6 @@ create_ics:
         - ulimit -s unlimited || true
         - module use {{ user.mpas_app }}/modulefiles
         - module load build_{{ user.platform }}_intel
-        - module load impi-collective-settings/1.0.0
-        - export I_MPI_COLL_INTRANODE=pt2pt
       executable: "{{ user.mpas_app }}/exec/init_atmosphere_model"
       mpiargs:
         - "--ntasks={{ create_ics.mpas_init.execution.batchargs.cores }}"
@@ -239,8 +237,6 @@ forecast:
         - ulimit -s unlimited || true
         - module use {{ user.mpas_app }}/modulefiles
         - module load build_{{ user.platform }}_intel
-        - module load impi-collective-settings/1.0.0
-        - export I_MPI_COLL_INTRANODE=pt2pt
       executable: "{{ user.mpas_app }}/exec/atmosphere_model"
       mpiargs:
         - "--ntasks={{ forecast.mpas.execution.batchargs.cores }}"
@@ -288,7 +284,10 @@ forecast:
           config_lsm_scheme: 'sf_ruc'
           num_soil_layers: 9
           config_pbl_scheme: 'bl_mynnedmf'
-
+        physics_mp_tempo:
+          config_tempo_aerosolaware: true
+          config_tempo_hailaware: true
+          config_tempo_ml_for_bl_nc: true
     rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/forecast'
     streams:
       input:
