@@ -478,7 +478,7 @@ def try_data_store(
     for fs_copy_config in fs_copy_configs:
         getter = fs.link if symlink else fs.copy
         files_copied = getter(config=fs_copy_config, target_dir=outpath, cycle=cycle)
-        if files_copied["ready"] and not files_copied["not-ready"]:
+        if files_copied["ready"] and not files_copied["notready"]:
             logging.info(files_copied)
             return True, fs_copy_config
 

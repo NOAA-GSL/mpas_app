@@ -159,13 +159,13 @@ def stage_grid_files(
     """
     Create grid files for each required processor count, if they don't already exist.
     """
-    mesh_file_name = f"{validated.user.mesh_label}.graph.info"
-    mesh_file_path = Path(experiment_config["data"]["mesh_files"]) / mesh_file_name
+    graphinfo_filename = experiment_config["data"]["graphinfo_filename"]
+    graphinfo_filepath = Path(experiment_config["data"]["mesh_files"]) / graphinfo_filename
     for nprocs in required_nprocs(experiment_config):
-        part_file = experiment_dir / f"{mesh_file_path.name}.part.{nprocs}"
+        part_file = experiment_dir / f"{graphinfo_filepath.name}.part.{nprocs}"
         if not part_file.is_file():
             logging.info("Creating grid file for %s procs", nprocs)
-            create_grid_files(experiment_dir, mesh_file_path, nprocs)
+            create_grid_files(experiment_dir, graphinfo_filepath, nprocs)
 
 
 def validate_driver_blocks(validated_blocks: list[str], workflow_config: YAMLConfig) -> None:

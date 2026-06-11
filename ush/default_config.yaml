@@ -24,6 +24,7 @@ user:
     data_stores: aws
     external_model: GFS
     interval_hours: 6
+    interval_delta: !timedelta "{{ user.lbcs.interval_hours }}"
     offset_hours: 0
   forecast:
     output_interval: 6
@@ -137,7 +138,7 @@ create_ics:
       RRTMG_SW_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/RRTMG_SW_DATA.DBL"
       SOILPARM.TBL: "{{ user.mpas_app }}/src/MPAS-Model/SOILPARM.TBL"
       VEGPARM.TBL: "{{ user.mpas_app }}/src/MPAS-Model/VEGPARM.TBL"
-      QNWFA_QNIFA_SIGMA_MONTHLY.dat: "{{ data.mesh_files }}/QNWFA_QNIFA_SIGMA_MONTHLY.dat"
+      QNWFA_QNIFA_SIGMA_MONTHLY.dat: "{{ platform.hrrr_fix }}/QNWFA_QNIFA_SIGMA_MONTHLY.dat"
     namelist:
       base_file: "{{ user.mpas_app }}/src/MPAS-Model/namelist.init_atmosphere"
       update_values: &mpas_init_update_values
@@ -247,7 +248,7 @@ forecast:
       stream_list.atmosphere.surface: "{{ user.mpas_app }}/parm/mpas/stream_list.atmosphere.surface"
     files_to_link:
       <<: *mpas_init_files_to_link
-      CCN_ACTIVATE.BIN: "{{ platform.hrrr_fix }}/CCN_ACTIVATE.BIN"
+      ccn_activate.bin: "{{ user.mpas_app }}/src/MPAS-Model/src/core_atmosphere/physics/physics_noaa/TEMPO/tables/ccn_activate.bin"
       CCN_ACTIVATE_DATA: "{{ user.mpas_app }}/src/MPAS-Model/CCN_ACTIVATE_DATA"
       COMPATIBILITY: "{{ user.mpas_app }}/src/MPAS-Model/src/core_atmosphere/physics/physics_wrf/files/COMPATIBILITY"
       MP_TEMPO_QRacrQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_TEMPO_QRacrQS_DATA.DBL"

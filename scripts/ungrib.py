@@ -124,8 +124,10 @@ def run_ungrib(config_file, cycle, key_path):
     yield f"run ungrib for {external_model} {ics_or_lbcs}"
     ungrib_block = walk_key_path(config=expt_config, key_path=key_path)
     rundir = Path(ungrib_block["ungrib"]["rundir"]).parent / external_model
-    summary = get_yaml_config(rundir / "ICS.yaml")
-    gribfiles = [Path(rundir, p) for p in summary]
+    gribfiles = []
+    if (ics_summary_file := rundir / "ICS.yaml").exists():
+        summary = get_yaml_config(rundir / "ICS.yaml")
+        gribfiles.extend(Path(rundir, p) for p in summary)
     if ics_or_lbcs == "lbcs":
         lbcs_summary = get_yaml_config(rundir / "LBCS.yaml")
         gribfiles.extend(Path(rundir, p) for p in lbcs_summary)
