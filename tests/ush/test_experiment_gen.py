@@ -20,7 +20,10 @@ def test_config(tmp_path):
             "ics": {"external_model": "GFS"},
             "lbcs": {"external_model": "GFS"},
         },
-        "data": {"mesh_files": str(tmp_path / "meshes")},
+        "data": {
+            "mesh_files": str(tmp_path / "meshes"),
+            "graphinfo_filename": "testmesh.graph.info",
+        },
         "create_ics": {"mpas_init": {"execution": {"batchargs": {"cores": 32}}}},
         "forecast": {"mpas": {"execution": {"batchargs": {"nodes": 2, "tasks_per_node": 32}}}},
         "workflow": {
@@ -241,9 +244,7 @@ def test_stage_grid_files(test_config, validated_config):
     existing_part = validated_config.user.experiment_dir / f"{mesh_file.name}.part.32"
     existing_part.write_text("partitioned content")
     with patch.object(experiment_gen, "create_grid_files") as create:
-        experiment_gen.stage_grid_files(
-            test_config, validated_config.user.experiment_dir, validated_config
-        )
+        experiment_gen.stage_grid_files(test_config, validated_config.user.experiment_dir)
     create.assert_called_once_with(validated_config.user.experiment_dir, mesh_file, 64)
 
 

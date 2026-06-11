@@ -11,7 +11,7 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from iotaa import asset, external, task, tasks
+from iotaa import Asset, collection, external, task
 from uwtools.api.config import get_yaml_config
 from uwtools.api.logging import use_uwtools_logger
 from uwtools.api.ungrib import Ungrib
@@ -23,7 +23,7 @@ from scripts.utils import run_shell_cmd, walk_key_path
 @external
 def file(path: Path):
     yield f"{path}"
-    yield asset(path, path.is_file)
+    yield Asset(path, path.is_file)
 
 
 @task
@@ -37,7 +37,7 @@ def regrid_input(driver: Ungrib, infile: Path, wgrib_config: dict):
     taskname = f"wgrib2 regrid {infile}"
     yield taskname
     outfile = driver.rundir / f"tmp.{infile.name}.grib2"
-    yield asset(outfile, outfile.is_file)
+    yield Asset(outfile, outfile.is_file)
     yield driver.gribfiles()
     gribfile = infile.resolve()
     # Removes the GRIBFILE.* link.
@@ -76,7 +76,7 @@ def merge_vector_fields(driver: Ungrib, infile: Path, wgrib_config: dict):
     taskname = f"wgrib2 merge vector fields {infile}"
     yield taskname
     outfile = driver.rundir / f"tmp2.{infile.name}.grib2"
-    yield asset(outfile, outfile.is_file)
+    yield Asset(outfile, outfile.is_file)
     regrid_task = regrid_input(driver, infile, wgrib_config)
     yield regrid_task
     options = [
@@ -102,7 +102,11 @@ def merge_vector_fields(driver: Ungrib, infile: Path, wgrib_config: dict):
         outfile.unlink()
 
 
-@tasks
+def regrid(driver: Ungrib, wgrib2_config: dict):
+    regrid_all(driver, wgrib2_config)
+
+
+@collection
 def regrid_all(driver: Ungrib, wgrib2_config: dict):
     """
     Use wgrib2 to regrid the winds.
@@ -132,16 +136,11 @@ def run_ungrib(config_file, cycle, key_path):
         lbcs_summary = get_yaml_config(rundir / "LBCS.yaml")
         gribfiles.extend(Path(rundir, p) for p in lbcs_summary)
     ungrib_block["ungrib"]["gribfiles"] = [str(p) for p in gribfiles]
-    driver = Ungrib(config=expt_config, cycle=cycle, key_path=key_path)
-    yield [asset(x, x.is_file) for x in driver.output["paths"]]
-    yield (
-        regrid_all(driver, walk_key_path(config=expt_config, key_path=key_path)["wgrib2"])
-        if external_model == "RRFS"
-        else None
-    )
-    # Run ungrib.
-    logging.info("Running %s in %s", Ungrib.__name__, driver.rundir)
-    driver.run()
+    driver = Ungrib(config=ungrib_block, cycle=cycle)
+    yield [Asset(x, x.is_file) for x in driver.output["paths"]]
+    if external_model == "RRFS":
+        regrid(driver, ungrib_block["wgrib2"])
+    yield driver.run()
 
 
 def main():

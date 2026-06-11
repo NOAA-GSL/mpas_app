@@ -79,7 +79,7 @@ def main():
     validated = validate(experiment_config.as_dict())
     experiment_dir, experiment_file = setup_experiment_directory(validated)
     generate_workflow_files(experiment_config, experiment_file, mpas_app, user_config, validated)
-    stage_grid_files(experiment_config, experiment_dir, validated)
+    stage_grid_files(experiment_config, experiment_dir)
 
 
 def parse_args() -> list[Path]:
@@ -153,9 +153,7 @@ def setup_experiment_directory(validated: Config) -> tuple[Path, Path]:
     return experiment_dir, experiment_file
 
 
-def stage_grid_files(
-    experiment_config: YAMLConfig, experiment_dir: Path, validated: Config
-) -> None:
+def stage_grid_files(experiment_config: YAMLConfig, experiment_dir: Path) -> None:
     """
     Create grid files for each required processor count, if they don't already exist.
     """
