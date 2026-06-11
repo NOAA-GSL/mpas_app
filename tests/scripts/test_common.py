@@ -89,7 +89,7 @@ def test_run_component_failure(caplog, test_driver, args):
     caplog.set_level("ERROR")
     driver = test_driver
     with (
-        patch.object(driver, "run", return_value=Mock(ready=False, refs=["/some/rundir/file"])),
+        patch.object(driver, "run", return_value=Mock(ready=False, ref=["/some/rundir/file"])),
         patch("scripts.common.use_uwtools_logger"),
         patch("sys.exit") as sysexit,
     ):

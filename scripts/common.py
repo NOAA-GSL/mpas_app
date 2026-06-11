@@ -52,7 +52,7 @@ def run_component(
     logging.info("Running %s in %s", driver_class.__name__, rundir)
     task = driver.run()
     if not task.ready:
-        logging.error("Error occurred. Expected file %s not found.", task.refs[0])
+        logging.error("Error occurred. Expected file %s not found.", task.ref[0])
         sys.exit(1)
     return driver
 

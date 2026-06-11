@@ -9,6 +9,8 @@ forecast:
     execution:
       batchargs:
         partition: hera
+        nodes: 20
+        tasks_per_node: 40
 post:
   mpassit:
     execution:
