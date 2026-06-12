@@ -36,6 +36,7 @@ user:
 data:
   # Known locations to mesh_files are updated from parm/machines/*.yaml files
   mesh_files: /path/to/nonstandard/location
+  graphinfo_filename: "{{ user.mesh_label }}.graph.info"
 platform:
   # Supported scheduler options include Slurm, PBSPro, and LSF
   scheduler: slurm
