@@ -79,7 +79,7 @@ def main():
     validated = validate(experiment_config.as_dict())
     experiment_dir, experiment_file = setup_experiment_directory(validated)
     generate_workflow_files(experiment_config, experiment_file, mpas_app, user_config, validated)
-    stage_grid_files(experiment_config, experiment_dir, validated)
+    stage_grid_files(experiment_config, experiment_dir)
 
 
 def parse_args() -> list[Path]:
@@ -153,19 +153,17 @@ def setup_experiment_directory(validated: Config) -> tuple[Path, Path]:
     return experiment_dir, experiment_file
 
 
-def stage_grid_files(
-    experiment_config: YAMLConfig, experiment_dir: Path, validated: Config
-) -> None:
+def stage_grid_files(experiment_config: YAMLConfig, experiment_dir: Path) -> None:
     """
     Create grid files for each required processor count, if they don't already exist.
     """
-    mesh_file_name = f"{validated.user.mesh_label}.graph.info"
-    mesh_file_path = Path(experiment_config["data"]["mesh_files"]) / mesh_file_name
+    graphinfo_filename = experiment_config["data"]["graphinfo_filename"]
+    graphinfo_filepath = Path(experiment_config["data"]["mesh_files"]) / graphinfo_filename
     for nprocs in required_nprocs(experiment_config):
-        part_file = experiment_dir / f"{mesh_file_path.name}.part.{nprocs}"
+        part_file = experiment_dir / f"{graphinfo_filepath.name}.part.{nprocs}"
         if not part_file.is_file():
             logging.info("Creating grid file for %s procs", nprocs)
-            create_grid_files(experiment_dir, mesh_file_path, nprocs)
+            create_grid_files(experiment_dir, graphinfo_filepath, nprocs)
 
 
 def validate_driver_blocks(validated_blocks: list[str], workflow_config: YAMLConfig) -> None:

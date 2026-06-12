@@ -1,3 +1,9 @@
+machine=$1
+
+if [[ -z "$machine" ]]; then
+  echo "usage: source load_wflow_modules.sh [machine]"
+  return
+fi
 
 machine=$1
 

@@ -102,6 +102,10 @@ def merge_vector_fields(driver: Ungrib, infile: Path, wgrib_config: dict):
         outfile.unlink()
 
 
+def regrid(driver: Ungrib, wgrib2_config: dict):
+    regrid_all(driver, wgrib2_config)
+
+
 @collection
 def regrid_all(driver: Ungrib, wgrib2_config: dict):
     """
@@ -130,16 +134,13 @@ def run_ungrib(config_file, cycle, key_path):
         lbcs_summary = get_yaml_config(rundir / "LBCS.yaml")
         gribfiles.extend(Path(rundir, p) for p in lbcs_summary)
     ungrib_block["ungrib"]["gribfiles"] = [str(p) for p in gribfiles]
-    driver = Ungrib(config=expt_config, cycle=cycle, key_path=key_path)
+    driver = Ungrib(config=ungrib_block, cycle=cycle)
     yield [Asset(x, x.is_file) for x in driver.output["paths"]]
-    yield (
-        regrid_all(driver, walk_key_path(config=expt_config, key_path=key_path)["wgrib2"])
-        if external_model == "RRFS"
-        else None
-    )
+    if external_model == "RRFS":
+        regrid(driver, ungrib_block["wgrib2"])
     # Run ungrib.
     logging.info("Running %s in %s", Ungrib.__name__, driver.rundir)
-    driver.run()
+    yield driver.run()
 
 
 def main():

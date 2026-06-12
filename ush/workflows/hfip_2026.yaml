@@ -9,7 +9,11 @@ user:
   first_cycle: !!timestamp 2025-08-14T00:00:00
   last_cycle: !!timestamp 2025-08-15T00:00:00
   hpss_archive_dir: /path/to/hpss/dir
-
+data:
+  mesh_files: /scratch3/BMC/wrfruc/Clark.Evans/MPAS-Model-v8.3.1/fix
+  graphinfo_filename: "{{ user.mesh_label }}.graph.info"
+platform:
+  hrrr_fix:  /scratch3/BMC/wrfruc/Clark.Evans/MPAS-Model-v8.3.1/fix
 workflow:
   tasks:
     task_mpas:
