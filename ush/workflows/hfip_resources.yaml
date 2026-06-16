@@ -19,6 +19,6 @@ post:
   mpassit:
     execution:
       batchargs:
-        nodes: 24
-        cores: 1200
+        nodes: 2
+        tasks_per_node: 80
         walltime: "00:15:00"

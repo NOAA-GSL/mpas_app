@@ -17,7 +17,7 @@ workflow:
           cyclestr:
             value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H_day#day#.log'
         walltime: "{{ archiving.mpassit.execution.walltime }}"
-        cores: !int "{{ archiving.mpassit.execution.cores }}"
+        cores: 1
         dependency:
           metataskdep:
             attrs:
@@ -35,7 +35,7 @@ workflow:
         cyclestr:
           value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ archiving.upp.execution.walltime }}"
-      cores: !int "{{ archiving.upp.execution.cores }}"
+      cores: 1
       dependency:
         metataskdep:
           attrs:

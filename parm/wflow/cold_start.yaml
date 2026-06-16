@@ -16,7 +16,13 @@ workflow:
     PLATFORM: "{{ user.platform }}"
   tasks:
     task_get_ics_data:
-      command: '&MPAS_APP;/scripts/get_external_data.sh'
+      command:
+        cyclestr:
+          value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; &&
+            &MPAS_APP;/scripts/get_external_data.py
+            -c &EXPERIMENT_CONFIG;
+            --cycle @Y-@m-@dT@H:@M:@S
+            --key-path get_ics_data'
       account: "{{ platform.account }}"
       partition: "{{ platform.service_partition }}"
       join:
@@ -24,24 +30,14 @@ workflow:
           value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ get_ics_data.execution.walltime }}"
       cores: !int "{{ get_ics_data.execution.cores }}"
-      envars:
-        cycle:
-          cyclestr:
-            value: '@Y-@m-@dT@H:@M:@S'
-        OUTPUT_PATH:
-          cyclestr:
-            value: "{{ user.experiment_dir }}/@Y@m@d@H/{{ user.ics.external_model }}"
-        DATA_STORES: "{{ user.ics.data_stores }}"
-        INPUT_FILE_PATH: "{{ user.ics.get('input_file_path', '')}}"
-        FILE_TEMPLATES:
-          cyclestr:
-            value: "{{ user.ics.get('file_templates', '')}}"
-        EXTERNAL_MODEL: "{{ user.ics.external_model }}"
-        ICS_or_LBCS: ICS
-        TIME_OFFSET_HRS: "{{ user.ics.offset_hours }}"
-        MPAS_APP: '&MPAS_APP;'
     task_get_lbcs_data:
-      command: '&MPAS_APP;/scripts/get_external_data.sh'
+      command:
+        cyclestr:
+          value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; &&
+            &MPAS_APP;/scripts/get_external_data.py
+            -c &EXPERIMENT_CONFIG;
+            --cycle @Y-@m-@dT@H:@M:@S
+            --key-path get_lbcs_data'
       account: "{{ platform.account }}"
       partition: "{{ platform.service_partition }}"
       join:
@@ -50,23 +46,6 @@ workflow:
       walltime: "{{ get_lbcs_data.execution.walltime }}"
       cores: !int "{{ get_lbcs_data.execution.cores }}"
       envars:
-        cycle:
-          cyclestr:
-            value: '@Y-@m-@dT@H:@M:@S'
-        OUTPUT_PATH:
-          cyclestr:
-            value: "{{ user.experiment_dir }}/@Y@m@d@H/{{ user.lbcs.external_model }}"
-        DATA_STORES: "{{ user.lbcs.data_stores }}"
-        INPUT_FILE_PATH: "{{ user.lbcs.get('input_file_path', '') }}"
-        FILE_TEMPLATES:
-          cyclestr:
-            value: "{{ user.lbcs.get('file_templates', '') }}"
-        EXTERNAL_MODEL: "{{ user.lbcs.external_model }}"
-        ICS_or_LBCS: LBCS
-        TIME_OFFSET_HRS: "{{ user.lbcs.offset_hours }}"
-        LBC_INTVL_HRS: "{{ user.lbcs.interval_hours }}"
-        FCST_LEN: !int "{{ forecast.mpas.length }}" 
-        MPAS_APP: '&MPAS_APP;'
     task_ungrib_ics:
       command:
         cyclestr:
@@ -93,6 +72,7 @@ workflow:
             --cycle @Y-@m-@dT@H:@M:@S
             --key-path prepare_grib_lbcs'
       account: "{{ platform.account }}"
+      exclusive: "true"
       join:
         cyclestr:
           value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'

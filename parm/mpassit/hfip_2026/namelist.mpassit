@@ -4,6 +4,7 @@
     diag_file_input_grid = "DIAGFILE"
     block_decomp_file    = "BLOCKFILE"
     output_file          = "MPAS-A_out.FCSTTIME.nc"
+    is_regional          = .true.
     target_grid_type     = 'lambert'
     interp_diag          = .true.
     interp_hist          = .true.

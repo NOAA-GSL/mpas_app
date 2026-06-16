@@ -9,10 +9,22 @@ user:
   first_cycle: !!timestamp 2025-08-14T00:00:00
   last_cycle: !!timestamp 2025-08-15T00:00:00
   hpss_archive_dir: /path/to/hpss/dir
+  ics:
+    data_stores:
+      - disk
+  lbcs:
+    data_stores:
+      - disk
 data:
   mesh_files: /scratch3/BMC/wrfruc/Clark.Evans/MPAS-Model-v8.3.1/fix
   graphinfo_filename: "{{ user.mesh_label }}.graph.info"
 platform:
+  data:
+    gfs:
+      path: /scratch3/HFIP/hwrfv3/noscrub/hafs-input/COMGFSv17/gfs.{{ yyyymmdd }}/{{ hh }}/products/atmos/grib2/0p25/
+      file_templates:
+        - gfs.t{{ hh }}z.pres_a.0p25.f{{ "%03d" | format(fcst_hr) }}.grib2
+        - gfs.t{{ hh }}z.pres_b.0p25.f{{ "%03d" | format(fcst_hr) }}.grib2
   hrrr_fix:  /scratch3/BMC/wrfruc/Clark.Evans/MPAS-Model-v8.3.1/fix
 workflow:
   tasks:
@@ -28,10 +40,10 @@ workflow:
 create_ics:
   mpas_init: &mpas_init
     files_to_copy:
-      stream_list.atmosphere.diag_ugwp: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.diag_ugwp"
-      stream_list.atmosphere.diagnostics: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.diagnostics"
-      stream_list.atmosphere.output: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.output"
-      stream_list.atmosphere.surface: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.surface"
+      stream_list.atmosphere.diag_ugwp: "{{ user.mpas_app }}/parm/mpas/hfip_2026/stream_list.atmosphere.diag_ugwp"
+      stream_list.atmosphere.diagnostics: "{{ user.mpas_app }}/parm/mpas/hfip_2026/stream_list.atmosphere.diagnostics"
+      stream_list.atmosphere.output: "{{ user.mpas_app }}/parm/mpas/hfip_2026/stream_list.atmosphere.output"
+      stream_list.atmosphere.surface: "{{ user.mpas_app }}/parm/mpas/hfip_2026/stream_list.atmosphere.surface"
     files_to_link:
       QNWFA_QNIFA_SIGMA_MONTHLY.dat: "{{ platform.hrrr_fix }}/../QNWFA_QNIFA_SIGMA_MONTHLY.dat"
       "{{ user.mesh_label }}.ugwp_oro_data.nc": "{{ platform.hrrr_fix }}/{{ user.mesh_label }}.ugwp_oro_data.nc" 
@@ -43,7 +55,7 @@ create_ics:
           config_nvertlevels: 79
           config_nsoillevels: 4
           config_nvegopt: 1
-          config_nfglevels: 34
+          config_nfglevels: 89
         interpolation_control:
           config_extrap_airtemp: linear
         preproc_stages:
@@ -68,10 +80,10 @@ create_lbcs:
 forecast:
   mpas:
     files_to_copy:
-      stream_list.atmosphere.diag_ugwp: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.diag_ugwp"
-      stream_list.atmosphere.diagnostics: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.diagnostics"
-      stream_list.atmosphere.output: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.output"
-      stream_list.atmosphere.surface: "{{ user.mpas_app }}/parm/mpas/hfip_2025/stream_list.atmosphere.surface"
+      stream_list.atmosphere.diag_ugwp: "{{ user.mpas_app }}/parm/mpas/hfip_2026/stream_list.atmosphere.diag_ugwp"
+      stream_list.atmosphere.diagnostics: "{{ user.mpas_app }}/parm/mpas/hfip_2026/stream_list.atmosphere.diagnostics"
+      stream_list.atmosphere.output: "{{ user.mpas_app }}/parm/mpas/hfip_2026/stream_list.atmosphere.output"
+      stream_list.atmosphere.surface: "{{ user.mpas_app }}/parm/mpas/hfip_2026/stream_list.atmosphere.surface"
       freeze_water_data_tempo_v3: "{{ user.mpas_app }}/src/MPAS-Model/freeze_water_data_tempo_v3"
       qr_acr_qs_data_tempo_v3: "{{ user.mpas_app }}/src/MPAS-Model/qr_acr_qs_data_tempo_v3"
       qr_acr_qg_data_tempo_v3: "{{ user.mpas_app }}/src/MPAS-Model/qr_acr_qg_data_tempo_v3"
@@ -106,9 +118,7 @@ forecast:
           config_gvf_update: true
           config_lsm_scheme: sf_noah
           num_soil_layers: 4
-        physics_lsm_noahmp:
-          config_noahmp_iopt_crs: 2
-          config_noahmp_iopt_stc: 3
+        physics_lsm_noahmp: !remove
         physics_mp_tempo:
           config_tempo_aerosolaware: true
           config_tempo_hailaware: true

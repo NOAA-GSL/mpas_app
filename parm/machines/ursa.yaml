@@ -5,7 +5,7 @@ platform:
   hrrr_fix: /scratch3/BMC/rtwrfruc/RRFSv2X/code/rrfs-workflow.20260603/fix
   scheduler: slurm
   geog_data:
-    global: /scratch2/BMC/wrfruc/talcott/mpas/global/static/geog/
+    global: /scratch3/BMC/wrfruc/Clark.Evans/mpas_static
   service_partition: u1-service
   data:
     gfs:
