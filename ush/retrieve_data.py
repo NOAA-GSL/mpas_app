@@ -336,24 +336,20 @@ def prepare_fs_copy_config(
                     file_item = get_yaml_config(
                         {
                             f"{mem_prefix}{local_fn}.{i}.grib2": f"{loc}/{fn}"
-                            for i, loc, fn in enumerate(zip(location, file_templates))
+                            for i, (loc, fn) in enumerate(zip(location, file_templates))
                         }
                     )
+            elif len(file_templates) == 1:
+                file_item = get_yaml_config(
+                    {f"{mem_prefix}{local_fn}.grib2": f"{location}/{fn}" for fn in file_templates}
+                )
             else:
-                if len(file_templates) == 1:
-                    file_item = get_yaml_config(
-                        {
-                            f"{mem_prefix}{local_fn}.grib2": f"{location}/{fn}"
-                            for fn in file_templates
-                        }
-                    )
-                else:
-                    file_item = get_yaml_config(
-                        {
-                            f"{mem_prefix}{local_fn}.{i}.grib2": f"{location}/{fn}"
-                            for i, fn in enumerate(file_templates)
-                        }
-                    )
+                file_item = get_yaml_config(
+                    {
+                        f"{mem_prefix}{local_fn}.{i}.grib2": f"{location}/{fn}"
+                        for i, fn in enumerate(file_templates)
+                    }
+                )
             context = {
                 "cycle": cycle,
                 "lead_time": lead_time,

@@ -5,7 +5,6 @@ Setup for calling retrieve_data.
 
 from __future__ import annotations
 
-import logging
 import sys
 from pathlib import Path
 
@@ -30,7 +29,6 @@ def main():
         _timedelta_from_str(str(t))
         for t in _arg_list_to_range(data_config["config"].pop("lead_times"))
     ]
-
     if not retrieve_data(
         config=get_yaml_config(data_config["config"].pop("config")),
         cycle=args.cycle,

@@ -96,13 +96,22 @@ def test_get_filenames_no_filefmt():
     assert result == files["anl"]
 
 
-def test_main(tmp_path):
+@fixture
+def config(tmp_path):
     # Using a basic YAML here while UW-suported YAML tags are not comparable.
-    config = tmp_path / "data_locations.yml"
-    config.write_text("foo: bar")
-    cycle = "2025-05-04T00"
-    cycle_dt = datetime.fromisoformat(cycle).replace(tzinfo=timezone.utc)
-    args = [
+    path = tmp_path / "data_locations.yml"
+    path.write_text("foo: bar")
+    return path
+
+
+@fixture
+def cycle():
+    return "2025-05-04T00"
+
+
+@fixture
+def retrieve_data_args(config, cycle, tmp_path):
+    return [
         "--fileset",
         "fcst",
         "--config",
@@ -122,8 +131,12 @@ def test_main(tmp_path):
         "--filefmt",
         "grib2",
     ]
+
+
+def test_main(config, cycle, tmp_path, retrieve_data_args):
+    cycle_dt = datetime.fromisoformat(cycle).replace(tzinfo=timezone.utc)
     with patch.object(retrieve_data, "retrieve_data") as retrieve:
-        retrieve_data.main(args)
+        retrieve_data.main(retrieve_data_args)
     expected_args = dict(
         config=get_yaml_config(str(config)),
         cycle=cycle_dt,
@@ -140,6 +153,11 @@ def test_main(tmp_path):
         symlink=False,
     )
     retrieve.assert_called_with(**expected_args)
+
+
+def test_main__files_not_staged(retrieve_data_args):
+    with patch.object(retrieve_data, "retrieve_data", return_value=False), raises(SystemExit):
+        retrieve_data.main(retrieve_data_args)
 
 
 def test_parse_args_hsi_available(sysargs, tmp_path):
@@ -235,9 +253,9 @@ def test_prepare_fs_copy_config_gefs_grib2_aws(data_locations):
     cycle = datetime.fromisoformat("2025-05-04T00").replace(tzinfo=timezone.utc)
     lead_times = [timedelta(hours=0)]
     expected = {
-        f"mem{mem:03d}/GEFS-{cycle.strftime('%Y%m%d-%H')}-f000.grib2": f"https://noaa-gefs-pds.s3.amazonaws.com/gefs.{cycle.strftime('%Y%m%d')}/{cycle.hour:02d}/atmos/{filelabel}p5/gep{mem:02d}.t00z.{filelabel}.0p50.f000"
+        f"mem{mem:03d}/GEFS-{cycle.strftime('%Y%m%d-%H')}-f000.{i}.grib2": f"https://noaa-gefs-pds.s3.amazonaws.com/gefs.{cycle.strftime('%Y%m%d')}/{cycle.hour:02d}/atmos/{filelabel}p5/gep{mem:02d}.t00z.{filelabel}.0p50.f000"
         for mem in members
-        for filelabel in ("pgrb2a", "pgrb2b")
+        for i, filelabel in enumerate(("pgrb2a", "pgrb2b"))
     }
     configs = retrieve_data.prepare_fs_copy_config(
         config=data_locations,
@@ -256,9 +274,9 @@ def test_prepare_fs_copy_config_gfs_grib2_aws(data_locations):
     cycle = datetime.fromisoformat("2025-05-04T00").replace(tzinfo=timezone.utc)
     lead_times = [timedelta(hours=lead) for lead in leads]
     expected = {
-        f"GFS-{cycle.strftime('%Y%m%d')}-{cycle.hour:02d}-f{lead:03d}.grib2": f"https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.{cycle.strftime('%Y%m%d')}/{cycle.hour:02d}/atmos/gfs.t{cycle.hour:02d}z.{level}f{lead:03d}.nc"
+        f"GFS-{cycle.strftime('%Y%m%d')}-{cycle.hour:02d}-f{lead:03d}.{i}.grib2": f"https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.{cycle.strftime('%Y%m%d')}/{cycle.hour:02d}/atmos/gfs.t{cycle.hour:02d}z.{level}f{lead:03d}.nc"
         for lead in leads
-        for level in ("atm", "sfc")
+        for i, level in enumerate(("atm", "sfc"))
     }
     configs = retrieve_data.prepare_fs_copy_config(
         config=data_locations,
