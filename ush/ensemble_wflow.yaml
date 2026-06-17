@@ -8,6 +8,7 @@ user:
     - create_lbcs.mpas_init
     - forecast.mpas
     - post.upp
+  ensemble_size: 2
 create_lbcs:
   mpas_init:
     files_to_copy:
@@ -58,7 +59,7 @@ workflow:
     task_mpas: !remove
     metatask_ensemble:
       var:
-        MEM: "01 02"
+        MEM: "{% for mem in range(1, user.ensemble_size + 1) %}{{ ' %02d' % mem }}{% endfor %}"
       task_fcst_mem_#MEM#:
         command:
           cyclestr:
