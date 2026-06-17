@@ -1,7 +1,7 @@
 CONUS 3km Quick Start Guide
 ---------------------------
 
-1. On Hera or Jet, clone the app's ``main`` branch and navigate to its directory:
+1. On Hera or Ursa, clone the app's ``main`` branch and navigate to its directory:
 
    .. code-block:: bash
 
@@ -26,7 +26,7 @@ CONUS 3km Quick Start Guide
 
       user:
         experiment_dir: /path/to/exp/dir
-        platform: jet
+        platform: ursa
       platform:
         account: wrfruc
 
@@ -35,7 +35,7 @@ CONUS 3km Quick Start Guide
    .. code-block:: bash
 
       cd ush
-      ./experiment_gen.py workflows/3km_conus.yaml workflows/conus.<platform>.yaml <your_user_yaml.yaml>
+      ./experiment_gen.py <your_user_yaml.yaml>
 
 This generates an experiment directory at the path specified in your user YAML that contains a Rocoto XML file, which is ready to use.
 
