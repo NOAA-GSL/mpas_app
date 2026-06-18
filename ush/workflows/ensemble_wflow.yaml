@@ -23,8 +23,9 @@ forecast:
         walltime: "1:10:00"
     files_to_copy:
       "{{ user.mesh_label }}.init.nc": !remove
-      steam_list/<files>: !glob "{{ platform.hrrr_fix }}/stream_list/hrrrv5/*"
+      steam_list/<files>: !glob "{{ user.mpas_app }}/parm/mpas/hrrrv5/*"
     files_to_link:
+      # Path to the RRFS EnKF initial conditions
       init.nc: /scratch3/BMC/wrfruc/cholt/mpas_app_work/rrfs_v2_ensemble/rt_run/20260526/rrfs_prep_ic_18_v2.1.3/enkf/mem0{{ "MEM" | env }}/mpasout.nc
       invariant.nc: "{{ platform.hrrr_fix }}/conus3km/conus3km.invariant.nc_L60_GEFS"
       MP_THOMPSON_QIautQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_THOMPSON_QIautQS_DATA.DBL"
@@ -32,7 +33,7 @@ forecast:
       MP_THOMPSON_QRacrQS_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_THOMPSON_QRacrQS_DATA.DBL"
       MP_THOMPSON_freezeH2O_DATA.DBL: "{{ user.mpas_app }}/src/MPAS-Model/MP_THOMPSON_freezeH2O_DATA.DBL"
     namelist:
-      base_file: /scratch3/BMC/wrfruc/cholt/mpas_app_work/rrfs_v2_ensemble/rt_run/namelist.atmosphere
+      base_file: "{{ user.mpas_app }}/parm/mpas/hrrrv5/namelist.atmosphere"
       update_values:
         nhyd_model: !remove
         physics: !remove
