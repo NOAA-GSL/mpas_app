@@ -76,7 +76,7 @@ get_lbcs_data:
     lead_times:
       - "{{ user.lbcs.offset_hours + user.lbcs.interval_hours }}"
       - "{{ user.lbcs.offset_hours + forecast.mpas.length }}"
-      - "{{ user.lbcs.offset_hours or 1 }}"
+      - "{{ user.lbcs.interval_hours }}"
     outpath: "{{ get_lbcs_data.rundir }}"
     inpath: "{{ platform.data[user.lbcs.external_model | lower ]['path']}}"
     summary_file: "{{ get_lbcs_data.rundir }}/LBCS.yaml"
@@ -484,6 +484,55 @@ post:
         nampgb:
           numx: 2
     rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/upp/{{ "%03d" % (leadtime.total_seconds() / 3600) }}'
+tracker:
+  gfdltracker:
+    basins: L
+    execution:
+      batchargs:
+        tasks_per_node: 32
+        nodes: 1
+        walltime: 00:30:00
+        exclusive: true
+      envcmds:
+        - module use {{ user.mpas_app }}/src/GFDL-VortexTracker/modulefiles
+        - module load {{ user.platform }}
+        - module load grib-util
+        - ulimit -s unlimited
+      executable: "{{ user.mpas_app }}/exec/gettrk.x"
+    input_files:
+      endhour: !int "{{ forecast.mpas.length }}"
+      filefreq: 6
+      filepath: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/latlon/mpas.trak.all.{{ cycle.strftime("%Y%m%d%H") }}.f{{ "%05d" % (leadtime.total_seconds() / 60) }}'
+    namelist:
+      base_file: "{{ user.mpas_app }}/parm/tracker/namelist.gettrk"
+      update_values:
+        atcfinfo:
+          atcfname: MPAS
+        trackerinfo:
+          trkrinfo:
+            eastbd: 3313
+            westbd: 20
+            northbd: 2646
+            southbd: 20
+    rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/tracker'
+    tcvitals: "{{ platform.data.syndat_tcvitals }}/syndat_tcvitals.{{ cycle.strftime('%Y') }}"
+  platform:
+    account: '{{ platform.account }}'
+    scheduler: '{{ platform.scheduler }}'
+graphics:
+  execution:
+    batchargs:
+      walltime: 00:12:00
+      nodes: 1
+      tasks_per_node: 1
+      exclusive: true
+  atcfname: MPAS
+latlon_regrid:
+  new_grid: "latlon -100:3333:0.03 -10:2666:0.03"
+  execution:
+    batchargs:
+      walltime: 00:12:00
+      cores: 12
 graphics:
   # the graphics task calls a bash run script that runs pygraf
   execution:
@@ -515,6 +564,10 @@ archiving:
   upp:
     execution:
       walltime: 02:59:00
+      cores: 1
+  tracker:
+    execution:
+      walltime: 00:29:00
       cores: 1
   init:
     execution:

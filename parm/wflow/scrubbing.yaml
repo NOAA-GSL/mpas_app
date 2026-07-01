@@ -1,6 +1,8 @@
 workflow:
   tasks:
     task_scrub_forecast:
+      attrs:
+        maxtries: 2
       command:
         cyclestr:
           value: 'set -xue ; rm -f "{{ user.experiment_dir }}/@Y@m@d@H/forecast"/{diag,history,restart}*nc'
@@ -16,6 +18,8 @@ workflow:
           attrs:
             metatask: post
     task_scrub_mpas_ics:
+      attrs:
+        maxtries: 2
       command:
         cyclestr:
           value: 'set -xue ; rm -rf "{{ user.experiment_dir }}/@Y@m@d@H/mpas_ics"'
@@ -31,6 +35,8 @@ workflow:
           attrs:
             metatask: post
     task_scrub_mpassit:
+      attrs:
+        maxtries: 2
       command:
         cyclestr:
           value: 'set -xue ; rm -rf "{{ user.experiment_dir }}/@Y@m@d@H/mpassit"'
@@ -50,6 +56,8 @@ workflow:
             attrs:
               metatask: archive_mpassit
     task_scrub_init:
+      attrs:
+        maxtries: 2
       command:
         cyclestr:
           value: 'set -xue ; rm -rf "{{ user.experiment_dir }}/@Y@m@d@H/forecast"/*init*nc'

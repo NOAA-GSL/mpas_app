@@ -6,8 +6,10 @@ user:
     - graphics.yaml
     - scrubbing.yaml
     - archiving.yaml
-  first_cycle: !!timestamp 2025-08-14T00:00:00
-  last_cycle: !!timestamp 2025-08-15T00:00:00
+    - tracker.yaml
+    - archiving_tracker.yaml
+  first_cycle: !!timestamp 2025-10-14T00:00:00
+  last_cycle: !!timestamp 2025-10-14T00:00:00
   hpss_archive_dir: /path/to/hpss/dir
   ics:
     data_stores:
@@ -15,6 +17,7 @@ user:
   lbcs:
     data_stores:
       - disk
+  input_grib: /scratch3/BMC/gsd-fv3-dev/role.rtgsd-fv3-dev/MPAS_HFIP_2025/merged-input/out
 data:
   mesh_files: /scratch3/BMC/wrfruc/Clark.Evans/MPAS-Model-v8.3.1/fix
   graphinfo_filename: "{{ user.mesh_label }}.graph.info"
@@ -28,14 +31,31 @@ platform:
   hrrr_fix:  /scratch3/BMC/wrfruc/Clark.Evans/MPAS-Model-v8.3.1/fix
 workflow:
   tasks:
-    task_mpas:
-      cores: !remove
-      nodes: "{{ forecast.mpas.execution.batchargs.nodes }}:ppn={{ forecast.mpas.execution.batchargs.tasks_per_node }}"
+    task_get_ics_data: !remove
+    task_ungrib_ics:
+      dependency:
+        taskdep: !remove
+        datadep:
+          value:
+            cyclestr:
+              value: '{{ user.input_grib }}/@Y@m@d@H/ready'
     metatask_post:
       task_combine_grib_#fhr#:
         command:
           cyclestr:
             value: 'cd {{ user.experiment_dir }}/@Y@m@d@H/upp/#fhr# && FHR=$( printf "%02d" "$((10##fhr#))") && cat PRSLEV.GrbF$FHR NATLEV.GrbF$FHR 2DFLD.GrbF$FHR >> ../COMBINED.GrbF$FHR'
+
+get_lbcs_data:
+  config:
+    lead_times:
+      - "{{ user.lbcs.offset_hours }}"
+      - "{{ user.lbcs.offset_hours + forecast.mpas.length }}"
+      - "{{ user.lbcs.interval_hours }}"
+
+prepare_grib_ics:
+  ungrib:
+    gribfiles:
+      - '{{ user.input_grib }}/{{ cycle.strftime("%Y%m%d%H") }}'
 
 create_ics:
   mpas_init: &mpas_init
@@ -171,4 +191,3 @@ graphics:
     identifier: HFIP Experimental
     image_list: "{{ user.mpas_app }}/parm/pygraf/hfip_subset.yml"
     specs_file: "{{ user.mpas_app }}/parm/pygraf/hfip_specs.yml"
-

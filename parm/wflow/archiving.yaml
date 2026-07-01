@@ -6,6 +6,8 @@ workflow:
       var:
         day: "{% for h in range(1,(forecast.mpas.length+23)//24+2) %}{{ ' %d' % h }}{% endfor %}"
       task_archive_mpassit_day#day#:
+        attrs:
+          maxtries: 2
         command:
           cyclestr:
             value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; &&
@@ -24,6 +26,8 @@ workflow:
               metatask: post
 
     task_archive_upp:
+      attrs:
+        maxtries: 2
       command:
         cyclestr:
           value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; &&
@@ -42,6 +46,8 @@ workflow:
             metatask: post
 
     task_archive_init:
+      attrs:
+        maxtries: 2
       command:
         cyclestr:
           value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; &&
