@@ -7,7 +7,6 @@ Creates the experiment directory and populates it with necessary configuration a
 import argparse
 import inspect
 import logging
-import os
 import stat
 import sys
 from datetime import timedelta
@@ -149,7 +148,7 @@ def make_cron_script(experiment_config: YAMLConfig, experiment_dir: Path, mpas_a
     cron_sh = experiment_dir / "cron.sh"
     machine = experiment_config["user"]["platform"]
     logging.info("Creating CRON script: %s", cron_sh)
-    with cron_sh.open('w') as fd:
+    with cron_sh.open("w") as fd:
         fd.write(f"""#!/bin/bash --login
 cd '{mpas_app}'
 source ./load_wflow_modules.sh '{machine}'
