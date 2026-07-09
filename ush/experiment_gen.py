@@ -150,7 +150,7 @@ def make_cron_script(experiment_config: YAMLConfig, experiment_dir: Path, mpas_a
     machine = experiment_config["user"]["platform"]
     logging.info("Creating CRON script: %s", filename)
     with open(filename, 'wt') as fd:
-        fd.write(f"""#!/bin/sh
+        fd.write(f"""#!/bin/bash --login
 cd '{mpas_app}'
 source ./load_wflow_modules.sh '{machine}'
 cd '{experiment_dir}'
