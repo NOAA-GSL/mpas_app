@@ -146,19 +146,19 @@ def required_nprocs(experiment_config: YAMLConfig) -> list[int]:
 
 
 def make_cron_script(experiment_config: YAMLConfig, experiment_dir: Path, mpas_app: Path) -> None:
-    filename = experiment_dir / "cron.sh"
+    cron_sh = experiment_dir / "cron.sh"
     machine = experiment_config["user"]["platform"]
-    logging.info("Creating CRON script: %s", filename)
-    with open(filename, 'wt') as fd:
+    logging.info("Creating CRON script: %s", cron_sh)
+    with cron_sh.open('w') as fd:
         fd.write(f"""#!/bin/bash --login
 cd '{mpas_app}'
 source ./load_wflow_modules.sh '{machine}'
 cd '{experiment_dir}'
 rocotorun -w rocoto.xml -d rocoto.db "$@"
 """)
-    sb = os.stat(filename)
+    sb = cron_sh.stat()
     add_user_execute = sb.st_mode | stat.S_IXUSR
-    os.chmod(filename, add_user_execute)
+    cron_sh.chmod(add_user_execute)
 
 def setup_experiment_directory(validated: Config) -> tuple[Path, Path]:
     """
