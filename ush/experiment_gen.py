@@ -7,6 +7,8 @@ Creates the experiment directory and populates it with necessary configuration a
 import argparse
 import inspect
 import logging
+import os
+import stat
 import sys
 from datetime import timedelta
 from pathlib import Path
@@ -79,6 +81,7 @@ def main():
     validated = validate(experiment_config.as_dict())
     experiment_dir, experiment_file = setup_experiment_directory(validated)
     generate_workflow_files(experiment_config, experiment_file, mpas_app, user_config, validated)
+    make_cron_script(experiment_config, experiment_dir, mpas_app)
     stage_grid_files(experiment_config, experiment_dir)
 
 
@@ -141,6 +144,21 @@ def required_nprocs(experiment_config: YAMLConfig) -> list[int]:
             nprocs.append(cores)
     return nprocs
 
+
+def make_cron_script(experiment_config: YAMLConfig, experiment_dir: Path, mpas_app: Path) -> None:
+    filename = experiment_dir / "cron.sh"
+    machine = experiment_config["user"]["platform"]
+    logging.info("Creating CRON script: %s", filename)
+    with open(filename, 'wt') as fd:
+        fd.write(f"""#!/bin/sh
+cd '{mpas_app}'
+source ./load_wflow_modules.sh '{machine}'
+cd '{experiment_dir}'
+rocotorun -w rocoto.xml -d rocoto.db "$@"
+""")
+    sb = os.stat(filename)
+    add_user_execute = sb.st_mode | stat.S_IXUSR
+    os.chmod(filename, add_user_execute)
 
 def setup_experiment_directory(validated: Config) -> tuple[Path, Path]:
     """
