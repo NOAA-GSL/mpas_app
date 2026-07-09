@@ -1,0 +1,54 @@
+platform:
+  account: rtgsd-fv3-dev
+workflow:
+  tasks:
+    task_ungrib_ics:
+      account: rtgsd-fv3-dev
+      native:
+        cyclestr:
+          value: --reservation=gsd_ini_00
+    task_ungrib_lbcs:
+      account: rtgsd-fv3-dev
+      native:
+        cyclestr:
+          value: --reservation=gsd_ini_00
+    task_mpas_ics:
+      account: rtgsd-fv3-dev
+      native:
+        cyclestr:
+          value: --reservation=gsd_ini_00
+    task_mpas_lbcs:
+      account: rtgsd-fv3-dev
+      native:
+        cyclestr:
+          value: --reservation=gsd_ini_00
+    task_mpas:
+      attrs:
+        maxtries: 1
+      account: rtgsd-fv3-dev
+      native:
+        cyclestr:
+          value: --reservation=gsd_fcst_00
+    metatask_post:
+      task_mpassit_#fhr#:
+        account: rtgsd-fv3-dev
+        attrs:
+          maxtries: 9
+        native:
+          cyclestr:
+            value: --reservation=gsd_post_00
+      task_upp_#fhr#:
+        account: rtgsd-fv3-dev
+        native:
+          cyclestr:
+            value: --reservation=gsd_post_00
+      task_combine_grib_#fhr#:
+        account: rtgsd-fv3-dev
+        native:
+          cyclestr:
+            value: --reservation=gsd_post_00
+forecast:
+  mpas:
+    execution:
+      batchargs:
+        walltime: 04:55:00
