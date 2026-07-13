@@ -17,24 +17,40 @@ user:
   lbcs:
     data_stores:
       - disk
-  input_grib: /scratch3/BMC/gsd-fv3-dev/role.rtgsd-fv3-dev/MPAS_HFIP_2025/merged-input/out
+  input_grib: /scratch5/purged/role.rtgsd-fv3-dev/MPAS_HFIP_2026/merged-input/102_download_lbcs/out
+
 data:
   mesh_files: /scratch3/BMC/wrfruc/Clark.Evans/MPAS-Model-v8.3.1/fix
   graphinfo_filename: "{{ user.mesh_label }}.graph.info"
+
 platform:
+  hrrr_fix:  /scratch3/BMC/wrfruc/Clark.Evans/MPAS-Model-v8.3.1/fix
+
   data:
     gfs:
-      path: /scratch3/HFIP/hwrfv3/noscrub/hafs-input/COMGFSv17/gfs.{{ yyyymmdd }}/{{ hh }}/products/atmos/grib2/0p25/
+      path: /scratch5/purged/role.rtgsd-fv3-dev/MPAS_HFIP_2026/merged-input/102_download_lbcs/out
       file_templates:
-        - gfs.t{{ hh }}z.pres_a.0p25.f{{ "%03d" | format(fcst_hr) }}.grib2
-        - gfs.t{{ hh }}z.pres_b.0p25.f{{ "%03d" | format(fcst_hr) }}.grib2
-  hrrr_fix:  /scratch3/BMC/wrfruc/Clark.Evans/MPAS-Model-v8.3.1/fix
+        - '{{ cycle.strftime("%Y%m%d%H") }}/gfs.t{{ hh }}z.pgrb2.0p25.f{{ "%03d" | format(fcst_hr) }}'
+        - '{{ cycle.strftime("%Y%m%d%H") }}/gfs.t{{ hh }}z.pgrb2b.0p25.f{{ "%03d" | format(fcst_hr) }}'
+
+#  data:
+#    gfs:
+#      path: /public/data/grids/gfs/0p25deg/grib2
+#      file_templates:
+#      - '{{ cycle.strftime("%y%j%H00") }}{{ "%04d" % (lead_time.total_seconds() // 3600) }}'
+
 workflow:
   tasks:
     task_get_ics_data: !remove
     task_ungrib_ics:
       dependency:
         taskdep: !remove
+        datadep:
+          value:
+            cyclestr:
+              value: '{{ user.input_grib }}/@Y@m@d@H/ready'
+    task_get_lbcs_data:
+      dependency:
         datadep:
           value:
             cyclestr:

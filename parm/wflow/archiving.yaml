@@ -68,3 +68,25 @@ workflow:
           metataskdep:
             attrs:
               metatask: post
+
+    task_archive_lbcs:
+      command:
+        cyclestr:
+          value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; &&
+            cd {{ user.experiment_dir }} &&
+            &MPAS_APP;/scripts/archive_lbcs.sh @Y@m@d@H "&ARCHIVE_DIR;"'
+      account: "{{ platform.account }}"
+      partition: "{{ platform.service_partition }}"
+      join:
+        cyclestr:
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+      walltime: "{{ archiving.lbcs.execution.walltime }}"
+      cores: !int "{{ archiving.lbcs.execution.cores }}"
+      dependency:
+        or:
+          taskdep:
+            attrs:
+              task: mpas
+          metataskdep:
+            attrs:
+              metatask: post

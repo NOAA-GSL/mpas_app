@@ -1,0 +1,20 @@
+user:
+  platform: ursa
+  experiment_dir: /scratch5/purged/role.rtgsd-fv3-dev/MPAS_HFIP_2026/108_gfs_ops
+  hpss_archive_dir: /5year/BMC/fv3lam/role.rtgsd-fv3-dev/HFIP_MPAS_2026/108_gfs_ops
+  input_grib: /scratch5/purged/role.rtgsd-fv3-dev/MPAS_HFIP_2026/merged-input/102_download_lbcs/out
+  first_cycle: !!timestamp 2026-07-09T12:00:00
+  last_cycle: !!timestamp 2026-12-31T12:00:00
+  cycle_frequency: 24
+
+forecast:
+  mpas:
+    length: 120
+
+workflow:
+  attrs:
+    taskthrottle: 20
+    realtime: true
+
+platform:
+  account: gsd-fv3-dev
