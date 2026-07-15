@@ -45,6 +45,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = [
+  "N802",    # invalid-function-name
   "PT013",   # pytest-incorrect-pytest-import
   "SLF001",  # private-member-access
 ]

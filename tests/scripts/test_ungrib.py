@@ -115,6 +115,12 @@ def test_merge_vector_fields(success, tmp_path, ungrib_driver):
             assert not outfile.is_file()
 
 
+def test_regrid(ungrib_driver, ungrib_config):
+    with patch.object(ungrib, "regrid_all") as regrid_all:
+        ungrib.regrid(ungrib_driver, ungrib_config.as_dict())
+        regrid_all.assert_called_once_with(ungrib_driver, ungrib_config.as_dict())
+
+
 def test_regrid_input(ungrib_driver, tmp_path):
     fields_file = tmp_path / "fields"
     fields_file.write_text("foo:bar")
@@ -161,62 +167,107 @@ def test_regrid_all(tmp_path, ungrib_driver):
 
 
 @mark.parametrize("outcome", ["pass", "fail"])
-def test_run_ungrib_gfs(outcome, tmp_path, ungrib_config):
+def test_run_ungrib__gfs_ics(outcome, tmp_path, ungrib_config):
     external_model = ungrib_config["user"]["ics"]["external_model"]
     rundir = Path(ungrib_config["ungrib_ics"]["ungrib"]["rundir"])
     model_dir = rundir.parent / external_model
     model_dir.mkdir(parents=True, exist_ok=True)
     get_yaml_config({"dst.grib2": "src.grib2"}).dump(model_dir / "ICS.yaml")
     config_file = tmp_path / "experiment.yaml"
+    ungrib_config.update_from(
+        {
+            "ungrib_ics": {
+                "ungrib": {
+                    "gribfiles": ["do not edit"],
+                }
+            }
+        }
+    )
     ungrib_config.dump(config_file)
     cycle = datetime(2025, 1, 1, 12, tzinfo=timezone.utc)
     side_effect = (tmp_path / "runscript.ungrib.done").touch() if outcome == "pass" else None
-    with patch.object(ungrib.Ungrib, "run", side_effect=side_effect, wraps=noop) as run:
+    with (
+        patch.object(ungrib.Ungrib, "run", side_effect=side_effect, wraps=noop) as run,
+        patch.object(
+            ungrib.UngribHurricane, "run", side_effect=side_effect, wraps=noop
+        ) as hurr_run,
+    ):
         task_state = ungrib.run_ungrib(config_file, cycle, ["ungrib_ics"])
         if outcome == "pass":
+            hurr_run.assert_not_called()
             assert (tmp_path / "runscript.ungrib.done").exists()
         else:
             run.assert_called_once()
+            hurr_run.assert_not_called()
             assert not task_state.ready
 
 
-def test_run_ungrib_rrfs_ics(tmp_path, ungrib_config):
+@mark.parametrize("ics_or_lbcs", ["ics", "lbcs"])
+def test_run_ungrib__gfs_hurr_merged(ics_or_lbcs, tmp_path, ungrib_config):
+    config_file = tmp_path / "experiment.yaml"
+
+    ungrib_config.dump(config_file)
+    cycle = datetime(2025, 1, 1, 12, tzinfo=timezone.utc)
+    with (
+        patch.object(ungrib.Ungrib, "run", wraps=noop) as run,
+        patch.object(ungrib.UngribHurricane, "run", wraps=noop) as hurr_run,
+    ):
+        ungrib.run_ungrib(config_file, cycle, [f"ungrib_{ics_or_lbcs}"])
+        hurr_run.assert_called_once()
+        run.assert_not_called()
+
+
+@mark.parametrize("ics_or_lbcs", ["ics", "lbcs"])
+def test_run_ungrib__rrfs(ics_or_lbcs, tmp_path, ungrib_config):
     external_model = "RRFS"
-    ungrib_config.update_from({"user": {"ics": {"external_model": external_model}}})
-    rundir = Path(ungrib_config["ungrib_ics"]["ungrib"]["rundir"])
+    ungrib_config.update_from({"user": {ics_or_lbcs: {"external_model": external_model}}})
+    rundir = Path(ungrib_config[f"ungrib_{ics_or_lbcs}"]["ungrib"]["rundir"])
     model_dir = rundir.parent / external_model
     model_dir.mkdir(parents=True, exist_ok=True)
-    get_yaml_config({"dst.grib2": "src.grib2"}).dump(model_dir / "ICS.yaml")
+    get_yaml_config({"dst.grib2": "src.grib2"}).dump(model_dir / f"{ics_or_lbcs.upper()}.yaml")
     config_file = tmp_path / "experiment.yaml"
-    ungrib_config.update_from({"user": {"ics": {"external_model": "RRFS"}}})
+    ungrib_config.update_from(
+        {
+            "user": {ics_or_lbcs: {"external_model": "RRFS"}},
+            f"ungrib_{ics_or_lbcs}": {"ungrib": {"gribfiles": ["do not edit"]}},
+        }
+    )
     ungrib_config.dump(config_file)
     cycle = datetime(2025, 1, 1, 12, tzinfo=timezone.utc)
 
     with (
         patch.object(ungrib.Ungrib, "run", wraps=noop) as run,
-        patch.object(ungrib, "regrid_all", wraps=noop) as regrid_all,
+        patch.object(ungrib, "regrid", wraps=noop) as regrid,
+        patch.object(ungrib.UngribHurricane, "run", wraps=noop) as hurr_run,
     ):
-        ungrib.run_ungrib(config_file, cycle, ["ungrib_ics"])
-        regrid_all.assert_called_once_with(ANY, ungrib_config["ungrib_ics"]["wgrib2"])
+        ungrib.run_ungrib(config_file, cycle, [f"ungrib_{ics_or_lbcs}"])
+        regrid.assert_called_once_with(ANY, ungrib_config[f"ungrib_{ics_or_lbcs}"]["wgrib2"])
         run.assert_called_once()
+        hurr_run.assert_not_called()
 
 
-def test_run_ungrib_rrfs_lbcs(tmp_path, ungrib_config):
-    external_model = "RRFS"
-    ungrib_config.update_from({"user": {"lbcs": {"external_model": external_model}}})
-    rundir = Path(ungrib_config["ungrib_lbcs"]["ungrib"]["rundir"])
-    model_dir = rundir.parent / external_model
-    model_dir.mkdir(parents=True, exist_ok=True)
-    get_yaml_config({"dst.grib2": "src.grib2"}).dump(model_dir / "ICS.yaml")
-    get_yaml_config({"dst.grib2": "src.grib2"}).dump(model_dir / "LBCS.yaml")
-    config_file = tmp_path / "experiment.yaml"
-    ungrib_config.dump(config_file)
+def test_UngribHurricane_gribfiles(tmp_path, ungrib_config):
     cycle = datetime(2025, 1, 1, 12, tzinfo=timezone.utc)
 
-    with (
-        patch.object(ungrib.Ungrib, "run", wraps=noop) as run,
-        patch.object(ungrib, "regrid_all", wraps=noop) as regrid_all,
-    ):
-        ungrib.run_ungrib(config_file, cycle, ["ungrib_lbcs"])
-        regrid_all.assert_called_once_with(ANY, ungrib_config["ungrib_lbcs"]["wgrib2"])
-        run.assert_called_once()
+    # Set up merged file directory for hurricane input
+    chosen_file = tmp_path / "input_data" / "chosen_storm.txt"
+    chosen_file.write_text("bigstorm.2026071312.VARNAME.grib2")
+
+    grib_dir = tmp_path / "input_data" / "merged-by-field"
+    grib_dir.mkdir(parents=True, exist_ok=True)
+    filenames = ("bigstorm.2026071312.foo.grib2", "bigstorm.2026071312.bar.grib2")
+    for fn in filenames:
+        (grib_dir / fn).touch()
+
+    driver = ungrib.UngribHurricane(config=ungrib_config, cycle=cycle, key_path=["ungrib_ics"])
+    driver.gribfiles()
+    for fn in ("GRIBFILE.AAA", "GRIBFILE.AAB"):
+        assert (tmp_path / fn).is_symlink()
+
+
+def test__ext():
+    assert ungrib._ext(0) == "AAA"
+    assert ungrib._ext(1) == "AAB"
+    assert ungrib._ext(2) == "AAC"
+    assert ungrib._ext(26) == "ABA"
+    assert ungrib._ext(29) == "ABD"
