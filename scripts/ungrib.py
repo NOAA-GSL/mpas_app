@@ -32,7 +32,6 @@ class UngribHurricane(Ungrib):
 
     @collection
     def gribfiles(self):
-        sys.stderr.write('UNGRIB HURRICANE GRIBFILES\n')
         yield self.taskname("GRIB files")
         gribfiles = Path(self.config["gribfiles"][0])
         chosen_text = (gribfiles / "chosen_storm.txt").read_text()
