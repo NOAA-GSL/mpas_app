@@ -152,7 +152,7 @@ def make_user_scripts(experiment_file: Path, experiment_dir: Path) -> None:
     user_scripts = config["user"]["scripts"]
     if not user_scripts:
         logging.warning("user.scripts is empty")
-    for key, value in user_scripts.items():
+    for value in user_scripts.values():
         generate_file_from_yaml(experiment_dir, value)
 
 
