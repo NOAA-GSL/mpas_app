@@ -19,6 +19,7 @@ workflow:
           value: --reservation=gsd_ini_00
     task_mpas_lbcs:
       account: rtgsd-fv3-dev
+      walltime: 00:20:00
       native:
         cyclestr:
           value: --reservation=gsd_ini_00

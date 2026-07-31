@@ -1,11 +1,27 @@
 user:
   platform: ursa
-  experiment_dir: /scratch5/purged/role.rtgsd-fv3-dev/MPAS_HFIP_2026/108_gfs_ops
-  hpss_archive_dir: /5year/BMC/fv3lam/role.rtgsd-fv3-dev/HFIP_MPAS_2026/108_gfs_ops
-  input_grib: /scratch5/purged/role.rtgsd-fv3-dev/MPAS_HFIP_2026/merged-input/102_download_lbcs/out
-  first_cycle: !!timestamp 2026-07-09T12:00:00
-  last_cycle: !!timestamp 2026-12-31T12:00:00
+  experiment_dir: /scratch3/BMC/gsd-fv3-dev/MPAS_HFIP_2026/116_archive_before_scrubbing
+  hpss_archive_dir: /5year/BMC/fv3lam/role.rtgsd-fv3-dev/HFIP_MPAS_2026/116_archive_before_scrubbing
+  input_grib: /scratch5/BMC/gsd-fv3-dev/MPAS_HFIP_2026/merged-input/104_sam_gfs_v17/out
+  first_cycle: !!timestamp 2026-07-28T06:00:00
+  last_cycle: !!timestamp 2026-12-31T06:00:00
   cycle_frequency: 24
+  scripts:
+    start_cycle.sh:
+      name: start_cycle.sh
+      executable: true
+      content: |+
+        #!/bin/bash --login
+        
+        hh=$1
+        shift 1
+        
+        cd {{user.mpas_app}}
+        source ./load_wflow_modules.sh {{user.platform}}
+        cd {{user.experiment_dir}}
+        sleep $(( 10  + RANDOM/1100 ))
+        yes | rocotoboot -w rocoto.xml -d rocoto.db -c $( date +%Y%m%d )${hh}00 -t start_cycle "$@"
+        
 
 forecast:
   mpas:

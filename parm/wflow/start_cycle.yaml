@@ -1,0 +1,19 @@
+workflow:
+  tasks:
+    task_start_cycle:
+      attrs:
+        maxtries: 1
+      command: /bin/true
+      account: "{{ platform.account }}"
+      join:
+        cyclestr:
+          value: '&LOGDIR;/@Y@m@d@H/{{ jobname }}.log'
+      walltime: "{{ start_cycle.execution.batchargs.walltime }}"
+      nodes: "{{ start_cycle.execution.batchargs.nodes }}:ppn={{ start_cycle.execution.batchargs.tasks_per_node }}"
+
+start_cycle:
+  execution:
+    batchargs:
+      walltime: 00:01:00
+      nodes: 1
+      tasks_per_node: 1

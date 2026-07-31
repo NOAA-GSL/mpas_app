@@ -10,7 +10,7 @@ workflow:
       partition: "{{ platform.service_partition }}"
       join:
         cyclestr:
-          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+          value: '&LOGDIR;/@Y@m@d@H/{{ jobname }}.log'
       walltime: "{{ scrubber.execution.walltime }}"
       cores: !int "{{ scrubber.execution.cores }}"
       dependency:
@@ -27,7 +27,7 @@ workflow:
       partition: "{{ platform.service_partition }}"
       join:
         cyclestr:
-          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+          value: '&LOGDIR;/@Y@m@d@H/{{ jobname }}.log'
       walltime: "{{ scrubber.execution.walltime }}"
       cores: !int "{{ scrubber.execution.cores }}"
       dependency:
@@ -42,13 +42,17 @@ workflow:
       partition: "{{ platform.service_partition }}"
       join:
         cyclestr:
-          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+          value: '&LOGDIR;/@Y@m@d@H/{{ jobname }}.log'
       walltime: "{{ scrubber.execution.walltime }}"
       cores: !int "{{ scrubber.execution.cores }}"
       dependency:
-        metataskdep_post:
-          attrs:
-            metatask: post
+        and:
+          taskdep_archive:
+            attrs:
+              task: archive_lbcs
+          metataskdep_post:
+            attrs:
+              metatask: post
     task_scrub_mpassit:
       attrs:
         maxtries: 2
@@ -59,7 +63,7 @@ workflow:
       partition: "{{ platform.service_partition }}"
       join:
         cyclestr:
-          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+          value: '&LOGDIR;/@Y@m@d@H/{{ jobname }}.log'
       walltime: "{{ scrubber.execution.walltime }}"
       cores: !int "{{ scrubber.execution.cores }}"
       dependency:
@@ -80,7 +84,7 @@ workflow:
       partition: "{{ platform.service_partition }}"
       join:
         cyclestr:
-          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+          value: '&LOGDIR;/@Y@m@d@H/{{ jobname }}.log'
       walltime: "{{ scrubber.execution.walltime }}"
       cores: !int "{{ scrubber.execution.cores }}"
       dependency:

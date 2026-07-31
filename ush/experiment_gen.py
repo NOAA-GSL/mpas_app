@@ -80,7 +80,7 @@ def main():
     validated = validate(experiment_config.as_dict())
     experiment_dir, experiment_file = setup_experiment_directory(validated)
     generate_workflow_files(experiment_config, experiment_file, mpas_app, user_config, validated)
-    make_cron_script(experiment_config, experiment_dir, mpas_app)
+    make_user_scripts(experiment_file, experiment_dir, mpas_app)
     stage_grid_files(experiment_config, experiment_dir)
 
 
@@ -144,20 +144,36 @@ def required_nprocs(experiment_config: YAMLConfig) -> list[int]:
     return nprocs
 
 
-def make_cron_script(experiment_config: YAMLConfig, experiment_dir: Path, mpas_app: Path) -> None:
-    cron_sh = experiment_dir / "cron.sh"
-    machine = experiment_config["user"]["platform"]
-    logging.info("Creating CRON script: %s", cron_sh)
-    with cron_sh.open("w") as fd:
-        fd.write(f"""#!/bin/bash --login
-cd '{mpas_app}'
-source ./load_wflow_modules.sh '{machine}'
-cd '{experiment_dir}'
-rocotorun -w rocoto.xml -d rocoto.db "$@"
-""")
-    sb = cron_sh.stat()
-    add_user_execute = sb.st_mode | stat.S_IXUSR
-    cron_sh.chmod(add_user_execute)
+def make_user_scripts(experiment_file: Path, experiment_dir: Path, mpas_app: Path) -> None:
+    config = get_yaml_config(experiment_file)
+    if "scripts" not in config["user"]:
+        logging.warning("No user.scripts found in yaml")
+        return
+    user_scripts = config["user"]["scripts"]
+    if not user_scripts:
+        logging.warning("user.scripts is empty")
+    for key, value in user_scripts.items():
+        generate_file_from_yaml(experiment_dir, key, value)
+
+
+def generate_file_from_yaml(experiment_dir: Path, key: str, script: Config):
+    path = experiment_dir / script['name']
+    parent = path.parent
+    contents = script['content']
+    executable = 'executable' in script and script['executable']
+
+    if not parent.exists():
+        logging.info("Creating user-defined directory: %s", parent)
+        parent.mkdir(parents=True, exists_ok=True)
+
+    logging.info("Creating user-defined file: %s", path)
+    with path.open("w") as fd:
+        fd.write(contents)
+
+    if executable:
+        sb = path.stat()
+        add_user_execute = sb.st_mode | stat.S_IXUSR
+        path.chmod(add_user_execute)
 
 
 def setup_experiment_directory(validated: Config) -> tuple[Path, Path]:
