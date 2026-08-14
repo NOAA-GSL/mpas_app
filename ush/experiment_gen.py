@@ -80,7 +80,7 @@ def main():
     validated = validate(experiment_config.as_dict())
     experiment_dir, experiment_file = setup_experiment_directory(validated)
     generate_workflow_files(experiment_config, experiment_file, mpas_app, user_config, validated)
-    make_user_scripts(experiment_file, experiment_dir, mpas_app)
+    make_user_scripts(experiment_file, experiment_dir)
     stage_grid_files(experiment_config, experiment_dir)
 
 
@@ -144,7 +144,7 @@ def required_nprocs(experiment_config: YAMLConfig) -> list[int]:
     return nprocs
 
 
-def make_user_scripts(experiment_file: Path, experiment_dir: Path, mpas_app: Path) -> None:
+def make_user_scripts(experiment_file: Path, experiment_dir: Path) -> None:
     config = get_yaml_config(experiment_file)
     if "scripts" not in config["user"]:
         logging.warning("No user.scripts found in yaml")
@@ -152,15 +152,15 @@ def make_user_scripts(experiment_file: Path, experiment_dir: Path, mpas_app: Pat
     user_scripts = config["user"]["scripts"]
     if not user_scripts:
         logging.warning("user.scripts is empty")
-    for key, value in user_scripts.items():
-        generate_file_from_yaml(experiment_dir, key, value)
+    for value in user_scripts.values():
+        generate_file_from_yaml(experiment_dir, value)
 
 
-def generate_file_from_yaml(experiment_dir: Path, key: str, script: Config):
-    path = experiment_dir / script['name']
+def generate_file_from_yaml(experiment_dir: Path, script: Config):
+    path = experiment_dir / script["name"]
     parent = path.parent
-    contents = script['content']
-    executable = 'executable' in script and script['executable']
+    contents = script["content"]
+    executable = "executable" in script and script["executable"]
 
     if not parent.exists():
         logging.info("Creating user-defined directory: %s", parent)
