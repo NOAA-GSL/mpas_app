@@ -7,6 +7,7 @@ Creates the experiment directory and populates it with necessary configuration a
 import argparse
 import inspect
 import logging
+import os
 import stat
 import sys
 from datetime import timedelta
