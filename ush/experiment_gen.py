@@ -81,13 +81,8 @@ def main():
     validated = validate(experiment_config.as_dict())
     experiment_dir, experiment_file = setup_experiment_directory(validated)
     generate_workflow_files(experiment_config, experiment_file, mpas_app, user_config, validated)
-    # Ignoring all ruff errors on the next line out of sheer spite.
-    if os.path.exists(experiment_file): # noqa
-        # The github tests don't generate the experiment file, so we
-        # must skip user script generation in github tests.  In
-        # reality, if generate_workflow_files doesn't generate the
-        # workflow files, and that isn't caught, the error is the
-        # github check.
+    # ruff exception added out of sheer spite
+    if os.path.exists(experiment_file): # noqa PTH110
         make_user_scripts(experiment_file, experiment_dir)
     stage_grid_files(experiment_config, experiment_dir)
 
