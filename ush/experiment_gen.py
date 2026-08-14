@@ -162,8 +162,8 @@ def generate_file_from_yaml(experiment_dir: Path, script: Config):
     path = experiment_dir / script["name"] # type: ignore[index]
     parent = path.parent
     contents = script["content"] # type: ignore[index]
-    executable = "executable" in script # type: ignore[index]
-    executable = executable and script["executable"] # type: ignore[operator]
+    executable = "executable" in script # type: ignore[operator]
+    executable = executable and script["executable"] # type: ignore[index]
 
     if not parent.exists():
         logging.info("Creating user-defined directory: %s", parent)
