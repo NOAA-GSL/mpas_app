@@ -1,3 +1,4 @@
+
 platform:
   account: rtgsd-fv3-dev
 workflow:
@@ -30,6 +31,16 @@ workflow:
       native:
         cyclestr:
           value: --reservation=gsd_fcst_00
+
+    metatask_latlon_regrid:
+      task_latlon_regrid_#fhr#:
+        attrs:
+          maxtries: 1
+        account: rtgsd-fv3-dev
+        native:
+          cyclestr:
+            value: --reservation=gsd_post_00
+
     metatask_post:
       task_mpassit_#fhr#:
         account: rtgsd-fv3-dev
