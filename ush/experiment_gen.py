@@ -82,7 +82,7 @@ def main():
     experiment_dir, experiment_file = setup_experiment_directory(validated)
     generate_workflow_files(experiment_config, experiment_file, mpas_app, user_config, validated)
     # ruff exception added out of sheer spite
-    if os.path.exists(experiment_file): # noqa PTH110
+    if os.path.exists(experiment_file): # noqa: PTH110
         make_user_scripts(experiment_file, experiment_dir)
     stage_grid_files(experiment_config, experiment_dir)
 
