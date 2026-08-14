@@ -157,10 +157,13 @@ def make_user_scripts(experiment_file: Path, experiment_dir: Path) -> None:
 
 
 def generate_file_from_yaml(experiment_dir: Path, script: Config):
-    path = experiment_dir / script["name"]
+    # The python type checker mistakenly believes Config cannot index str,
+    # so we need some "type: ignore" comments to pass github tests.
+    path = experiment_dir / script["name"] # type: ignore[index]
     parent = path.parent
-    contents = script["content"]
-    executable = "executable" in script and script["executable"]
+    contents = script["content"] # type: ignore[index]
+    executable = "executable" in script # type: ignore[index]
+    executable = executable and script["executable"] # type: ignore[operator]
 
     if not parent.exists():
         logging.info("Creating user-defined directory: %s", parent)
