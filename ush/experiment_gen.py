@@ -80,7 +80,10 @@ def main():
     validated = validate(experiment_config.as_dict())
     experiment_dir, experiment_file = setup_experiment_directory(validated)
     generate_workflow_files(experiment_config, experiment_file, mpas_app, user_config, validated)
-    make_user_scripts(experiment_file, experiment_dir)
+    if os.path.exists(experiment_file):
+        # The github tests don't generate the experiment file,
+        # so we must skip this for github tests.
+        make_user_scripts(experiment_file, experiment_dir)
     stage_grid_files(experiment_config, experiment_dir)
 
 
