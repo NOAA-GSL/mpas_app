@@ -588,7 +588,7 @@ archiving:
       cores: 1
   lbcs:
     execution:
-      walltime: 04:59:00
+      walltime: 07:59:00
       cores: 1
 
 scrubber:
