@@ -48,7 +48,7 @@ def test_script_config(test_config):
     test_config["user"]["scripts"] = {
         "hello.sh": {
             "executable": True,
-            "content": "#!/bin/bash\necho hello",
+            "content": "#!/bin/bash \necho hello",
         },
         "goodbye.sh": {
             "executable": False,
@@ -117,15 +117,22 @@ def test_create_grid_files_failure(tmp_path, caplog):
 def test_generate_file_from_yaml(tmp_path, test_script_config):
     experiment_dir = tmp_path / "expt"
     user_scripts = test_script_config["user"]["scripts"]
-    files = [(experiment_dir / k, v.get("executable", False)) for k, v in user_scripts.items()]
-    for f, _ in files:
+    files = [experiment_dir / k for k in user_scripts]
+    for f in files:
         assert not f.exists()
     for script_name, script_config in user_scripts.items():
         experiment_gen.generate_file_from_yaml(experiment_dir, script_name, script_config)
-    for f, e in files:
-        assert f.exists()
-        is_executable = os.access(f, os.X_OK)
-        assert e == is_executable
+    f = experiment_dir / "hello.sh"
+    assert f.exists()
+    is_executable = os.access(f, os.X_OK)
+    assert is_executable
+    assert f.read_text() == "#!/bin/bash \necho hello"
+
+    f = experiment_dir / "goodbye.sh"
+    assert f.exists()
+    is_executable = os.access(f, os.X_OK)
+    assert not is_executable
+    assert f.read_text() == "echo goodbye"
 
 
 def test_generate_workflow_files(tmp_path, test_config, validated_config):
