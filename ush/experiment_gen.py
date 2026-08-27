@@ -7,7 +7,6 @@ Creates the experiment directory and populates it with necessary configuration a
 import argparse
 import inspect
 import logging
-import os
 import stat
 import sys
 from datetime import timedelta
@@ -41,6 +40,24 @@ def create_grid_files(expt_dir: Path, mesh_file_path: Path, nprocs: int) -> None
             logging.error(line)
         logging.error("Failed with status: %s", e.returncode)
         sys.exit(1)
+
+
+def generate_file_from_yaml(experiment_dir: Path, name: str, script: dict):
+    path = experiment_dir / name
+    parent = path.parent
+    contents = script["content"]
+    executable = script.get("executable", False)
+
+    logging.info("Ensuring user-defined directory exists: %s", parent)
+    parent.mkdir(parents=True, exist_ok=True)
+
+    logging.info("Creating user-defined file: %s", path)
+    with path.open("w") as fd:
+        fd.write(contents)
+
+    if executable:
+        current_mode = path.stat().st_mode
+        path.chmod(current_mode | stat.S_IXUSR)
 
 
 def generate_workflow_files(
@@ -81,10 +98,17 @@ def main():
     validated = validate(experiment_config.as_dict())
     experiment_dir, experiment_file = setup_experiment_directory(validated)
     generate_workflow_files(experiment_config, experiment_file, mpas_app, user_config, validated)
-    # ruff exception added out of sheer spite
-    if os.path.exists(experiment_file): # noqa: PTH110
-        make_user_scripts(experiment_file, experiment_dir)
+    make_user_scripts(experiment_config, experiment_dir)
     stage_grid_files(experiment_config, experiment_dir)
+
+
+def make_user_scripts(experiment_config: YAMLConfig, experiment_dir: Path) -> None:
+    user_scripts = experiment_config["user"].get("scripts")
+    if not user_scripts:
+        logging.warning("No user.scripts found in config")
+        return
+    for script_name, script_config in user_scripts.items():
+        generate_file_from_yaml(experiment_dir, script_name, script_config)
 
 
 def parse_args() -> list[Path]:
@@ -145,41 +169,6 @@ def required_nprocs(experiment_config: YAMLConfig) -> list[int]:
             cores = resources.get("cores") or (resources["nodes"] * resources["tasks_per_node"])
             nprocs.append(cores)
     return nprocs
-
-
-def make_user_scripts(experiment_file: Path, experiment_dir: Path) -> None:
-    config = get_yaml_config(experiment_file)
-    if "scripts" not in config["user"]:
-        logging.warning("No user.scripts found in yaml")
-        return
-    user_scripts = config["user"]["scripts"]
-    if not user_scripts:
-        logging.warning("user.scripts is empty")
-    for value in user_scripts.values():
-        generate_file_from_yaml(experiment_dir, value)
-
-
-def generate_file_from_yaml(experiment_dir: Path, script: Config):
-    # The python type checker mistakenly believes Config cannot index str,
-    # so we need some "type: ignore" comments to pass github tests.
-    path = experiment_dir / script["name"] # type: ignore[index]
-    parent = path.parent
-    contents = script["content"] # type: ignore[index]
-    executable = "executable" in script # type: ignore[operator]
-    executable = executable and script["executable"] # type: ignore[index]
-
-    if not parent.exists():
-        logging.info("Creating user-defined directory: %s", parent)
-        parent.mkdir(parents=True, exists_ok=True)
-
-    logging.info("Creating user-defined file: %s", path)
-    with path.open("w") as fd:
-        fd.write(contents)
-
-    if executable:
-        sb = path.stat()
-        add_user_execute = sb.st_mode | stat.S_IXUSR
-        path.chmod(add_user_execute)
 
 
 def setup_experiment_directory(validated: Config) -> tuple[Path, Path]:

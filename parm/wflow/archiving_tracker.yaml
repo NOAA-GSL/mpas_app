@@ -12,7 +12,7 @@ workflow:
       partition: "{{ platform.service_partition }}"
       join:
         cyclestr:
-          value: '&LOGDIR;/@Y@m@d@H/{{ jobname }}.log'
+          value: '&LOGDIR;/{{ jobname }}.log'
       walltime: "{{ archiving.tracker.execution.walltime }}"
       cores: 1
       dependency:

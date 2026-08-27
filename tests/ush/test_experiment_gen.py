@@ -1,8 +1,9 @@
 import logging
+import os
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from subprocess import CalledProcessError
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, call, patch
 
 from pytest import fixture, raises
 from uwtools.api.config import YAMLConfig, get_yaml_config
@@ -40,6 +41,21 @@ def test_config(tmp_path):
             },
         },
     }
+
+
+@fixture
+def test_script_config(test_config):
+    test_config["user"]["scripts"] = {
+        "hello.sh": {
+            "executable": True,
+            "content": "#!/bin/bash\necho hello",
+        },
+        "goodbye.sh": {
+            "executable": False,
+            "content": "echo goodbye",
+        },
+    }
+    return test_config
 
 
 @fixture
@@ -96,6 +112,20 @@ def test_create_grid_files_failure(tmp_path, caplog):
         assert "Error running command:" in caplog.text
         assert "gpmetis error: segmentation fault" in caplog.text
         assert "Failed with status: 1" in caplog.text
+
+
+def test_generate_file_from_yaml(tmp_path, test_script_config):
+    experiment_dir = tmp_path / "expt"
+    user_scripts = test_script_config["user"]["scripts"]
+    files = [(experiment_dir / k, v.get("executable", False)) for k, v in user_scripts.items()]
+    for f, _ in files:
+        assert not f.exists()
+    for script_name, script_config in user_scripts.items():
+        experiment_gen.generate_file_from_yaml(experiment_dir, script_name, script_config)
+    for f, e in files:
+        assert f.exists()
+        is_executable = os.access(f, os.X_OK)
+        assert e == is_executable
 
 
 def test_generate_workflow_files(tmp_path, test_config, validated_config):
@@ -180,11 +210,29 @@ def test_main(validated_config, test_config, tmp_path):
             return_value=(tmp_path, tmp_path / "experiment.yaml"),
         ),
         patch.object(experiment_gen, "generate_workflow_files") as generate,
+        patch.object(experiment_gen, "make_user_scripts") as make_scripts,
         patch.object(experiment_gen, "stage_grid_files") as stage,
     ):
         experiment_gen.main()
         generate.assert_called_once()
+        make_scripts.assert_called_once()
         stage.assert_called_once()
+
+
+def test_make_user_scripts(tmp_path, test_script_config):
+    with patch.object(experiment_gen, "generate_file_from_yaml") as gen_file:
+        experiment_gen.make_user_scripts(test_script_config, tmp_path)
+
+    calls = [
+        call(tmp_path, name, values)
+        for name, values in test_script_config["user"]["scripts"].items()
+    ]
+    gen_file.assert_has_calls(calls)
+
+
+def test_make_user_scripts__no_scripts(caplog, tmp_path, test_config):
+    experiment_gen.make_user_scripts(test_config, tmp_path)
+    assert "No user.scripts found in config" in caplog.text
 
 
 def test_parse_args():

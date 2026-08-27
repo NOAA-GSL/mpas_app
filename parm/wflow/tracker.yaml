@@ -19,7 +19,7 @@ workflow:
                       '
         join:
           cyclestr:
-              value: '&LOGDIR;/@Y@m@d@H/{{ jobname }}.log'
+              value: '&LOGDIR;/{{ jobname }}.log'
         walltime: "{{ latlon_regrid.execution.batchargs.walltime }}"
         cores: !int "{{ latlon_regrid.execution.batchargs.cores }}"
         partition: "{{ post.upp.execution.batchargs.partition }}"
@@ -40,7 +40,7 @@ workflow:
       account: "{{ platform.account }}"
       join:
         cyclestr:
-          value: '&LOGDIR;/@Y@m@d@H/{{ jobname }}.log'
+          value: '&LOGDIR;/{{ jobname }}.log'
       walltime: "{{ tracker.gfdltracker.execution.batchargs.walltime }}"
       nodes: "{{ tracker.gfdltracker.execution.batchargs.nodes }}:ppn={{ tracker.gfdltracker.execution.batchargs.tasks_per_node }}"
       exclusive: "{{ tracker.gfdltracker.execution.batchargs.exclusive }}"

@@ -7,7 +7,7 @@ workflow:
       account: "{{ platform.account }}"
       join:
         cyclestr:
-          value: '&LOGDIR;/@Y@m@d@H/{{ jobname }}.log'
+          value: '&LOGDIR;/{{ jobname }}.log'
       walltime: "{{ start_cycle.execution.batchargs.walltime }}"
       nodes: "{{ start_cycle.execution.batchargs.nodes }}:ppn={{ start_cycle.execution.batchargs.tasks_per_node }}"
 

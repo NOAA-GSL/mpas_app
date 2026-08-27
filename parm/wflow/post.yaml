@@ -29,7 +29,7 @@ workflow:
           MESH_LABEL: '{{ user.mesh_label }}'
         join:
           cyclestr:
-            value: '&LOGDIR;/@Y@m@d@H/{{ jobname }}.log'
+            value: '&LOGDIR;/{{ jobname }}.log'
         exclusive: "true"
         partition: "{{ post.mpassit.execution.batchargs.partition }}"
         walltime: "{{ post.mpassit.execution.batchargs.walltime }}"
@@ -59,7 +59,7 @@ workflow:
         account: "{{ platform.account }}"
         join:
           cyclestr:
-            value: '&LOGDIR;/@Y@m@d@H/{{ jobname }}.log'
+            value: '&LOGDIR;/{{ jobname }}.log'
         walltime: "{{ post.upp.execution.batchargs.walltime }}"
         nodes: "{{ post.upp.execution.batchargs.nodes }}:ppn={{ post.upp.execution.batchargs.tasks_per_node }}"
         exclusive: "True"
@@ -79,7 +79,7 @@ workflow:
         walltime: 00:02:00
         join:
           cyclestr:
-            value: '&LOGDIR;/@Y@m@d@H/{{ jobname }}.log'
+            value: '&LOGDIR;/{{ jobname }}.log'
         cores: 1
         envars:
           FHR: '#fhr#'
