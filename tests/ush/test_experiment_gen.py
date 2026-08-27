@@ -48,7 +48,7 @@ def test_script_config(test_config):
     test_config["user"]["scripts"] = {
         "hello.sh": {
             "executable": True,
-            "content": "#!/bin/bash \necho hello",
+            "content": "#!/bin/bash \necho hello {{ user.platform }}",
         },
         "goodbye.sh": {
             "executable": False,
@@ -116,7 +116,9 @@ def test_create_grid_files_failure(tmp_path, caplog):
 
 def test_generate_file_from_yaml(tmp_path, test_script_config):
     experiment_dir = tmp_path / "expt"
-    user_scripts = test_script_config["user"]["scripts"]
+    config = get_yaml_config(test_script_config)
+    config.dereference()
+    user_scripts = config["user"]["scripts"]
     files = [experiment_dir / k for k in user_scripts]
     for f in files:
         assert not f.exists()
@@ -126,7 +128,7 @@ def test_generate_file_from_yaml(tmp_path, test_script_config):
     assert f.exists()
     is_executable = os.access(f, os.X_OK)
     assert is_executable
-    assert f.read_text() == "#!/bin/bash \necho hello"
+    assert f.read_text() == "#!/bin/bash \necho hello jet"
 
     f = experiment_dir / "goodbye.sh"
     assert f.exists()
@@ -139,7 +141,8 @@ def test_generate_workflow_files(tmp_path, test_config, validated_config):
     experiment_file = tmp_path / "experiment.yaml"
     experiment_config = get_yaml_config(test_config)
     user_config = get_yaml_config({"user": {"platform": "hera"}})
-    mpas_app = tmp_path / "mpas_app"
+
+    experiment_config["user"]["mpas_app"] = str(tmp_path / "mpas_app")
     rocoto_xml = tmp_path / "rocoto.xml"
     task_config = {
         "workflow": {
@@ -165,7 +168,6 @@ def test_generate_workflow_files(tmp_path, test_config, validated_config):
         experiment_gen.generate_workflow_files(
             experiment_config=experiment_config,
             experiment_file=experiment_file,
-            mpas_app=mpas_app,
             user_config=user_config,
             validated=validated_config,
         )
@@ -183,7 +185,7 @@ def test_generate_workflow_files(tmp_path, test_config, validated_config):
 def test_generate_workflow_files_failure(tmp_path, test_config, validated_config):
     experiment_file = tmp_path / "experiment.yaml"
     experiment_config = get_yaml_config(test_config)
-    mpas_app = tmp_path / "mpas_app"
+    experiment_config["user"]["mpas_app"] = str(tmp_path / "mpas_app")
     with (
         patch.object(experiment_gen, "get_yaml_config", return_value=YAMLConfig(test_config)),
         patch.object(experiment_gen, "validate_driver_blocks"),
@@ -194,7 +196,6 @@ def test_generate_workflow_files_failure(tmp_path, test_config, validated_config
         experiment_gen.generate_workflow_files(
             experiment_config=experiment_config,
             experiment_file=experiment_file,
-            mpas_app=mpas_app,
             user_config=get_yaml_config({"user": {"platform": "hera"}}),
             validated=validated_config,
         )
@@ -208,7 +209,7 @@ def test_main(validated_config, test_config, tmp_path):
         patch.object(
             experiment_gen,
             "prepare_configs",
-            return_value=(experiment_config, get_yaml_config({}), Path("/some/mpas_app")),
+            return_value=(experiment_config, get_yaml_config({})),
         ),
         patch.object(experiment_gen, "validate", return_value=validated_config),
         patch.object(
@@ -267,16 +268,13 @@ def test_prepare_configs(test_config):
     ):
         get_yaml_config.side_effect = [YAMLConfig(cfg) for cfg in config_dicts]
         path.return_value.parent.parent.resolve.return_value = Path("/some/mpas_app")
-        experiment_config, user_config, mpas_app = experiment_gen.prepare_configs(
-            [Path("user.yaml")]
-        )
+        experiment_config, user_config = experiment_gen.prepare_configs([Path("user.yaml")])
     assert isinstance(experiment_config, YAMLConfig)
     assert experiment_config["data"]["mesh_files"] == test_config["data"]["mesh_files"]
     assert experiment_config["ics_key"] == "ics_value"
     assert experiment_config["lbcs_key"] == "lbcs_value"
     assert experiment_config["platform"] is True
-    assert experiment_config["user"] is True
-    assert mpas_app == Path("/some/mpas_app")
+    assert experiment_config["user"] == {"mpas_app": "/some/mpas_app"}
 
 
 def test_required_nprocs(test_config):
