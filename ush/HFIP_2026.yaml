@@ -1,9 +1,9 @@
 user:
   platform: ursa
-  experiment_dir: /scratch3/BMC/gsd-fv3-dev/MPAS_HFIP_2026/119_almost_global_init
-  hpss_archive_dir: /5year/BMC/fv3lam/role.rtgsd-fv3-dev/HFIP_MPAS_2026/119_almost_global_init
+  experiment_dir: /scratch3/BMC/gsd-fv3-dev/MPAS_HFIP_2026/124_smaller_upp
+  hpss_archive_dir: /5year/BMC/fv3lam/role.rtgsd-fv3-dev/HFIP_MPAS_2026/124_smaller_upp
   input_grib: /scratch5/BMC/gsd-fv3-dev/MPAS_HFIP_2026/merged-input/110_change_grid_bounds/out
-  first_cycle: !!timestamp 2026-07-28T06:00:00
+  first_cycle: !!timestamp 2026-08-28T06:00:00
   last_cycle: !!timestamp 2026-12-31T06:00:00
   cycle_frequency: 24
   scripts:
