@@ -22,3 +22,9 @@ post:
         nodes: 2
         tasks_per_node: 80
         walltime: "00:15:00"
+  upp:
+    execution:
+      batchargs:
+        nodes: 2
+        tasks_per_node: 32
+        walltime: "00:12:00"
