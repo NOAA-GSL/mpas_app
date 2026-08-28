@@ -10,7 +10,7 @@ workflow:
       partition: "{{ platform.service_partition }}"
       join:
         cyclestr:
-          value: '&LOGDIR;/@Y@m@d@H/{{ jobname }}.log'
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ scrubber.execution.walltime }}"
       cores: !int "{{ scrubber.execution.cores }}"
       dependency:
@@ -27,7 +27,7 @@ workflow:
       partition: "{{ platform.service_partition }}"
       join:
         cyclestr:
-          value: '&LOGDIR;/@Y@m@d@H/{{ jobname }}.log'
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ scrubber.execution.walltime }}"
       cores: !int "{{ scrubber.execution.cores }}"
       dependency:
@@ -42,7 +42,7 @@ workflow:
       partition: "{{ platform.service_partition }}"
       join:
         cyclestr:
-          value: '&LOGDIR;/@Y@m@d@H/{{ jobname }}.log'
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ scrubber.execution.walltime }}"
       cores: !int "{{ scrubber.execution.cores }}"
       dependency:
@@ -63,7 +63,7 @@ workflow:
       partition: "{{ platform.service_partition }}"
       join:
         cyclestr:
-          value: '&LOGDIR;/@Y@m@d@H/{{ jobname }}.log'
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ scrubber.execution.walltime }}"
       cores: !int "{{ scrubber.execution.cores }}"
       dependency:
@@ -84,7 +84,7 @@ workflow:
       partition: "{{ platform.service_partition }}"
       join:
         cyclestr:
-          value: '&LOGDIR;/@Y@m@d@H/{{ jobname }}.log'
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ scrubber.execution.walltime }}"
       cores: !int "{{ scrubber.execution.cores }}"
       dependency:

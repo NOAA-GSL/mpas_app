@@ -11,7 +11,7 @@ workflow:
     value: "{{ user.experiment_dir }}/workflow.log"
   entities:
     EXPERIMENT_CONFIG: "{{user.experiment_dir}}/experiment.yaml"
-    LOGDIR: "{{user.experiment_dir}}/log"
+    LOGDIR: "{{user.experiment_dir}}/log/@Y@m@d@H"
     MPAS_APP: "{{ user.mpas_app }}"
     PLATFORM: "{{ user.platform }}"
   tasks:
@@ -29,7 +29,7 @@ workflow:
       partition: "{{ platform.service_partition }}"
       join:
         cyclestr:
-          value: '&LOGDIR;/@Y@m@d@H/{{ jobname }}.log'
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ get_ics_data.execution.walltime }}"
       cores: !int "{{ get_ics_data.execution.cores }}"
     task_get_lbcs_data:
@@ -46,7 +46,7 @@ workflow:
       partition: "{{ platform.service_partition }}"
       join:
         cyclestr:
-          value: '&LOGDIR;/@Y@m@d@H/{{ jobname }}.log'
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ get_lbcs_data.execution.walltime }}"
       cores: !int "{{ get_lbcs_data.execution.cores }}"
     task_ungrib_ics:
@@ -62,7 +62,7 @@ workflow:
       exclusive: "true"
       join:
         cyclestr:
-          value: '&LOGDIR;/@Y@m@d@H/{{ jobname }}.log'
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ prepare_grib_ics.ungrib.execution.batchargs.walltime }}"
       nodes: "{{ prepare_grib_ics.ungrib.execution.batchargs.nodes }}:ppn={{ prepare_grib_ics.ungrib.execution.batchargs.tasks_per_node }}"
       dependency:
@@ -82,7 +82,7 @@ workflow:
       exclusive: "true"
       join:
         cyclestr:
-          value: '&LOGDIR;/@Y@m@d@H/{{ jobname }}.log'
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ prepare_grib_lbcs.ungrib.execution.batchargs.walltime }}"
       nodes: "{{ prepare_grib_lbcs.ungrib.execution.batchargs.nodes }}:ppn={{ prepare_grib_lbcs.ungrib.execution.batchargs.tasks_per_node }}"
       dependency:
@@ -101,7 +101,7 @@ workflow:
       account: "{{ platform.account }}"
       join:
         cyclestr:
-          value: '&LOGDIR;/@Y@m@d@H/{{ jobname }}.log'
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ create_ics.mpas_init.execution.batchargs.walltime }}"
       cores: !int "{{ create_ics.mpas_init.execution.batchargs.cores }}"
       dependency:
@@ -120,7 +120,7 @@ workflow:
       account: "{{ platform.account }}"
       join:
         cyclestr:
-          value: '&LOGDIR;/@Y@m@d@H/{{ jobname }}.log'
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ create_lbcs.mpas_init.execution.batchargs.walltime }}"
       cores: !int "{{ create_lbcs.mpas_init.execution.batchargs.cores }}"
       dependency:
@@ -143,7 +143,7 @@ workflow:
       account: "{{ platform.account }}"
       join:
         cyclestr:
-          value: '&LOGDIR;/@Y@m@d@H/{{ jobname }}.log'
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ forecast.mpas.execution.batchargs.walltime }}"
       nodes: "{{ forecast.mpas.execution.batchargs.nodes }}:ppn={{ forecast.mpas.execution.batchargs.tasks_per_node }}"
       partition: "{{ forecast.mpas.execution.batchargs.get('partition') }}"

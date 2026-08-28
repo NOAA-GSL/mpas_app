@@ -8,7 +8,6 @@ user:
   cycle_frequency: 24
   scripts:
     start_cycle.sh:
-      name: start_cycle.sh
       executable: true
       content: |+
         #!/bin/bash --login
