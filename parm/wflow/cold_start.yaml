@@ -11,7 +11,7 @@ workflow:
     value: "{{ user.experiment_dir }}/workflow.log"
   entities:
     EXPERIMENT_CONFIG: "{{user.experiment_dir}}/experiment.yaml"
-    LOGDIR: "{{user.experiment_dir}}/log"
+    LOGDIR: "{{user.experiment_dir}}/log/@Y@m@d@H"
     MPAS_APP: "{{ user.mpas_app }}"
     PLATFORM: "{{ user.platform }}"
   tasks:

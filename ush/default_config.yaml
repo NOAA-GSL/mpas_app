@@ -36,6 +36,17 @@ user:
     - cold_start.yaml
     - post.yaml
   hpss_archive_dir: /insert/a/valid/path/here
+  scripts:
+    cron.sh:
+      executable: true
+      content: |+
+        #!/bin/bash --login
+        cd {{user.mpas_app}}
+        source ./load_wflow_modules.sh {{user.platform}}
+        cd {{user.experiment_dir}}
+        rocotorun -w rocoto.xml -d rocoto.db "$@"
+        
+
 data:
   # Known locations to mesh_files are updated from parm/machines/*.yaml files
   mesh_files: /path/to/nonstandard/location
@@ -576,7 +587,7 @@ archiving:
       cores: 1
   lbcs:
     execution:
-      walltime: 02:59:00
+      walltime: 07:59:00
       cores: 1
 
 scrubber:

@@ -30,6 +30,7 @@ workflow:
         join:
           cyclestr:
             value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+        exclusive: "true"
         partition: "{{ post.mpassit.execution.batchargs.partition }}"
         walltime: "{{ post.mpassit.execution.batchargs.walltime }}"
         nodes: "{{ post.mpassit.execution.batchargs.nodes }}:ppn={{ post.mpassit.execution.batchargs.tasks_per_node }}"

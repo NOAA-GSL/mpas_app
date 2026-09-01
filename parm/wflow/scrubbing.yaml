@@ -46,9 +46,13 @@ workflow:
       walltime: "{{ scrubber.execution.walltime }}"
       cores: !int "{{ scrubber.execution.cores }}"
       dependency:
-        metataskdep_post:
-          attrs:
-            metatask: post
+        and:
+          taskdep_archive:
+            attrs:
+              task: archive_lbcs
+          metataskdep_post:
+            attrs:
+              metatask: post
     task_scrub_mpassit:
       attrs:
         maxtries: 2
