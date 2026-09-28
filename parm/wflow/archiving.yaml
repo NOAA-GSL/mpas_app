@@ -6,6 +6,8 @@ workflow:
       var:
         day: "{% for h in range(1,(forecast.mpas.length+23)//24+2) %}{{ ' %d' % h }}{% endfor %}"
       task_archive_mpassit_day#day#:
+        attrs:
+          maxtries: 2
         command:
           cyclestr:
             value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; &&
@@ -15,15 +17,17 @@ workflow:
         partition: "{{ platform.service_partition }}"
         join:
           cyclestr:
-            value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H_day#day#.log'
+            value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
         walltime: "{{ archiving.mpassit.execution.walltime }}"
-        cores: !int "{{ archiving.mpassit.execution.cores }}"
+        cores: 1
         dependency:
           metataskdep:
             attrs:
               metatask: post
 
     task_archive_upp:
+      attrs:
+        maxtries: 2
       command:
         cyclestr:
           value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; &&
@@ -35,13 +39,15 @@ workflow:
         cyclestr:
           value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ archiving.upp.execution.walltime }}"
-      cores: !int "{{ archiving.upp.execution.cores }}"
+      cores: 1
       dependency:
         metataskdep:
           attrs:
             metatask: post
 
     task_archive_init:
+      attrs:
+        maxtries: 2
       command:
         cyclestr:
           value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; &&
@@ -54,6 +60,30 @@ workflow:
           value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
       walltime: "{{ archiving.init.execution.walltime }}"
       cores: !int "{{ archiving.init.execution.cores }}"
+      dependency:
+        or:
+          taskdep:
+            attrs:
+              task: mpas
+          metataskdep:
+            attrs:
+              metatask: post
+
+    task_archive_lbcs:
+      attrs:
+        maxtries: 2
+      command:
+        cyclestr:
+          value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; &&
+            cd {{ user.experiment_dir }} &&
+            &MPAS_APP;/scripts/archive_lbcs.sh @Y@m@d@H "&ARCHIVE_DIR;"'
+      account: "{{ platform.account }}"
+      partition: "{{ platform.service_partition }}"
+      join:
+        cyclestr:
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+      walltime: "{{ archiving.lbcs.execution.walltime }}"
+      cores: !int "{{ archiving.lbcs.execution.cores }}"
       dependency:
         or:
           taskdep:

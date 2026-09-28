@@ -5,6 +5,13 @@ if [[ -z "$machine" ]]; then
   return
 fi
 
+machine=$1
+
+if [[ -z "$machine" ]]; then
+  echo "usage: source load_wflow_modules.sh [machine]"
+  return
+fi
+
 scrfunc_fp=$( readlink -f "${BASH_SOURCE[0]}" )
 scrfunc_dir=$( dirname "${scrfunc_fp}" )
 

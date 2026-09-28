@@ -4,30 +4,20 @@ workflow:
       var:
         fhr: "{% for h in range(0, forecast.mpas['length'] + 1, 6) %}{{ ' %03d' % h }}{% endfor %}"
       task_mpassit_#fhr#:
+        attrs:
+          maxtries: 2
         account: "{{ platform.account }}"
-        command: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; && &MPAS_APP;/scripts/mpassit.sh
-          -m {{ user.mpas_app }}/src/MPASSIT/modulefiles/build.{{ user.platform }}.intel{{ "-llvm" if user.platform == "ursa" else "" }}
-          -w {{ user.experiment_dir }}/${CYCLE}/mpassit
-          -f #fhr#
-          -i ${CYCLE}
-          -x {{ post.mpassit.fixdir }}
-          -n {{ post.mpassit.nmldir }}
-          -p {{ post.mpassit.parmdir }}
-          -e {{ user.mpas_app }}/exec'
-        envars:
-          CYCLE:
-            cyclestr:
-              value: '@Y@m@d@H'
-          INIT_DIR:
-            cyclestr:
-              value: '{{ user.experiment_dir }}/@Y@m@d@H/mpas_ics'
-          FCST_DIR:
-            cyclestr:
-              value: '{{ user.experiment_dir }}/@Y@m@d@H/forecast'
-          MESH_LABEL: '{{ user.mesh_label }}'
+        command:
+          cyclestr:
+            value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; && &MPAS_APP;/scripts/mpassit.py
+              -c &EXPERIMENT_CONFIG;
+              --cycle @Y-@m-@dT@H:@M:@S
+              --leadtime #fhr#
+              --key-path post'
         join:
           cyclestr:
             value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+        exclusive: "true"
         partition: "{{ post.mpassit.execution.batchargs.partition }}"
         walltime: "{{ post.mpassit.execution.batchargs.walltime }}"
         nodes: "{{ post.mpassit.execution.batchargs.nodes }}:ppn={{ post.mpassit.execution.batchargs.tasks_per_node }}"
@@ -44,6 +34,8 @@ workflow:
                   value: '{{ user.mpas_app }}/ush/output_is_available_for.sh {{ user.experiment_dir }}/@Y@m@d@H/forecast @Y-@m-@dt@H:00:00 #fhr# {{ user.forecast.output_interval }}'
 
       task_upp_#fhr#:
+        attrs:
+          maxtries: 2
         command:
           cyclestr:
             value: 'source &MPAS_APP;/load_wflow_modules.sh &PLATFORM; && &MPAS_APP;/scripts/upp.py
@@ -65,6 +57,8 @@ workflow:
               task: mpassit_#fhr#
 
       task_combine_grib_#fhr#:
+        attrs:
+          maxtries: 2
         account: "{{ platform.account }}"
         command:
           cyclestr:

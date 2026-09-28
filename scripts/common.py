@@ -42,9 +42,15 @@ def run_component(
     cycle: datetime,
     key_path: list[str],
     leadtime: timedelta | None = None,
+    schema_file: Path | None = None,
 ) -> Driver:
     use_uwtools_logger()
-    kwargs = {"config": config_file, "cycle": cycle, "key_path": key_path}
+    kwargs = {
+        "config": config_file,
+        "cycle": cycle,
+        "key_path": key_path,
+        "schema_file": schema_file,
+    }
     if leadtime is not None:
         kwargs["leadtime"] = leadtime
     driver: Driver = driver_class(**kwargs)

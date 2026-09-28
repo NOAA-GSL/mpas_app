@@ -5,7 +5,7 @@ show_missing = true
 skip_covered = true
 
 [tool.coverage.run]
-source = ["scripts", "ush"]
+source = ["drivers", "scripts", "ush"]
 
 [tool.mypy]
 check_untyped_defs = true
@@ -27,10 +27,13 @@ ignore = [
   "C408",    # unnecessary-collection-call
   "C901",    # complex-structure
   "COM812",  # missing-trailing-comma
+  "CPY001",  # missing-copyright-notice
   "D",       # all pydocstyle
   "FBT002",  # boolean-default-value-positional-argument
   "LOG015",  # root-logger-call
   "PLR0912", # too-many-branches
+  "PLR0913", # too-many-arguments
+  "PLR0917", # too-many-positional-arguments
   "PLR2004", # magic-value-comparison
   "PTH207",  # glob
   "S101",    # assert
@@ -44,6 +47,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = [
+  "N802",    # invalid-function-name
   "PT013",   # pytest-incorrect-pytest-import
   "SLF001",  # private-member-access
 ]

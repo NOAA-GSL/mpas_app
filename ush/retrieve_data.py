@@ -112,11 +112,11 @@ def main(args):
     use_uwtools_logger(verbose=clargs.debug)
     print("Running script retrieve_data.py with args:", f"\n{('-' * 80)}\n{('-' * 80)}")
     for name, val in vars(clargs).items():
-        if name not in ["config"]:
+        if name != "config":
             print(f"{name:>15s}: {val}")
     print(f"{('-' * 80)}\n{('-' * 80)}")
 
-    retrieve_data(
+    if not retrieve_data(
         config=clargs.config,
         cycle=clargs.cycle,
         data_stores=clargs.data_stores,
@@ -130,7 +130,8 @@ def main(args):
         outpath=clargs.output_path,
         summary_file=clargs.summary_file,
         symlink=clargs.symlink,
-    )
+    ):
+        _abort("Files were not staged!")
 
 
 def parse_args(argv):
@@ -329,18 +330,27 @@ def prepare_fs_copy_config(
             # Don't path join because location can be a url
             mem_prefix = f"mem{member:03d}/" if member != -999 else ""
             lead = int(lead_time.total_seconds() // 3600)
-            local_fn = f"{data_type}-{cycle.strftime('%Y%m%d-%H')}-f{lead:03d}.grib2"
+            local_fn = f"{data_type}-{cycle.strftime('%Y%m%d-%H')}-f{lead:03d}"
             if isinstance(location, list):
                 if isinstance(file_templates, list) and len(file_templates) == len(location):
                     file_item = get_yaml_config(
                         {
-                            f"{mem_prefix}{local_fn}": f"{loc}/{fn}"
-                            for loc, fn in zip(location, file_templates)
+                            f"{mem_prefix}{local_fn}.{i}.grib2": f"{loc}/{fn}"
+                            for i, (loc, fn) in enumerate(
+                                zip(location, file_templates, strict=True)
+                            )
                         }
                     )
+            elif len(file_templates) == 1:
+                file_item = get_yaml_config(
+                    {f"{mem_prefix}{local_fn}.grib2": f"{location}/{fn}" for fn in file_templates}
+                )
             else:
                 file_item = get_yaml_config(
-                    {f"{mem_prefix}{local_fn}": f"{location}/{fn}" for fn in file_templates}
+                    {
+                        f"{mem_prefix}{local_fn}.{i}.grib2": f"{location}/{fn}"
+                        for i, fn in enumerate(file_templates)
+                    }
                 )
             context = {
                 "cycle": cycle,
@@ -365,12 +375,12 @@ def retrieve_data(
     data_stores: list[str],
     data_type: str,
     fileset: str,
-    outpath: Path,
-    file_templates: list[str],
+    outpath: str | Path,
     lead_times: list[timedelta],
     members: list[int],
     filefmt: str = "",
-    inpath: Path | None = None,
+    file_templates: list[str] | None = None,
+    inpath: str | Path | None = None,
     summary_file: str | Path | None = None,
     *,
     symlink: bool = False,
@@ -379,8 +389,14 @@ def retrieve_data(
     Checks for and gathers the requested data.
     """
 
+    if file_templates is None:
+        file_templates = []
+
     standard_filenames = get_filenames(config[data_type]["filenames"], filefmt, fileset)
     config.dereference(context={"cycle": cycle})
+    outpath = Path(outpath)
+    inpath = Path(inpath) if inpath is not None else None
+    summary_file = Path(summary_file) if summary_file is not None else None
     for store in data_stores:
         # checks for given data_store
         if store == "disk":
@@ -435,13 +451,13 @@ def try_data_store(
     cycle: datetime,
     data_store: str,
     data_type: str,
-    file_templates: list[str],
     lead_times: list[timedelta],
     locations: list[list | Path | str],
     members: list[int],
     outpath: Path,
     archive_config: dict[str, str] | None = None,
     archive_names: list[str] | None = None,
+    file_templates: list[str] | None = None,
     *,
     symlink: bool = False,
 ) -> tuple[bool, dict[str, str]]:
@@ -449,6 +465,9 @@ def try_data_store(
     Given a data store, prepare a UW YAML file block to retrieve all requested
     data. Iterate through each potential option until the data set is retrieved.
     """
+
+    if file_templates is None:
+        file_templates = []
 
     # Form a UW YAML to try a copy.
     fs_copy_configs: Iterator[dict[str, str]]

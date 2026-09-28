@@ -12,16 +12,19 @@ user:
     - create_ics.mpas_init
     - create_lbcs.mpas_init
     - forecast.mpas
+    - post.mpassit
     - post.upp
   experiment_dir: ""
   first_cycle: !!timestamp 2023-09-15T00:00:00
   last_cycle: !!timestamp 2023-09-15T00:00:00
   ics:
-    data_stores: aws
+    data_stores:
+      - aws
     external_model: GFS
     offset_hours: 0
   lbcs:
-    data_stores: aws
+    data_stores:
+      - aws
     external_model: GFS
     interval_hours: 6
     offset_hours: 0
@@ -33,6 +36,18 @@ user:
   workflow_blocks:
     - cold_start.yaml
     - post.yaml
+  hpss_archive_dir: /insert/a/valid/path/here
+  scripts:
+    cron.sh:
+      executable: true
+      content: |+
+        #!/bin/bash --login
+        cd {{user.mpas_app}}
+        source ./load_wflow_modules.sh {{user.platform}}
+        cd {{user.experiment_dir}}
+        rocotorun -w rocoto.xml -d rocoto.db "$@"
+        
+
 data:
   # Known locations to mesh_files are updated from parm/machines/*.yaml files
   mesh_files: /path/to/nonstandard/location
@@ -46,11 +61,37 @@ get_ics_data:
     cores: 1
     walltime: 00:10:00
   rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/{{ user.ics.external_model }}'
+  config:
+    config: "{{ user.mpas_app }}/parm/data_locations.yml"
+    data_stores: !list "{{ user.ics.data_stores }}"
+    data_type: "{{ user.ics.external_model }}"
+    filefmt: grib2
+    fileset: "{{ 'anl' if user.ics.offset_hours == 0 else 'fcst' }}"
+    lead_times:
+      - "{{ user.ics.offset_hours }}"
+    inpath: "{{ platform.data[user.ics.external_model | lower ]['path']}}"
+    outpath: "{{ get_ics_data.rundir }}"
+    summary_file: "{{ get_ics_data.rundir }}/ICS.yaml"
+
 get_lbcs_data:
   execution:
     cores: 1
     walltime: 00:20:00
   rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/{{ user.lbcs.external_model }}'
+  config:
+    config: "{{ user.mpas_app }}/parm/data_locations.yml"
+    data_stores: !list "{{ user.lbcs.data_stores }}"
+    data_type: "{{ user.lbcs.external_model }}"
+    filefmt: grib2
+    fileset: fcst
+    lead_times:
+      - "{{ user.lbcs.offset_hours }}"
+      - "{{ user.lbcs.offset_hours + forecast.mpas.length }}"
+      - "{{ user.lbcs.interval_hours }}"
+    outpath: "{{ get_lbcs_data.rundir }}"
+    inpath: "{{ platform.data[user.lbcs.external_model | lower ]['path']}}"
+    summary_file: "{{ get_lbcs_data.rundir }}/LBCS.yaml"
+
 prepare_grib_ics:
   # ungrib settings follow UW Tools driver YAML
   ungrib:
@@ -59,6 +100,7 @@ prepare_grib_ics:
         nodes: 1
         tasks_per_node: 1
         walltime: 00:15:00
+        exclusive: true
       envcmds:
         - source {{ user.mpas_app }}/load_wflow_modules.sh {{ user.platform }}
         - conda activate ungrib
@@ -85,6 +127,7 @@ prepare_grib_lbcs:
         nodes: 1
         tasks_per_node: 1
         walltime: 00:15:00
+        exclusive: true
       envcmds:
         - source {{ user.mpas_app }}/load_wflow_modules.sh {{ user.platform }}
         - conda activate ungrib
@@ -114,6 +157,8 @@ create_ics:
         - ulimit -s unlimited || true
         - module use {{ user.mpas_app }}/modulefiles
         - module load build_{{ user.platform }}_intel
+        - module load impi-collective-settings/1.0.0
+        - export I_MPI_COLL_INTRANODE=pt2pt
       executable: "{{ user.mpas_app }}/exec/init_atmosphere_model"
       mpiargs:
         - "--ntasks={{ create_ics.mpas_init.execution.batchargs.cores }}"
@@ -188,9 +233,8 @@ create_lbcs:
       length: !int "{{ forecast.mpas.length }}"
       offset: 0
       path: "{{ prepare_grib_lbcs.ungrib.rundir }}"
-    files_to_copy:
-      <<: *mpas_init_files_to_copy
-      "{{ user.mesh_label }}.init.nc": "{{ create_ics.mpas_init['rundir'] }}/{{ user.mesh_label }}.init.nc"
+    files_to_hardlink:
+      "{{ user.mesh_label }}.init.nc": "{{ create_ics.mpas_init.rundir }}/{{ user.mesh_label }}.init.nc"
     namelist:
       base_file: "{{ user.mpas_app }}/src/MPAS-Model/namelist.init_atmosphere"
       update_values:
@@ -237,6 +281,8 @@ forecast:
         - ulimit -s unlimited || true
         - module use {{ user.mpas_app }}/modulefiles
         - module load build_{{ user.platform }}_intel
+        - module load impi-collective-settings/1.0.0
+        - export I_MPI_COLL_INTRANODE=pt2pt
       executable: "{{ user.mpas_app }}/exec/atmosphere_model"
       mpiargs:
         - "--ntasks={{ forecast.mpas.execution.batchargs.cores }}"
@@ -341,25 +387,46 @@ forecast:
     account: '{{ platform.account }}'
     scheduler: '{{ platform.scheduler }}'
 post:
+  platform:
+    account: '{{ platform.account }}'
+    scheduler: '{{ platform.scheduler }}'
   # combined_files is a simple tasks that concatenates grib files. Please see
   # parm/wflow/post.yaml for information on the task.
   compbined_files:
     name: COMBINED.GrbF{{ '%02d' % (leadtime.total_seconds() // 3600) }}
     path: "{{  user.experiment_dir }}/"
-  # mpassit settings are not associated with a UW Driver. Please see the
-  # parm/wflow/post.yaml for information on how its runscript is called.
   mpassit:
+    # mpassit settings follow UW Tools driver YAML
     execution:
       batchargs:
         walltime: 00:30:00
         tasks_per_node: 160
         nodes: 1
+        cores: !int '{{ post.mpassit.execution.batchargs.nodes * post.mpassit.execution.batchargs.tasks_per_node }}'
         native:
           - --exclusive
-    fixdir: /path/to/fix/files
-    nmldir: '{{ user.mpas_app }}/parm/mpassit'
-    parmdir: '{{ user.mpas_app }}/parm/mpassit'
-    rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/mpassit'
+      envcmds:
+        - module use {{ user.mpas_app }}/src/MPASSIT/modulefiles
+        - module load build.{{ user.platform }}.intel{{ "-llvm" if user.platform == "ursa" else "" }}
+      executable: "{{ user.mpas_app }}/exec/mpassit"
+      mpicmd: srun
+      mpiargs:
+        - --ntasks $SLURM_NTASKS
+    files_to_link:
+      diaglist: "{{ user.mpas_app }}/parm/mpassit/diaglist"
+      histlist_2d: "{{ user.mpas_app }}/parm/mpassit/histlist_2d"
+      histlist_3d: "{{ user.mpas_app }}/parm/mpassit/histlist_3d"
+      histlist_soil: "{{ user.mpas_app }}/parm/mpassit/histlist_soil"
+    namelist:
+      base_file: "{{ user.mpas_app }}/parm/mpassit/namelist.mpassit"
+      update_values:
+        config:
+          grid_file_input_grid: '{{ create_ics.mpas_init.rundir }}/{{  user.mesh_label }}.init.nc'
+          hist_file_input_grid: '{{ forecast.mpas.rundir }}/history.{{ (cycle + leadtime).strftime("%Y-%m-%d_%H.%M.%S") }}.nc'
+          diag_file_input_grid: '{{ forecast.mpas.rundir }}/diag.{{ (cycle + leadtime).strftime("%Y-%m-%d_%H.%M.%S") }}.nc'
+          block_decomp_file: '{{ user.experiment_dir }}/{{ user.mesh_label }}.graph.info.part.{{ post.mpassit.execution.batchargs.cores }}'
+          output_file: MPAS-A_out.{{ (cycle + leadtime).strftime('%Y-%m-%d_%H.%M.%S') }}.nc
+    rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/mpassit/{{ "%03d" % (leadtime.total_seconds() / 3600) }}'
   upp:
     # upp settings follow UW Tools driver YAML
     control_file: "{{ user.mpas_app }}/parm/upp/postxconfig-NT-rrfs_mpas.txt"
@@ -438,7 +505,7 @@ post:
     namelist:
       update_values:
         model_inputs:
-          filename: "{{ post.mpassit.rundir }}/{{ '%03d' % (leadtime.total_seconds() / 3600) }}/MPAS-A_out.{{ (cycle + leadtime).strftime('%Y-%m-%d_%H.%M.%S') }}.nc"
+          filename: "{{ post.mpassit.rundir }}/MPAS-A_out.{{ (cycle + leadtime).strftime('%Y-%m-%d_%H.%M.%S') }}.nc"
           ioform: netcdf
           grib: grib2
           datestr: "{{ (cycle + leadtime).strftime('%Y-%m-%d_%H:%M:%S') }}"
@@ -449,6 +516,55 @@ post:
         nampgb:
           numx: 2
     rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/upp/{{ "%03d" % (leadtime.total_seconds() / 3600) }}'
+tracker:
+  gfdltracker:
+    basins: L
+    execution:
+      batchargs:
+        tasks_per_node: 32
+        nodes: 1
+        walltime: 00:30:00
+        exclusive: true
+      envcmds:
+        - module use {{ user.mpas_app }}/src/GFDL-VortexTracker/modulefiles
+        - module load {{ user.platform }}
+        - module load grib-util
+        - ulimit -s unlimited
+      executable: "{{ user.mpas_app }}/exec/gettrk.x"
+    input_files:
+      endhour: !int "{{ forecast.mpas.length }}"
+      filefreq: 6
+      filepath: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/latlon/mpas.trak.all.{{ cycle.strftime("%Y%m%d%H") }}.f{{ "%05d" % (leadtime.total_seconds() / 60) }}'
+    namelist:
+      base_file: "{{ user.mpas_app }}/parm/tracker/namelist.gettrk"
+      update_values:
+        atcfinfo:
+          atcfname: MPAS
+        trackerinfo:
+          trkrinfo:
+            eastbd: 3313
+            westbd: 20
+            northbd: 2646
+            southbd: 20
+    rundir: '{{ user.experiment_dir }}/{{ cycle.strftime("%Y%m%d%H") }}/tracker'
+    tcvitals: "{{ platform.data.syndat_tcvitals }}/syndat_tcvitals.{{ cycle.strftime('%Y') }}"
+  platform:
+    account: '{{ platform.account }}'
+    scheduler: '{{ platform.scheduler }}'
+graphics:
+  execution:
+    batchargs:
+      walltime: 00:12:00
+      nodes: 1
+      tasks_per_node: 1
+      exclusive: true
+  atcfname: MPAS
+latlon_regrid:
+  new_grid: "latlon -100:3333:0.03 -10:2666:0.03"
+  execution:
+    batchargs:
+      walltime: 00:12:00
+      cores: 12
 graphics:
   # the graphics task calls a bash run script that runs pygraf
   execution:
@@ -481,9 +597,17 @@ archiving:
     execution:
       walltime: 02:59:00
       cores: 1
+  tracker:
+    execution:
+      walltime: 00:29:00
+      cores: 1
   init:
     execution:
       walltime: 02:59:00
+      cores: 1
+  lbcs:
+    execution:
+      walltime: 07:59:00
       cores: 1
 
 scrubber:

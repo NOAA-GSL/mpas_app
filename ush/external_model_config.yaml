@@ -3,7 +3,6 @@ GFS:
   ics:
     user:
       ics:
-        file_templates: "{{ platform.data.gfs.file_templates }}"
         input_file_path: "{{ platform.data.gfs.path }}"
     prepare_grib_ics: &prepare_grib_gfs
       ungrib:
@@ -18,7 +17,6 @@ GFS:
   lbcs:
     user:
       lbcs:
-        file_templates: "{{ platform.data.gfs.file_templates }}"
         input_file_path: "{{ platform.data.gfs.path }}"
     prepare_grib_lbcs:
       <<: *prepare_grib_gfs

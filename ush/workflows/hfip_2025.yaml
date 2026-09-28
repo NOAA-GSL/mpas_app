@@ -6,6 +6,8 @@ user:
     - graphics.yaml
     - scrubbing.yaml
     - archiving.yaml
+    - tracker.yaml
+    - archiving_tracker.yaml
   first_cycle: !!timestamp 2025-08-14T00:00:00
   last_cycle: !!timestamp 2025-08-15T00:00:00
 
@@ -51,6 +53,9 @@ create_ics:
           config_blend_bdy_terrain: false
         preproc_stages:
           config_aerosol_climo: true
+
+tracker:
+  basin_list: "L"
 
 forecast:
   mpas:

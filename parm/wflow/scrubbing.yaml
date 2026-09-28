@@ -1,6 +1,8 @@
 workflow:
   tasks:
     task_scrub_forecast:
+      attrs:
+        maxtries: 2
       command:
         cyclestr:
           value: 'set -xue ; rm -f "{{ user.experiment_dir }}/@Y@m@d@H/forecast"/{diag,history,restart}*nc'
@@ -16,9 +18,11 @@ workflow:
           attrs:
             metatask: post
     task_scrub_mpas_ics:
+      attrs:
+        maxtries: 2
       command:
         cyclestr:
-          value: 'set -xue ; rm -rf "{{ user.experiment_dir }}/@Y@m@d@H/mpas_ics"'
+          value: 'set -xue ; rm -rf "{{ user.experiment_dir }}/@Y@m@d@H/mpas_ics" "{{ user.experiment_dir }}/@Y@m@d@H/ungrib_ics"'
       account: "{{ platform.account }}"
       partition: "{{ platform.service_partition }}"
       join:
@@ -30,7 +34,28 @@ workflow:
         metataskdep_post:
           attrs:
             metatask: post
+    task_scrub_mpas_lbcs:
+      command:
+        cyclestr:
+          value: 'set -xue ; rm -rf "{{ user.experiment_dir }}/@Y@m@d@H/mpas_lbcs" "{{ user.experiment_dir }}/@Y@m@d@H/ungrib_lbcs"'
+      account: "{{ platform.account }}"
+      partition: "{{ platform.service_partition }}"
+      join:
+        cyclestr:
+          value: '&LOGDIR;/{{ jobname }}_@Y@m@d@H.log'
+      walltime: "{{ scrubber.execution.walltime }}"
+      cores: !int "{{ scrubber.execution.cores }}"
+      dependency:
+        and:
+          taskdep_archive:
+            attrs:
+              task: archive_lbcs
+          metataskdep_post:
+            attrs:
+              metatask: post
     task_scrub_mpassit:
+      attrs:
+        maxtries: 2
       command:
         cyclestr:
           value: 'set -xue ; rm -rf "{{ user.experiment_dir }}/@Y@m@d@H/mpassit"'
@@ -50,6 +75,8 @@ workflow:
             attrs:
               metatask: archive_mpassit
     task_scrub_init:
+      attrs:
+        maxtries: 2
       command:
         cyclestr:
           value: 'set -xue ; rm -rf "{{ user.experiment_dir }}/@Y@m@d@H/forecast"/*init*nc'
