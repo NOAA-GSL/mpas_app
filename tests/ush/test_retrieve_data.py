@@ -363,7 +363,8 @@ def test_retrieve_data(data_locations, data_set, tmp_path):
         try_data_store.assert_has_calls([call(**disk_calls), call(**aws_calls), call(**hpss_calls)])
 
 
-def test_retrieve_data_summary_file(data_locations, tmp_path):
+@mark.parametrize("template_provided", [True, False])
+def test_retrieve_data_summary_file(data_locations, template_provided, tmp_path):
     data_stores = ["disk"]
     data_set = "GFS"
     cycle = datetime.fromisoformat("2025-05-04T00").replace(tzinfo=timezone.utc)
@@ -376,7 +377,7 @@ def test_retrieve_data_summary_file(data_locations, tmp_path):
         "fileset": "anl",
         "outpath": tmp_path / "output",
         "filefmt": "wgrib2",
-        "file_templates": ["a.f{{ '%3d' % fcst_hr }}.grib"],
+        "file_templates": ["a.f{{ '%3d' % fcst_hr }}.grib"] if template_provided else None,
         "lead_times": [0],
         "members": [None],
         "inpath": tmp_path / "input",
@@ -487,6 +488,26 @@ def test_try_data_store_hpss(data_locations, tmp_path):
         lead_times=[timedelta(hours=0)],
         members=[-999],
     )
+
+
+def test_try_data_store_mock_no_file_templates(cycle, data_locations, tmp_path):
+    with patch.object(
+        retrieve_data,
+        "prepare_fs_copy_config",
+        return_value=iter({}),
+    ):
+        ret = retrieve_data.try_data_store(
+            config=data_locations,
+            cycle=cycle,
+            data_store="disk",
+            data_type="GFS",
+            file_templates=None,
+            lead_times=[timedelta(hours=6)],
+            locations=["some/path"],
+            members=[-999],
+            outpath=tmp_path,
+        )
+    assert ret == (False, {})
 
 
 # Tests that pull data

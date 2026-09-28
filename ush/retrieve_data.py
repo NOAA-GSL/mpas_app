@@ -451,13 +451,13 @@ def try_data_store(
     cycle: datetime,
     data_store: str,
     data_type: str,
-    file_templates: list[str],
     lead_times: list[timedelta],
     locations: list[list | Path | str],
     members: list[int],
     outpath: Path,
     archive_config: dict[str, str] | None = None,
     archive_names: list[str] | None = None,
+    file_templates: list[str] | None = None,
     *,
     symlink: bool = False,
 ) -> tuple[bool, dict[str, str]]:
@@ -465,6 +465,9 @@ def try_data_store(
     Given a data store, prepare a UW YAML file block to retrieve all requested
     data. Iterate through each potential option until the data set is retrieved.
     """
+
+    if file_templates is None:
+        file_templates = []
 
     # Form a UW YAML to try a copy.
     fs_copy_configs: Iterator[dict[str, str]]
